@@ -31,5 +31,12 @@
         <file>images/checked.png</file>
         <file>images/checked.svg</file>
         <file>images/sync.svg</file>
+        <file>images/albums.png</file>
+        <file>images/artists.png</file>
+        <file>images/playlists.png</file>
+        <file>images/songs.png</file>
+        <file>images/cloud.png</file>
+        <file>images/local.png</file>
+        <file>images/star.png</file>
     </qresource>
 </RCC>
