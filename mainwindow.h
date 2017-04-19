@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QTableWidgetItem>
+#include "songlist.h"
 
 namespace Ui {
 class MainWindow;
@@ -12,10 +14,16 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+public slots:
+    void setDisplayInfo(QString title,QString album,QString artists,QString artwork);
+    void selectedSong(QTableWidgetItem*);
 public:
+    Ui::MainWindow *ui;
     void displayArtists();
     void clearContent();
     explicit MainWindow(QWidget *parent = 0);
+
+
     ~MainWindow();
 
 private slots:
@@ -27,11 +35,12 @@ private slots:
 
     void on_volumeSlider_valueChanged(int value);
 
-
     void on_timePosition_sliderMoved(int position);
 
-private:
-    Ui::MainWindow *ui;
+
+
 };
+
+
 
 #endif // MAINWINDOW_H

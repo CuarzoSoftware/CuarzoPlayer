@@ -38,5 +38,6 @@
         <file>images/cloud.png</file>
         <file>images/local.png</file>
         <file>images/star.png</file>
+        <file>images/playerSlider.png</file>
     </qresource>
 </RCC>

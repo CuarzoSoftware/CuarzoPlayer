@@ -41,6 +41,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     json.hpp \
+    songlist.h
 
 
 FORMS    += mainwindow.ui
@@ -50,4 +51,5 @@ RESOURCES += \
 
 DISTFILES += \
     images/cloud.png \
-    images/local.png
+    images/local.png \
+    images/playerSlider.png

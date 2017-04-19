@@ -5,8 +5,15 @@
 #include <fstream>
 
 
+
+
 int main(int argc, char *argv[])
 {
+
+    QApplication a(argc, argv);
+    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
+    a.setAttribute(Qt::AA_EnableHighDpiScaling);
+
     QString path = QDir::homePath() + "/Music";
 
     //Check if music folder exist
@@ -43,9 +50,6 @@ int main(int argc, char *argv[])
         db.close();
     }
 
-    QApplication a(argc, argv);
-    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-    a.setAttribute(Qt::AA_EnableHighDpiScaling);
     MainWindow w;
     w.show();
 
