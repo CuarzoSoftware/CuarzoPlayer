@@ -28,7 +28,7 @@ public:
 
 private slots:
     void setTime(qint64);
-
+    void setDuration(qint64);
     void on_addMusicButton_clicked();
 
     void on_listView_itemClicked(QListWidgetItem *item);
@@ -39,6 +39,8 @@ private slots:
 
 
 
+    void on_timePosition_sliderPressed();
+    void on_timePosition_sliderReleased();
 };
 
 

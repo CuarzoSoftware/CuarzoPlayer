@@ -37,13 +37,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayInfo->item(0,0)->setTextColor(QColor("#000"));
     ui->displayInfo->item(1,0)->setTextColor(QColor("#444"));
     ui->displayInfo->item(2,0)->setTextColor(QColor("#888"));
+
     //Read the songs DB
 
     std::ifstream readDB(path.toStdString()+"/localSongsDB.json");
     readDB >> localSongsDB;
     displayArtists();
     player->setVolume(100);
-    connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
+    connect(player,SIGNAL(durationChanged(qint64)),this,SLOT(setDuration(qint64)));
 
 }
 
@@ -53,8 +54,11 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::setTime(qint64 time){
-    ui->timePosition->setValue(time/1000);
-
+    float dur = (float)100000 / (float)player->duration() * (float)time ;
+    ui->timePosition->setValue(dur);
+}
+void MainWindow::setDuration(qint64 duration){
+    connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
 }
 
 void MainWindow::displayArtists(){
@@ -415,7 +419,17 @@ void MainWindow::on_volumeSlider_valueChanged(int value)
 
 void MainWindow::on_timePosition_sliderMoved(int position)
 {
-     player->setPosition(position*1000);
+     //player->setPosition((float)position / (float)player->position()*(float)player->duration());
 }
 
 
+
+void MainWindow::on_timePosition_sliderPressed()
+{
+    //player->pause();
+}
+
+void MainWindow::on_timePosition_sliderReleased()
+{
+    player->setPosition((float)player->duration() / 100000 * (float)ui->timePosition->value());
+}

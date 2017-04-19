@@ -948,6 +948,12 @@ background:#FFF;
              </item>
              <item>
               <widget class="QWidget" name="timer" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>0</height>
+                </size>
+               </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
                  <widget class="QLabel" name="currentTime">
@@ -963,21 +969,21 @@ background:#FFF;
     min-height: 50px;
 }
 QSlider::groove:horizontal {
-height: 7px;
+height: 5px;
 border-radius: 0px;
 }
 QSlider::handle:horizontal {
 	image:none;
 }
 QSlider::sub-page:qlineargradient {
-background: blue;
+background: #888;
 }
 QSlider::add-page:qlineargradient {
 background: lightgrey;
 }</string>
                   </property>
                   <property name="maximum">
-                   <number>100</number>
+                   <number>100000</number>
                   </property>
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
@@ -996,14 +1002,38 @@ background: lightgrey;
              </item>
              <item>
               <widget class="QWidget" name="volume" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>120</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <layout class="QHBoxLayout" name="horizontalLayout_5">
                 <item>
                  <widget class="QLabel" name="volumeIcon">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">image:url(:rec/images/volumeOn.png);</string>
+                  </property>
                   <property name="text">
                    <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="resources.qrc">:/rec/images/volumeOn.png</pixmap>
                   </property>
                   <property name="scaledContents">
                    <bool>false</bool>
