@@ -17,7 +17,7 @@ ICON = icon.icns
 macx {
 
     INCLUDEPATH += \
-        /usr/local/include/taglib
+        %{sourceDir}/lib/mac/include/taglib
 
     LIBS += \
         -L/usr/local/lib \
@@ -25,9 +25,10 @@ macx {
         -lz
 }
 unix:!macx {
+
     INCLUDEPATH += \
-        /usr/local/include/taglib
-        #%{sourceDir}/lib/linux/include/taglib
+        %{sourceDir}/lib/linux/include/taglib
+
     LIBS += \
         -L/usr/local/lib \
         -ltag\
