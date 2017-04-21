@@ -13,13 +13,30 @@ TARGET = CuarzoPlayer
 TEMPLATE = app
 ICON = icon.icns
 
-INCLUDEPATH += \
-    /usr/local/include/taglib
 
-LIBS += \
-    -L/usr/local/lib \
-    -ltag\
-    -lz
+macx {
+
+    INCLUDEPATH += \
+        /usr/local/include/taglib
+
+    LIBS += \
+        -L/usr/local/lib \
+        -ltag\
+        -lz
+}
+unix:!macx {
+    INCLUDEPATH += \
+        /usr/local/include/taglib
+        #%{sourceDir}/lib/linux/include/taglib
+    LIBS += \
+        -L/usr/local/lib \
+        -ltag\
+}
+
+win32 {
+
+}
+
 
 
 # The following define makes your compiler emit warnings if you use

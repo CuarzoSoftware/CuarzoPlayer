@@ -17,6 +17,8 @@
 #include <QUuid>
 #include <QFileInfo>
 #include <QTime>
+#include <QFile>
+
 
 
 using json = nlohmann::json;
@@ -135,6 +137,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       artist = m_tag->artist().toCString();
+      artist.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
     }
 
     //Read the album
@@ -144,6 +147,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       album = m_tag->album().toCString();
+      album.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
     }
 
     //Read the title
@@ -153,6 +157,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       title = m_tag->title().toCString();
+      title.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
     }
 
     //Read the track
@@ -185,8 +190,6 @@ void MainWindow::on_addMusicButton_clicked()
             QImage coverQImg;
             coverQImg.loadFromData((const uchar *) coverImg->picture().data(), coverImg->picture().size());
             bool b = coverQImg.save(path+"/artwork/"+artist+"/"+album+".png");
-
-            Q_ASSERT(b);
         }
     }
     else{
@@ -207,10 +210,11 @@ void MainWindow::on_addMusicButton_clicked()
 
     //Copy file
 
-    std::ifstream  src(files[i].path().toStdString(), std::ios::binary);
-    std::ofstream  dst(path.toStdString()+"/music/"+artist.toStdString()+"/"+album.toStdString()+"/"+title.toStdString()+".mp3",   std::ios::binary);
+    QFile::copy(files[i].path(), path+"/music/"+artist+"/"+album+"/"+title+".mp3");
+    //std::ifstream  src(files[i].path().toStdString(), std::ios::binary);
+    //std::ofstream  dst(path.toStdString()+"/music/"+artist.toStdString()+"/"+album.toStdString()+"/"+title.toStdString()+".mp3",   std::ios::binary);
 
-    dst << src.rdbuf();
+   // dst << src.rdbuf();
     QString preID;
     if(track<10){
         preID = "0" + QString::number(track) ;
