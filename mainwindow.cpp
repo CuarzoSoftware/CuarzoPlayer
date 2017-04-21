@@ -16,12 +16,17 @@
 #include <QWheelEvent>
 #include <QUuid>
 #include <QFileInfo>
+#include <QTime>
 
 
 using json = nlohmann::json;
 using namespace TagLib;
 
-json localSongsDB;
+QTableWidgetItem *artistSongsItems[10000];
+QString displayedArtist = "asda98a883h2";
+QString playlistArtist = "90s83h2hk2-";
+QString viewMode = "artists";
+json currentSongData, artistSongData, localSongsDB, playList;
 
 QString path = QDir::homePath() + "/Music/Cuarzo Player";
 QMediaPlayer *player = new QMediaPlayer();
@@ -53,13 +58,28 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//Set current a remaining song time
+
 void MainWindow::setTime(qint64 time){
     float dur = (float)100000 / (float)player->duration() * (float)time ;
     ui->timePosition->setValue(dur);
+    int seconds = (time/1000) % 60;
+    int minutes = (time/60000) % 60;
+    int secondsB = ((player->duration() - time)/1000) % 60;
+    int minutesB = ((player->duration() - time)/60000) % 60;
+    QTime cTime(0,minutes,seconds);
+    QTime rTime(0,minutesB,secondsB);
+    ui->currentTime->setText(cTime.toString().mid(3,5));
+    ui->remainTime->setText("-"+rTime.toString().mid(3,5));
 }
+
+//Start the timer when song duration is calculated
+
 void MainWindow::setDuration(qint64 duration){
     connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
 }
+
+//Display the artists list
 
 void MainWindow::displayArtists(){
     ui->listView->clear();
@@ -80,6 +100,8 @@ void MainWindow::displayArtists(){
     }
 }
 
+//Save the current library
+
 void SaveLocalSongsDB(){
     std::ofstream db;
     db.open (path.toStdString()+"/localSongsDB.json");
@@ -87,7 +109,7 @@ void SaveLocalSongsDB(){
     db.close();
 }
 
-
+//Adds new music
 
 void MainWindow::on_addMusicButton_clicked()
 {
@@ -226,24 +248,31 @@ void MainWindow::on_addMusicButton_clicked()
 }
 
 
-//Select artist
+//Display albums from selected artist
 
-void MainWindow::on_listView_itemClicked(QListWidgetItem *item)
-{
+void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
+
+    //Cleans the body container
     clearContent();
+
+    //Save the current artist name
+    displayedArtist = item->text();
 
     //Creates the view inside the scroll area
     QWidget *view = new QWidget();
     QBoxLayout *viewLayout = new QBoxLayout(QBoxLayout::TopToBottom,view);
     viewLayout->setAlignment(Qt::AlignTop);
 
-    //Creates the artist name label
+    //Creates the artist name label on the top
     QLabel *artistTitle = new QLabel(item->text());
     artistTitle->setStyleSheet("font-weight:bold;font-size:30px");
     artistTitle->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
     artistTitle->setMaximumHeight(40);
     viewLayout->addWidget(artistTitle);
 
+    int globalIndex = 0;
+
+    //Loop through the artist albums
     for (json::iterator it = localSongsDB["artists"][item->text().toStdString()].begin(); it != localSongsDB["artists"][item->text().toStdString()].end(); ++it) {
 
         //The album name String
@@ -296,8 +325,6 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item)
         rightLayout->setAlignment(Qt::AlignRight);
         rightLeftLayout->setMargin(0);
 
-
-
         //Creates the left songs container
         SongList *songList = new SongList();
         songList->setColumnCount(3);
@@ -316,13 +343,14 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item)
         songList->setColumnWidth(0,30);
         songList->setColumnWidth(2,30);
 
-
-        connect(songList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(selectedSong(QTableWidgetItem*)));
-
+        //When song from list is double clicked
+        connect(songList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(doubleClickedSongFromArtistView(QTableWidgetItem*)));
 
         rightLeftLayout->addWidget(songList);
 
+        int albumIndex = 0;
 
+        //Loop the album songs
         for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
 
             //Create a song
@@ -330,9 +358,18 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item)
             QTableWidgetItem *title = new QTableWidgetItem();
             QTableWidgetItem *status = new QTableWidgetItem();
 
+            //Set the global index
+            track->setData(Qt::UserRole,QVariant(globalIndex));
+            title->setData(Qt::UserRole,QVariant(globalIndex));
+            status->setData(Qt::UserRole,QVariant(globalIndex));
+
+            artistSongsItems[globalIndex] = title;
+            artistSongData[globalIndex] = it2.value();
+            artistSongData[globalIndex]["globalIndex"] = globalIndex;
+            artistSongData[globalIndex]["albumIndex"] = albumIndex;
             songList->insertRow(songList->rowCount());
 
-            //Track
+            //Set the track number
             int tr = it2.value()["track"];
             QString tra;
             if(tr < 10){
@@ -341,39 +378,73 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item)
             else{
                 tra = QString::number(tr);
             }
+            if(displayedArtist == playlistArtist){
+                if(!currentSongData.empty()){
+                    if(currentSongData["globalIndex"] == globalIndex){
+                         track->setIcon(QIcon(":rec/images/playingSong.png"));
+                    }
+                }
+            }
 
             track->setText(tra);
             songList->setItem(songList->rowCount() - 1,0,track);
 
-            //Tile
+            //Set the song title
             QString titleText = QString::fromStdString(it2.value()["title"]);
             title->setText(titleText);
 
             bool artWork = it2.value()["artwork"];
-            title->setData(Qt::UserRole,QVariant(QStringList({
-                                                         titleText,
-                                                         QString::fromStdString( it2.value()["album"]),
-                                                         QString::fromStdString( it2.value()["artist"]),
-                                                         QString::number(artWork)
-                                                     })));
+
             songList->setItem(songList->rowCount() - 1,1,title);
 
-            //Satus button
+            //Set the current song status (Download / Downloaded / Upload)
             status->setIcon(QIcon(":rec/images/download.png"));
             songList->setItem(songList->rowCount() - 1,2,status);
 
-
+            globalIndex++;
+            albumIndex++;
         }
 
     }
-
     ui->scroll->layout()->addWidget(view);
     view->show();
 }
 
+//Double ckicked on song from artist view mode
 
-void MainWindow::setDisplayInfo(QString title,QString album,QString artist,QString artwork){
-    if(artwork == "1"){
+void MainWindow::doubleClickedSongFromArtistView(QTableWidgetItem* model){
+    currentSongData = artistSongData[model->data(Qt::UserRole).toInt()];
+    if(displayedArtist != playlistArtist){
+        playList = artistSongData;
+    }
+    playlistArtist = displayedArtist;
+    selectSongFromArtistView(model);
+    playSong();
+}
+
+//Set selected song from artist view mode list
+
+void MainWindow::selectSongFromArtistView(QTableWidgetItem* model){
+    if(displayedArtist == playlistArtist){
+        for(int ii = 0;ii<artistSongData.size();ii++){
+            for(int i = 0;i<artistSongsItems[ii]->tableWidget()->rowCount();i++){
+                artistSongsItems[ii]->tableWidget()->item(i,0)->setIcon(QIcon());
+            }
+        }
+        model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+    }
+}
+
+void MainWindow::playSong(){
+
+    QString artist = QString::fromStdString(currentSongData["artist"]);
+    QString album = QString::fromStdString(currentSongData["album"]);
+    QString title = QString::fromStdString(currentSongData["title"]);
+
+    player->setMedia(QUrl::fromLocalFile(path+"/music/"+artist+"/"+album+"/"+title+".mp3"));
+    player->play();
+
+    if(currentSongData["artwork"] == true){
         ui->artWork->setPixmap(QPixmap(path+"/artwork/"+artist+"/"+album+".png"));
     }
     else{
@@ -382,24 +453,6 @@ void MainWindow::setDisplayInfo(QString title,QString album,QString artist,QStri
     ui->displayInfo->item(0,0)->setText(title);
     ui->displayInfo->item(1,0)->setText(album);
     ui->displayInfo->item(2,0)->setText(artist);
-}
-
-
-void MainWindow::selectedSong(QTableWidgetItem* model){
-
-    for(int i = 0;i<model->tableWidget()->rowCount();i++){
-        model->tableWidget()->item(i,0)->setIcon(QIcon());
-    }
-
-    model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
-    if(model->column() == 1){
-        QStringList data = model->data(Qt::UserRole).toStringList();
-        player->setMedia(QUrl::fromLocalFile(path+"/music/"+data[2]+"/"+data[1]+"/"+data[0]+".mp3"));
-        player->play();
-        if(data[3] == "1"){
-            setDisplayInfo(data[0],data[1],data[2],data[3]);
-        }
-    }
 }
 
 void SongList::wheelEvent(QWheelEvent *event){
@@ -412,24 +465,36 @@ void MainWindow::clearContent(){
     }
 }
 
-void MainWindow::on_volumeSlider_valueChanged(int value)
-{
+void MainWindow::on_volumeSlider_valueChanged(int value){
     player->setVolume(value);
 }
 
-void MainWindow::on_timePosition_sliderMoved(int position)
-{
+void MainWindow::on_timePosition_sliderMoved(int position){
      //player->setPosition((float)position / (float)player->position()*(float)player->duration());
 }
 
-
-
-void MainWindow::on_timePosition_sliderPressed()
-{
+void MainWindow::on_timePosition_sliderPressed(){
     //player->pause();
 }
 
-void MainWindow::on_timePosition_sliderReleased()
-{
+void MainWindow::on_timePosition_sliderReleased(){
     player->setPosition((float)player->duration() / 100000 * (float)ui->timePosition->value());
+}
+
+void MainWindow::on_playNextButton_clicked(){
+    if(playList.size() == 0){
+        return;
+    }
+    int i = (int)currentSongData["globalIndex"] + 1;
+    if(viewMode == "artists"){
+        if(i < playList.size()){
+            currentSongData = playList[i];
+            selectSongFromArtistView(artistSongsItems[i]);
+        }
+        else{
+            currentSongData = playList[0];
+            selectSongFromArtistView(artistSongsItems[0]);
+        }
+        playSong();
+    }
 }

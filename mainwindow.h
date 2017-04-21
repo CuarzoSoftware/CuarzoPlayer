@@ -15,8 +15,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public slots:
-    void setDisplayInfo(QString title,QString album,QString artists,QString artwork);
-    void selectedSong(QTableWidgetItem*);
+    void playSong();
+    void doubleClickedSongFromArtistView(QTableWidgetItem* model);
+    void selectSongFromArtistView(QTableWidgetItem* model);
 public:
     Ui::MainWindow *ui;
     void displayArtists();
@@ -41,6 +42,7 @@ private slots:
 
     void on_timePosition_sliderPressed();
     void on_timePosition_sliderReleased();
+    void on_playNextButton_clicked();
 };
 
 
