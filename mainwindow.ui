@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>928</width>
     <height>597</height>
    </rect>
   </property>
@@ -823,7 +823,7 @@ background:#FFF;
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>550</width>
+                  <width>678</width>
                   <height>428</height>
                  </rect>
                 </property>
@@ -865,7 +865,9 @@ background:#FFF;
              <bool>false</bool>
             </property>
             <property name="styleSheet">
-             <string notr="true"/>
+             <string notr="true">QToolButton{
+	background:transparent;
+}</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <property name="spacing">
@@ -1100,7 +1102,7 @@ background: lightgrey;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>928</width>
      <height>22</height>
     </rect>
    </property>
