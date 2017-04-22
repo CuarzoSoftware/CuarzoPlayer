@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QTableWidgetItem>
+#include <QMediaPlayer>
 
 namespace Ui {
 class MainWindow;
@@ -13,6 +14,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+QMediaPlayer *player = new QMediaPlayer();
 public slots:
     void doubleClickedSongFromArtistView(QTableWidgetItem* model);
 public:

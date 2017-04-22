@@ -30,7 +30,8 @@ QString viewMode = "artists";
 json currentSongData, artistSongData, localSongsDB, playList;
 
 QString path = QDir::homePath() + "/Music/Cuarzo Player";
-QMediaPlayer *player = new QMediaPlayer();
+
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -43,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayInfo->item(0,0)->setTextColor(QColor("#000"));
     ui->displayInfo->item(1,0)->setTextColor(QColor("#444"));
     ui->displayInfo->item(2,0)->setTextColor(QColor("#888"));
+
 
     //Read the songs DB
     std::ifstream readDB(path.toStdString()+"/localSongsDB.json");
@@ -322,6 +324,8 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
         rightLeftLayout->setMargin(0);
 
         //Creates the left songs container
+        QPalette tableColors = QPalette();
+
         SongList *songList = new SongList();
         songList->setColumnCount(3);
         songList->setMinimumHeight(it.value().size() * 30);
@@ -338,6 +342,8 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
         songList->verticalHeader()->hide();
         songList->setColumnWidth(0,30);
         songList->setColumnWidth(2,30);
+        songList->setFocusPolicy(Qt::NoFocus);
+
 
         //When song from list is double clicked
         connect(songList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(doubleClickedSongFromArtistView(QTableWidgetItem*)));
@@ -358,6 +364,7 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
             track->setData(Qt::UserRole,QVariant(globalIndex));
             title->setData(Qt::UserRole,QVariant(globalIndex));
             status->setData(Qt::UserRole,QVariant(globalIndex));
+
 
             artistSongsItems[globalIndex] = title;
             artistSongData[globalIndex] = it2.value();
