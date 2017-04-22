@@ -29,7 +29,7 @@ unix:!macx {
 
     LIBS += \
         -L/usr/local/lib \
-        -L$$_PRO_FILE_PWD_/lib/mac/lib \
+        -L$$_PRO_FILE_PWD_/lib/linux/lib \
         -ltag
 }
 
