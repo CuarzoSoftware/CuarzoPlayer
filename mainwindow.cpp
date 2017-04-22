@@ -25,6 +25,7 @@ using json = nlohmann::json;
 using namespace TagLib;
 
 QTableWidgetItem *artistSongsItems[10000];
+QTableWidgetItem *artistSongItem;
 QString displayedArtist = "asda98a883h2";
 QString playlistArtist = "90s83h2hk2-";
 QString viewMode = "artists";
@@ -386,8 +387,11 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
                 if(!currentSongData.empty()){
                     if(currentSongData["globalIndex"] == globalIndex){
                          track->setIcon(QIcon(":rec/images/playingSong.png"));
+                         artistSongItem = title;
                     }
                 }
+            }else{
+                artistSongItem = NULL;
             }
 
             track->setText(tra);
@@ -430,12 +434,11 @@ void MainWindow::doubleClickedSongFromArtistView(QTableWidgetItem* model){
 
 void MainWindow::selectSongFromArtistView(QTableWidgetItem* model){
     if(displayedArtist == playlistArtist){
-        for(int ii = 0;ii<artistSongData.size();ii++){
-            for(int i = 0;i<artistSongsItems[ii]->tableWidget()->rowCount();i++){
-                artistSongsItems[ii]->tableWidget()->item(i,0)->setIcon(QIcon());
-            }
+        if(artistSongItem!=NULL){
+            artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon());
         }
         model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+        artistSongItem = model;
     }
 }
 

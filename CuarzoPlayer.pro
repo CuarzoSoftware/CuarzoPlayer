@@ -13,25 +13,24 @@ TARGET = CuarzoPlayer
 TEMPLATE = app
 ICON = icon.icns
 
-
 macx {
 
-    INCLUDEPATH += \
-        %{sourceDir}/lib/mac/include/taglib
+    INCLUDEPATH += $$_PRO_FILE_PWD_/lib/mac/include/taglib/
 
     LIBS += \
         -L/usr/local/lib \
+        -L$$_PRO_FILE_PWD_/lib/mac/lib \
         -ltag\
         -lz
 }
 unix:!macx {
 
-    INCLUDEPATH += \
-        %{sourceDir}/lib/linux/include/taglib
+    INCLUDEPATH += $$_PRO_FILE_PWD_/lib/linux/include/taglib/
 
     LIBS += \
         -L/usr/local/lib \
-        -ltag\
+        -L$$_PRO_FILE_PWD_/lib/mac/lib \
+        -ltag
 }
 
 win32 {
