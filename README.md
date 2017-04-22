@@ -16,3 +16,7 @@ Using TagLib v1.11.1 C++ library for ID3 tags management <a href="http://taglib.
   <li>Compile TagLib with <a href="https://cmake.org" target="_blank">CMake</a>, and install into "usr/lib" directory</li>
   <li>Compile with Qt</li>
 </ol>
+
+# LINUX
+Install those libraries before compile.<br><br>
+<code>sudo apt-get install freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libpulse-dev</code>
