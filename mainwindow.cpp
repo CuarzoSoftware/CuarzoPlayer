@@ -1,23 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <songlist.h>
+#include "songlist.h"
 #include "json.hpp"
+#include "fileref.h"
+#include "tag.h"
+#include "id3v2tag.h"
+#include "mpegfile.h"
+#include "attachedpictureframe.h"
 #include <fstream>
 #include <QFileDialog>
-#include <fileref.h>
-#include <tag.h>
-#include <id3v2tag.h>
-#include <mpegfile.h>
-#include <attachedpictureframe.h>
-#include <string>
+#include <QFileInfo>
+#include <QFile>
 #include <QMediaPlayer>
 #include <QScrollArea>
 #include <QPushButton>
 #include <QWheelEvent>
 #include <QUuid>
-#include <QFileInfo>
 #include <QTime>
-#include <QFile>
 
 
 
@@ -26,8 +25,7 @@ using namespace TagLib;
 
 QTableWidgetItem *artistSongsItems[10000];
 QTableWidgetItem *artistSongItem;
-QString displayedArtist = "asda98a883h2";
-QString playlistArtist = "90s83h2hk2-";
+QString displayedArtist,playlistArtist;
 QString viewMode = "artists";
 json currentSongData, artistSongData, localSongsDB, playList;
 
@@ -47,12 +45,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayInfo->item(2,0)->setTextColor(QColor("#888"));
 
     //Read the songs DB
-
     std::ifstream readDB(path.toStdString()+"/localSongsDB.json");
     readDB >> localSongsDB;
     displayArtists();
     player->setVolume(100);
-    connect(player,SIGNAL(durationChanged(qint64)),this,SLOT(setDuration(qint64)));
+    connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
 
 }
 
@@ -74,12 +71,6 @@ void MainWindow::setTime(qint64 time){
     QTime rTime(0,minutesB,secondsB);
     ui->currentTime->setText(cTime.toString().mid(3,5));
     ui->remainTime->setText("-"+rTime.toString().mid(3,5));
-}
-
-//Start the timer when song duration is calculated
-
-void MainWindow::setDuration(qint64 duration){
-    connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
 }
 
 //Display the artists list
@@ -118,7 +109,7 @@ void MainWindow::on_addMusicButton_clicked()
 {
     //Open the file dialog
 
-    QList<QUrl> files = QFileDialog::getOpenFileUrls(this,"Añade Música",QUrl(""),tr("MP3 (*.mp3)" ));
+    QList<QUrl> files = QFileDialog::getOpenFileUrls(this,"Añade Música",QUrl(path),tr("MP3 (*.mp3)" ));
 
     for(int i = 0; i < files.length(); i++){
 
@@ -138,7 +129,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       artist = m_tag->artist().toCString();
-      artist.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
+      artist.remove(QRegExp("[^a-zA-Z\\d\\s]"));
     }
 
     //Read the album
@@ -148,7 +139,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       album = m_tag->album().toCString();
-      album.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
+      album.remove(QRegExp("[^a-zA-Z\\d\\s]"));
     }
 
     //Read the title
@@ -158,7 +149,7 @@ void MainWindow::on_addMusicButton_clicked()
     }
     else{
       title = m_tag->title().toCString();
-      title.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
+      title.remove(QRegExp("[^a-zA-Z\\d\\s]"));
     }
 
     //Read the track
@@ -190,7 +181,7 @@ void MainWindow::on_addMusicButton_clicked()
 
             QImage coverQImg;
             coverQImg.loadFromData((const uchar *) coverImg->picture().data(), coverImg->picture().size());
-            bool b = coverQImg.save(path+"/artwork/"+artist+"/"+album+".png");
+            coverQImg.save(path+"/artwork/"+artist+"/"+album+".png");
         }
     }
     else{
@@ -401,8 +392,6 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
             QString titleText = QString::fromStdString(it2.value()["title"]);
             title->setText(titleText);
 
-            bool artWork = it2.value()["artwork"];
-
             songList->setItem(songList->rowCount() - 1,1,title);
 
             //Set the current song status (Download / Downloaded / Upload)
@@ -476,14 +465,6 @@ void MainWindow::on_volumeSlider_valueChanged(int value){
     player->setVolume(value);
 }
 
-void MainWindow::on_timePosition_sliderMoved(int position){
-     //player->setPosition((float)position / (float)player->position()*(float)player->duration());
-}
-
-void MainWindow::on_timePosition_sliderPressed(){
-    //player->pause();
-}
-
 void MainWindow::on_timePosition_sliderReleased(){
     player->setPosition((float)player->duration() / 100000 * (float)ui->timePosition->value());
 }
@@ -494,7 +475,7 @@ void MainWindow::on_playNextButton_clicked(){
     }
     int i = (int)currentSongData["globalIndex"] + 1;
     if(viewMode == "artists"){
-        if(i < playList.size()){
+        if(i < (int)playList.size()){
             currentSongData = playList[i];
             selectSongFromArtistView(artistSongsItems[i]);
         }
