@@ -824,7 +824,7 @@ background:#FFF;
                   <x>0</x>
                   <y>0</y>
                   <width>678</width>
-                  <height>432</height>
+                  <height>435</height>
                  </rect>
                 </property>
                 <property name="autoFillBackground">
@@ -888,68 +888,7 @@ background:#FFF;
              </property>
              <item>
               <widget class="QWidget" name="playerButtons" native="true">
-               <layout class="QHBoxLayout" name="horizontalLayout_4">
-                <item>
-                 <widget class="QToolButton" name="playBackButton">
-                  <property name="focusPolicy">
-                   <enum>Qt::NoFocus</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true"/>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/rec/images/backPlay.png</normaloff>:/rec/images/backPlay.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>32</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="playButton">
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/rec/images/play.png</normaloff>:/rec/images/play.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>40</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="playNextButton">
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/rec/images/nextPlay.png</normaloff>:/rec/images/nextPlay.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>32</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <layout class="QHBoxLayout" name="horizontalLayout_4"/>
               </widget>
              </item>
              <item>

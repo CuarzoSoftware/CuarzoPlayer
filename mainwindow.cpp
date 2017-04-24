@@ -7,6 +7,7 @@
 #include "id3v2tag.h"
 #include "mpegfile.h"
 #include "attachedpictureframe.h"
+#include "opbutton.h"
 #include <fstream>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -18,20 +19,8 @@
 #include <QUuid>
 #include <QTime>
 
-
-
 using json = nlohmann::json;
 using namespace TagLib;
-
-QTableWidgetItem *artistSongsItems[10000];
-QTableWidgetItem *artistSongItem;
-QString displayedArtist,playlistArtist;
-QString viewMode = "artists";
-json currentSongData, artistSongData, localSongsDB, playList;
-
-QString path = QDir::homePath() + "/Music/Cuarzo Player";
-
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -45,6 +34,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayInfo->item(1,0)->setTextColor(QColor("#444"));
     ui->displayInfo->item(2,0)->setTextColor(QColor("#888"));
 
+    //Play Buttons
+    ui->playerButtons->layout()->addWidget(backBtn);
+    ui->playerButtons->layout()->addWidget(playBtn);
+    ui->playerButtons->layout()->addWidget(nextBtn);
+
+    connect(playBtn,SIGNAL(released()),this,SLOT(playPause()));
+    connect(nextBtn,SIGNAL(released()),this,SLOT(playNext()));
+
+
+
 
     //Read the songs DB
     std::ifstream readDB(path.toStdString()+"/localSongsDB.json");
@@ -52,13 +51,51 @@ MainWindow::MainWindow(QWidget *parent) :
     displayArtists();
     player->setVolume(100);
     connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(setTime(qint64)));
-
+    connect(player,SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),this,SLOT(playerStateChanged(QMediaPlayer::MediaStatus)));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+/*-----------------------------------------------------*/
+/*------------------Player Buttons---------------------*/
+/*-----------------------------------------------------*/
+
+void MainWindow::playPause(){
+    if(player->state() == QMediaPlayer::PlayingState){
+        playBtn->setIcon(QIcon(":rec/images/play-button.svg"));
+        player->pause();
+    }
+    else if(player->state() == QMediaPlayer::PausedState){
+        playBtn->setIcon(QIcon(":rec/images/pause-button.svg"));
+        player->play();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Set current a remaining song time
 
@@ -73,6 +110,12 @@ void MainWindow::setTime(qint64 time){
     QTime rTime(0,minutesB,secondsB);
     ui->currentTime->setText(cTime.toString().mid(3,5));
     ui->remainTime->setText("-"+rTime.toString().mid(3,5));
+}
+
+void MainWindow::playerStateChanged(QMediaPlayer::MediaStatus state){
+   if(state == QMediaPlayer::EndOfMedia){
+    playNext();
+  }
 }
 
 //Display the artists list
@@ -98,7 +141,7 @@ void MainWindow::displayArtists(){
 
 //Save the current library
 
-void SaveLocalSongsDB(){
+void MainWindow::SaveLocalSongsDB(){
     std::ofstream db;
     db.open (path.toStdString()+"/localSongsDB.json");
     db << localSongsDB.dump();
@@ -263,7 +306,7 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
 
     //Creates the artist name label on the top
     QLabel *artistTitle = new QLabel(item->text());
-    artistTitle->setStyleSheet("font-weight:bold;font-size:30px");
+    artistTitle->setStyleSheet("font-weight:bold;font-size:35px;margin-left:13px;color:#222");
     artistTitle->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
     artistTitle->setMaximumHeight(40);
     viewLayout->addWidget(artistTitle);
@@ -295,7 +338,7 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
             albumImage = QPixmap(":rec/images/artWork.png");
         }
         albumArt->setPixmap(albumImage);
-        albumArt->setStyleSheet("max-height:200px;max-width:200px");
+        albumArt->setStyleSheet("max-height:220px;max-width:220px");
         albumArt->setScaledContents(true);
         albumArt->setAlignment(Qt::AlignTop);
         albumL->addWidget(albumArt);
@@ -311,9 +354,9 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
 
         //Creates the album name label and adds to the right layout
         QLabel *albumTitle = new QLabel(albumName);
-        albumTitle->setStyleSheet("font-weight:bold;font-size:15px");
+        albumTitle->setStyleSheet("font-weight:bold;font-size:16px;color:#444;margin-left:0px;margin-top:9px");
         albumTitle->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-        albumTitle->setMaximumHeight(18);
+        albumTitle->setMaximumHeight(28);
         rightLayout->addWidget(albumTitle);
 
         //Creates the left and right songs container
@@ -333,21 +376,21 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
         songList->setSelectionBehavior(QAbstractItemView::SelectRows);
         songList->setShowGrid(false);
         songList->setWordWrap(false);
-        songList->setStyleSheet("border:none");
+        songList->setStyleSheet("SongList{border:none;background:#FFF}SongList:edit-focus{background:#419BF9;color:#FFF}");
         songList->setEditTriggers(QAbstractItemView::NoEditTriggers);
         songList->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
         songList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         songList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         songList->horizontalHeader()->hide();
         songList->verticalHeader()->hide();
-        songList->setColumnWidth(0,30);
+        songList->setColumnWidth(0,26);
         songList->setColumnWidth(2,30);
         songList->setFocusPolicy(Qt::NoFocus);
 
 
         //When song from list is double clicked
         connect(songList,SIGNAL(itemDoubleClicked(QTableWidgetItem*)),this,SLOT(doubleClickedSongFromArtistView(QTableWidgetItem*)));
-
+        connect(songList,SIGNAL(itemSelectionChanged()),this,SLOT(activeSongFromArtistView()));
         rightLeftLayout->addWidget(songList);
 
         int albumIndex = 0;
@@ -355,16 +398,21 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
         //Loop the album songs
         for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
 
+            songList->setRowHeight(albumIndex,28);
+
             //Create a song
             QTableWidgetItem *track = new QTableWidgetItem();
             QTableWidgetItem *title = new QTableWidgetItem();
             QTableWidgetItem *status = new QTableWidgetItem();
+
 
             //Set the global index
             track->setData(Qt::UserRole,QVariant(globalIndex));
             title->setData(Qt::UserRole,QVariant(globalIndex));
             status->setData(Qt::UserRole,QVariant(globalIndex));
 
+            track->setTextColor(QColor("#999"));
+            title->setTextColor(QColor("#444"));
 
             artistSongsItems[globalIndex] = title;
             artistSongData[globalIndex] = it2.value();
@@ -414,6 +462,17 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
     view->show();
 }
 
+void MainWindow::activeSongFromArtistView(){
+    if(artistSongItem == NULL){
+        return;
+    }
+    if(artistSongItem->isSelected()){
+        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playingSongSelected.png"));
+    }else{
+        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+    }
+}
+
 //Double ckicked on song from artist view mode
 
 void MainWindow::doubleClickedSongFromArtistView(QTableWidgetItem* model){
@@ -433,7 +492,11 @@ void MainWindow::selectSongFromArtistView(QTableWidgetItem* model){
         if(artistSongItem!=NULL){
             artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon());
         }
-        model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+        if(model->isSelected()){
+            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSongSelected.png"));
+        }else{
+            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+        }
         artistSongItem = model;
     }
 }
@@ -446,6 +509,7 @@ void MainWindow::playSong(){
 
     player->setMedia(QUrl::fromLocalFile(path+"/music/"+artist+"/"+album+"/"+title+".mp3"));
     player->play();
+    playBtn->setIcon(QIcon(":rec/images/pause-button.svg"));
 
     if(currentSongData["artwork"] == true){
         ui->artWork->setPixmap(QPixmap(path+"/artwork/"+artist+"/"+album+".png"));
@@ -476,7 +540,7 @@ void MainWindow::on_timePosition_sliderReleased(){
     player->setPosition((float)player->duration() / 100000 * (float)ui->timePosition->value());
 }
 
-void MainWindow::on_playNextButton_clicked(){
+void MainWindow::playNext(){
     if(playList.size() == 0){
         return;
     }

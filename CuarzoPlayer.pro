@@ -16,7 +16,6 @@ ICON = icon.icns
 macx {
 
     INCLUDEPATH += $$_PRO_FILE_PWD_/lib/mac/include/taglib/
-
     LIBS += \
         -L/usr/local/lib \
         -L$$_PRO_FILE_PWD_/lib/mac/lib \
@@ -42,13 +41,15 @@ win32 {
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    opbutton.cpp
 
 
 
 HEADERS  += mainwindow.h \
     json.hpp \
-    songlist.h
+    songlist.h \
+    opbutton.h
 
 
 FORMS    += mainwindow.ui

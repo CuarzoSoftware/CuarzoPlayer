@@ -39,5 +39,9 @@
         <file>images/local.png</file>
         <file>images/star.png</file>
         <file>images/playerSlider.png</file>
+        <file>images/play-button.svg</file>
+        <file>images/back-button.svg</file>
+        <file>images/next-button.svg</file>
+        <file>images/pause-button.svg</file>
     </qresource>
 </RCC>
