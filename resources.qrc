@@ -9,25 +9,13 @@
         <file>images/expand.png</file>
         <file>images/logo.png</file>
         <file>images/logos.png</file>
-        <file>images/loopOff.png</file>
-        <file>images/loopOn.png</file>
-        <file>images/loopOne.png</file>
         <file>images/minimize.png</file>
         <file>images/mp3.png</file>
         <file>images/nextPlay.png</file>
         <file>images/noUser.jpg</file>
-        <file>images/pause.png</file>
-        <file>images/play.png</file>
-        <file>images/playingSong.png</file>
-        <file>images/playingSongSelected.png</file>
         <file>images/refresh.png</file>
         <file>images/search.png</file>
-        <file>images/shuffleOff.png</file>
-        <file>images/shuffleOn.png</file>
         <file>images/slider.png</file>
-        <file>images/volumeMed.png</file>
-        <file>images/volumeOff.png</file>
-        <file>images/volumeOn.png</file>
         <file>images/checked.png</file>
         <file>images/checked.svg</file>
         <file>images/sync.svg</file>
@@ -43,5 +31,15 @@
         <file>images/back-button.svg</file>
         <file>images/next-button.svg</file>
         <file>images/pause-button.svg</file>
+        <file>images/volume-high.svg</file>
+        <file>images/volume-low.svg</file>
+        <file>images/volume-medium.svg</file>
+        <file>images/loop-off.svg</file>
+        <file>images/loop-on.svg</file>
+        <file>images/loop-one.svg</file>
+        <file>images/playing-song-selected.svg</file>
+        <file>images/playing-song.svg</file>
+        <file>images/shuffle-off.svg</file>
+        <file>images/shuffle-on.svg</file>
     </qresource>
 </RCC>

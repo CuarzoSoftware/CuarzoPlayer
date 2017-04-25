@@ -39,8 +39,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->playerButtons->layout()->addWidget(playBtn);
     ui->playerButtons->layout()->addWidget(nextBtn);
 
+    connect(backBtn,SIGNAL(released()),this,SLOT(playBack()));
     connect(playBtn,SIGNAL(released()),this,SLOT(playPause()));
     connect(nextBtn,SIGNAL(released()),this,SLOT(playNext()));
+
+    //Play Mode Buttons
+    ui->playMode->layout()->addWidget(loopBtn);
+    ui->playMode->layout()->addWidget(shuffleBtn);
+
+    connect(loopBtn,SIGNAL(released()),this,SLOT(loopToggle()));
+    connect(shuffleBtn,SIGNAL(released()),this,SLOT(shuffleToggle()));
 
 
 
@@ -63,6 +71,23 @@ MainWindow::~MainWindow()
 /*------------------Player Buttons---------------------*/
 /*-----------------------------------------------------*/
 
+void MainWindow::playBack(){
+    if(playList.size() == 0){
+        return;
+    }
+    int i = (int)currentSongData["globalIndex"];
+    if(0 < i){
+        --i;
+    }
+    else{
+        i = playList.size() - 1;
+    }
+    if(viewMode == "artists"){
+        currentSongData = playList[i];
+        selectSongFromArtistView(artistSongsItems[i]);
+        playSong();
+    }
+}
 void MainWindow::playPause(){
     if(player->state() == QMediaPlayer::PlayingState){
         playBtn->setIcon(QIcon(":rec/images/play-button.svg"));
@@ -73,9 +98,65 @@ void MainWindow::playPause(){
         player->play();
     }
 }
+void MainWindow::playNext(){
+    if(playList.size() == 0){
+        return;
+    }
+    int i = (int)currentSongData["globalIndex"];
+    if((int)playList.size() - 1 > i){
+        ++i;
+    }
+    else{
+        i = 0;
+    }
+    if(viewMode == "artists"){
+        currentSongData = playList[i];
+        selectSongFromArtistView(artistSongsItems[i]);
+        playSong();
+    }
+}
+void MainWindow::playSong(){
 
+    QString artist = QString::fromStdString(currentSongData["artist"]);
+    QString album = QString::fromStdString(currentSongData["album"]);
+    QString title = QString::fromStdString(currentSongData["title"]);
 
+    player->setMedia(QUrl::fromLocalFile(path+"/music/"+artist+"/"+album+"/"+title+".mp3"));
+    player->play();
+    playBtn->setIcon(QIcon(":rec/images/pause-button.svg"));
 
+    if(currentSongData["artwork"] == true){
+        ui->artWork->setPixmap(QPixmap(path+"/artwork/"+artist+"/"+album+".png"));
+    }
+    else{
+        ui->artWork->setPixmap(QPixmap(":rec/images/artWork.png"));
+    }
+    ui->displayInfo->item(0,0)->setText(title);
+    ui->displayInfo->item(1,0)->setText(album);
+    ui->displayInfo->item(2,0)->setText(artist);
+}
+void MainWindow::loopToggle(){
+    if(loop == "off"){
+        loop = "on";
+        loopBtn->setIcon(QIcon(":rec/images/loop-on.svg"));
+    }
+    else if(loop == "on"){
+        loop = "one";
+        loopBtn->setIcon(QIcon(":rec/images/loop-one.svg"));
+    }
+    else if(loop == "one"){
+        loop = "off";
+        loopBtn->setIcon(QIcon(":rec/images/loop-off.svg"));
+    }
+}
+void MainWindow::shuffleToggle(){
+    if(shuffle){
+        shuffleBtn->setIcon(QIcon(":rec/images/shuffle-off.svg"));
+    }else{
+        shuffleBtn->setIcon(QIcon(":rec/images/shuffle-on.svg"));
+    }
+    shuffle = !shuffle;
+}
 
 
 
@@ -432,7 +513,7 @@ void MainWindow::on_listView_itemClicked(QListWidgetItem *item){
             if(displayedArtist == playlistArtist){
                 if(!currentSongData.empty()){
                     if(currentSongData["globalIndex"] == globalIndex){
-                         track->setIcon(QIcon(":rec/images/playingSong.png"));
+                         track->setIcon(QIcon(":rec/images/playing-song.svg"));
                          artistSongItem = title;
                     }
                 }
@@ -467,9 +548,9 @@ void MainWindow::activeSongFromArtistView(){
         return;
     }
     if(artistSongItem->isSelected()){
-        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playingSongSelected.png"));
+        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playing-song-selected.svg"));
     }else{
-        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+        artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon(":rec/images/playing-song.svg"));
     }
 }
 
@@ -493,33 +574,12 @@ void MainWindow::selectSongFromArtistView(QTableWidgetItem* model){
             artistSongItem->tableWidget()->item(artistSongItem->row(),0)->setIcon(QIcon());
         }
         if(model->isSelected()){
-            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSongSelected.png"));
+            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playing-song-selected.svg"));
         }else{
-            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playingSong.png"));
+            model->tableWidget()->item(model->row(),0)->setIcon(QIcon(":rec/images/playing-song.svg"));
         }
         artistSongItem = model;
     }
-}
-
-void MainWindow::playSong(){
-
-    QString artist = QString::fromStdString(currentSongData["artist"]);
-    QString album = QString::fromStdString(currentSongData["album"]);
-    QString title = QString::fromStdString(currentSongData["title"]);
-
-    player->setMedia(QUrl::fromLocalFile(path+"/music/"+artist+"/"+album+"/"+title+".mp3"));
-    player->play();
-    playBtn->setIcon(QIcon(":rec/images/pause-button.svg"));
-
-    if(currentSongData["artwork"] == true){
-        ui->artWork->setPixmap(QPixmap(path+"/artwork/"+artist+"/"+album+".png"));
-    }
-    else{
-        ui->artWork->setPixmap(QPixmap(":rec/images/artWork.png"));
-    }
-    ui->displayInfo->item(0,0)->setText(title);
-    ui->displayInfo->item(1,0)->setText(album);
-    ui->displayInfo->item(2,0)->setText(artist);
 }
 
 void SongList::wheelEvent(QWheelEvent *event){
@@ -534,26 +594,18 @@ void MainWindow::clearContent(){
 
 void MainWindow::on_volumeSlider_valueChanged(int value){
     player->setVolume(value);
+    if(value > 60){
+        ui->volumeIcon->setPixmap(QPixmap(":rec/images/volume-high.svg"));
+    }
+    else if(value <= 60 && value >10){
+        ui->volumeIcon->setPixmap(QPixmap(":rec/images/volume-medium.svg"));
+    }
+    else{
+        ui->volumeIcon->setPixmap(QPixmap(":rec/images/volume-low.svg"));
+    }
 }
 
 void MainWindow::on_timePosition_sliderReleased(){
     player->setPosition((float)player->duration() / 100000 * (float)ui->timePosition->value());
 }
 
-void MainWindow::playNext(){
-    if(playList.size() == 0){
-        return;
-    }
-    int i = (int)currentSongData["globalIndex"] + 1;
-    if(viewMode == "artists"){
-        if(i < (int)playList.size()){
-            currentSongData = playList[i];
-            selectSongFromArtistView(artistSongsItems[i]);
-        }
-        else{
-            currentSongData = playList[0];
-            selectSongFromArtistView(artistSongsItems[0]);
-        }
-        playSong();
-    }
-}

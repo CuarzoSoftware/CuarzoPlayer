@@ -23,6 +23,8 @@ QTableWidgetItem *artistSongsItems[10000];
 QTableWidgetItem *artistSongItem;
 QString displayedArtist,playlistArtist;
 QString viewMode = "artists";
+QString loop = "on";
+bool shuffle = false;
 json currentSongData, artistSongData, localSongsDB, playList;
 
 QString path = QDir::homePath() + "/Music/Cuarzo Player";
@@ -31,8 +33,11 @@ public slots:
     void doubleClickedSongFromArtistView(QTableWidgetItem* model);
     void playerStateChanged(QMediaPlayer::MediaStatus state);
     void activeSongFromArtistView();
+    void playBack();
     void playPause();
     void playNext();
+    void loopToggle();
+    void shuffleToggle();
 public:
     Ui::MainWindow *ui;
     void displayArtists();
@@ -42,6 +47,8 @@ public:
     OpButton *backBtn = new OpButton(":rec/images/back-button.svg",40,40);
     OpButton *playBtn = new OpButton(":rec/images/play-button.svg",40,40);
     OpButton *nextBtn = new OpButton(":rec/images/next-button.svg",40,40);
+    OpButton *loopBtn = new OpButton(":rec/images/loop-on.svg",30,30);
+    OpButton *shuffleBtn = new OpButton(":rec/images/shuffle-off.svg",30,30);
     void selectSongFromArtistView(QTableWidgetItem* model);
     explicit MainWindow(QWidget *parent = 0);
 

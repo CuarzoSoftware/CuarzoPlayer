@@ -902,6 +902,9 @@ background:#FFF;
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
                  <widget class="QLabel" name="currentTime">
+                  <property name="styleSheet">
+                   <string notr="true">margin-right:5px</string>
+                  </property>
                   <property name="text">
                    <string>00:00</string>
                   </property>
@@ -937,6 +940,9 @@ background: lightgrey;
                 </item>
                 <item>
                  <widget class="QLabel" name="remainTime">
+                  <property name="styleSheet">
+                   <string notr="true">margin-left:5px;</string>
+                  </property>
                   <property name="text">
                    <string>3:32</string>
                   </property>
@@ -974,14 +980,14 @@ background: lightgrey;
                     <height>20</height>
                    </size>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true">image:url(:rec/images/volumeOn.png);</string>
-                  </property>
                   <property name="text">
                    <string/>
                   </property>
+                  <property name="pixmap">
+                   <pixmap resource="resources.qrc">:/rec/images/volume-high.svg</pixmap>
+                  </property>
                   <property name="scaledContents">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -1003,30 +1009,7 @@ background: lightgrey;
              </item>
              <item>
               <widget class="QWidget" name="playMode" native="true">
-               <layout class="QHBoxLayout" name="horizontalLayout_6">
-                <item>
-                 <widget class="QToolButton" name="repeatMode">
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/rec/images/loopOn.png</normaloff>:/rec/images/loopOn.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="shuffleMode">
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/rec/images/shuffleOn.png</normaloff>:/rec/images/shuffleOn.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <layout class="QHBoxLayout" name="horizontalLayout_6"/>
               </widget>
              </item>
             </layout>
