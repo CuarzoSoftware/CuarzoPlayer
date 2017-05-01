@@ -41,15 +41,11 @@ win32 {
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    opbutton.cpp
+        mainwindow.cpp
 
 
 
-HEADERS  += mainwindow.h \
-    json.hpp \
-    songlist.h \
-    opbutton.h
+HEADERS  += mainwindow.h
 
 
 FORMS    += mainwindow.ui
