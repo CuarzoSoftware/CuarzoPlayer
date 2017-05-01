@@ -1,1 +1,26 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/res">
+        <file>cache/id.count</file>
+        <file>img/add.svg</file>
+        <file>img/albums.svg</file>
+        <file>img/artists.svg</file>
+        <file>img/artWork.png</file>
+        <file>img/back.svg</file>
+        <file>img/checked.svg</file>
+        <file>img/genres.svg</file>
+        <file>img/logos.png</file>
+        <file>img/loop-one.svg</file>
+        <file>img/loop.svg</file>
+        <file>img/next.svg</file>
+        <file>img/no-user.jpg</file>
+        <file>img/pause.svg</file>
+        <file>img/play.svg</file>
+        <file>img/playlist.svg</file>
+        <file>img/shuffle.svg</file>
+        <file>img/songs.svg</file>
+        <file>img/sync.svg</file>
+        <file>img/volume-high.svg</file>
+        <file>img/volume-low.svg</file>
+        <file>img/volume-medium.svg</file>
+    </qresource>
+</RCC>
