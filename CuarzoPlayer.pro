@@ -41,16 +41,26 @@ win32 {
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    opbutton.cpp
+    opbutton.cpp \
+    bottombar.cpp \
+    croplabel.cpp \
+    playerwindow.cpp \
+    songinfo.cpp \
+    playerbuttons.cpp
 
 
 
-HEADERS  += mainwindow.h \
-    opbutton.h
+HEADERS  += \
+    opbutton.h \
+    bottombar.h \
+    croplabel.h \
+    playerwindow.h \
+    songinfo.h \
+    playerbuttons.h
 
 
-FORMS    += mainwindow.ui
+FORMS    += \
+    playerwindow.ui
 
 RESOURCES += \
     resources.qrc

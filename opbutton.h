@@ -14,7 +14,7 @@ class OpButton : public QPushButton
 public:
     OpButton(QIcon icon);
     OpButton(QString image,int width,int height);
-    OpButton(QString text);
+    OpButton(QString text,QString style);
     QGraphicsOpacityEffect *opacity;
     void setOpacityLevel (float level){
         this->opacity->setOpacity((qreal)level);

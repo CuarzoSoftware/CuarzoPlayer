@@ -6,19 +6,24 @@ OpButton::OpButton(QString icon, int width, int height)
 {
     setIcon(QIcon(icon));
     setIconSize(QSize(width,height));
+    setStyleSheet("OpButton{background:transparent;border:none;}");
+    setup();
 }
 
-OpButton::OpButton(QString txt)
+OpButton::OpButton(QString txt, QString style)
 {
     setText(txt);
+    setStyleSheet("OpButton{background:transparent;border:none;"+style+"}");
+    setup();
 }
 OpButton::OpButton(QIcon ico)
 {
     setIcon(ico);
+    setStyleSheet("OpButton{background:transparent;border:none;}");
+    setup();
 }
 
 void OpButton::setup(){
-    this->setStyleSheet("OpButton{background:transparent;border:none;color:#666}");
     opacity = new QGraphicsOpacityEffect();
     opacity->setOpacity(0.1);
     opacity->setOpacity(1);
