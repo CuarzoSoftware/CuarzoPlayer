@@ -8,6 +8,6 @@ CropLabel::CropLabel(QString text,QString style)
 }
 
 void CropLabel::resizeEvent( QResizeEvent * event){
-    QString elidedText = this->fontMetrics().elidedText(_text, Qt::ElideRight, this->width() - 10);
+    QString elidedText = this->fontMetrics().elidedText(_text, Qt::ElideRight, this->width() - 5);
     this->setText(elidedText);
 }

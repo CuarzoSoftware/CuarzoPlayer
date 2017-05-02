@@ -46,7 +46,9 @@ SOURCES += main.cpp\
     croplabel.cpp \
     playerwindow.cpp \
     songinfo.cpp \
-    playerbuttons.cpp
+    playerbuttons.cpp \
+    timebar.cpp \
+    volumebar.cpp
 
 
 
@@ -56,7 +58,9 @@ HEADERS  += \
     croplabel.h \
     playerwindow.h \
     songinfo.h \
-    playerbuttons.h
+    playerbuttons.h \
+    timebar.h \
+    volumebar.h
 
 
 FORMS    += \

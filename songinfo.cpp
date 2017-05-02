@@ -12,7 +12,7 @@ SongInfo::SongInfo()
     layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QWidget *textFrame = new QWidget();
     textFrame->setSizeIncrement(1,1);
-    textFrame->setMinimumWidth(190);
+    textFrame->setMinimumWidth(140);
     QBoxLayout *textLayout = new QBoxLayout(QBoxLayout::TopToBottom,textFrame);
     textLayout->setMargin(0);
     textLayout->setSpacing(0);

@@ -1,6 +1,9 @@
 #include "opbutton.h"
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
+#include <QPixmap>
+#include <QBitmap>
+#include <QPainter>
 
 OpButton::OpButton(QString icon, int width, int height)
 {
@@ -9,7 +12,14 @@ OpButton::OpButton(QString icon, int width, int height)
     setStyleSheet("OpButton{background:transparent;border:none;}");
     setup();
 }
-
+OpButton::OpButton(QString icon, int width, int height, QString color)
+{
+    setIcon(QIcon(icon));
+    setIconSize(QSize(width,height));
+    setStyleSheet("OpButton{background:transparent;border:none;}");
+    setColor(color);
+    setup();
+}
 OpButton::OpButton(QString txt, QString style)
 {
     setText(txt);
@@ -55,3 +65,17 @@ void OpButton::reset(){
     this->setGraphicsEffect(opacity);
 }
 
+void OpButton::setColor(QString color){
+    QPixmap m = icon().pixmap(icon().actualSize(QSize(128, 128)));
+    QPixmap newPix(m.size());
+    newPix.fill(Qt::transparent);
+    QBitmap mask = m.createMaskFromColor(Qt::black,Qt::MaskOutColor);
+    QPainter p(&newPix);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBackgroundMode(Qt::TransparentMode);
+    p.setPen(QColor(color));
+    p.drawPixmap(newPix.rect(),mask,m.rect());
+    p.end();
+    setIcon(QIcon(newPix));
+}

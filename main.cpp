@@ -3,9 +3,9 @@
 #include <QDir>
 #include <QFileInfo>
 #include <fstream>
+#include <QString>
 
-
-
+QString blue = "#2687FB";
 
 int main(int argc, char *argv[])
 {
