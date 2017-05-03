@@ -6,6 +6,7 @@
 #include <QString>
 
 QString blue = "#2687FB";
+QString lightGray = "#CCC";
 
 int main(int argc, char *argv[])
 {

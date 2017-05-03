@@ -12,6 +12,8 @@ class OpButton : public QPushButton
     QPropertyAnimation *animation;
 
 public:
+    int w;
+    int h;
     OpButton(QIcon icon);
     OpButton(QString image,int width,int height,QString color);
     OpButton(QString image,int width,int height);

@@ -7,6 +7,8 @@
 
 OpButton::OpButton(QString icon, int width, int height)
 {
+    w = width;
+    h = height;
     setIcon(QIcon(icon));
     setIconSize(QSize(width,height));
     setStyleSheet("OpButton{background:transparent;border:none;}");
@@ -14,6 +16,8 @@ OpButton::OpButton(QString icon, int width, int height)
 }
 OpButton::OpButton(QString icon, int width, int height, QString color)
 {
+    w = width;
+    h = height;
     setIcon(QIcon(icon));
     setIconSize(QSize(width,height));
     setStyleSheet("OpButton{background:transparent;border:none;}");
@@ -68,14 +72,7 @@ void OpButton::reset(){
 void OpButton::setColor(QString color){
     QPixmap m = icon().pixmap(icon().actualSize(QSize(128, 128)));
     QPixmap newPix(m.size());
-    newPix.fill(Qt::transparent);
-    QBitmap mask = m.createMaskFromColor(Qt::black,Qt::MaskOutColor);
-    QPainter p(&newPix);
-    p.setRenderHint(QPainter::SmoothPixmapTransform);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setBackgroundMode(Qt::TransparentMode);
-    p.setPen(QColor(color));
-    p.drawPixmap(newPix.rect(),mask,m.rect());
-    p.end();
+    newPix.fill( QColor(color) );
+    newPix.setMask( m.createMaskFromColor( Qt::transparent ) );
     setIcon(QIcon(newPix));
 }
