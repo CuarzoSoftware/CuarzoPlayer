@@ -2,6 +2,8 @@
 #define PLAYERWINDOW_H
 
 #include <QMainWindow>
+#include "library.h"
+#include "topbar.h"
 #include "bottombar.h"
 
 namespace Ui {
@@ -14,6 +16,8 @@ class PlayerWindow : public QMainWindow
 
 public:
     explicit PlayerWindow(QWidget *parent = 0);
+    Library *library = new Library();
+    TopBar *topBar = new TopBar();
     BottomBar *bottomBar = new BottomBar();
     ~PlayerWindow();
 

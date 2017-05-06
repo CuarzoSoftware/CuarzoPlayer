@@ -48,7 +48,9 @@ SOURCES += main.cpp\
     songinfo.cpp \
     playerbuttons.cpp \
     timebar.cpp \
-    volumebar.cpp
+    volumebar.cpp \
+    topbar.cpp \
+    library.cpp
 
 
 
@@ -60,7 +62,9 @@ HEADERS  += \
     songinfo.h \
     playerbuttons.h \
     timebar.h \
-    volumebar.h
+    volumebar.h \
+    topbar.h \
+    library.h
 
 
 FORMS    += \

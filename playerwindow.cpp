@@ -5,6 +5,8 @@
 PlayerWindow::PlayerWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::PlayerWindow)
 {
     ui->setupUi(this);
+    setUnifiedTitleAndToolBarOnMac(true);
+    addToolBar(Qt::TopToolBarArea,topBar);
     addToolBar(Qt::BottomToolBarArea,bottomBar);
 }
 
