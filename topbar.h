@@ -2,17 +2,17 @@
 #define TOPBAR_H
 
 #include <QJsonObject>
-#include <QWidget>
+#include <QToolBar>
 #include <QBoxLayout>
 #include "selectlist.h"
 
-class TopBar : public QWidget
+class TopBar : public QToolBar
 {
 public:
     TopBar();
     SelectList *modeList;
-    QBoxLayout *layout;
-
+    QWidget *frame = new QWidget();
+    QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,frame);
 };
 
 #endif // TOPBAR_H

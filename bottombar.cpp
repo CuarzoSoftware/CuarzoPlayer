@@ -8,7 +8,6 @@ extern QString lightGray;
 
 BottomBar::BottomBar()
 {
-    setMouseTracking(true);
     loopState = 1;
     shuffleState = 1;
     loopButton = new OpButton(":res/img/loop.svg",27,27,blue);
@@ -18,15 +17,16 @@ BottomBar::BottomBar()
     connect(shuffleButton,SIGNAL(released()),this,SLOT(toggleShuffle()));
 
     setStyleSheet("BottomBar{border:none;background:#FFF;border-top:1px solid #DDD;}");
-    layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
-    layout->setSpacing(5);
+    setMovable(false);
+    addWidget(frame);
+    frameLayout->setSpacing(5);
 
-    layout->addWidget(songInfo,0);
-    layout->addWidget(playerButtons,0);
-    layout->addWidget(timeBar,1);
-    layout->addWidget(volumeBar,0);
-    layout->addWidget(loopButton,0);
-    layout->addWidget(shuffleButton,0);
+    frameLayout->addWidget(songInfo,0);
+    frameLayout->addWidget(playerButtons,0);
+    frameLayout->addWidget(timeBar,1);
+    frameLayout->addWidget(volumeBar,0);
+    frameLayout->addWidget(loopButton,0);
+    frameLayout->addWidget(shuffleButton,0);
 }
 
 void BottomBar::toggleLoop(){

@@ -27,6 +27,9 @@ TimeBar::TimeBar(QWidget *parent) : QWidget(parent)
     currentTimeBar->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     currentTimeBar->setFixedWidth(50);
 
+    currentTime->setStyleSheet("color:#666;font-size:10px");
+    remainingTime->setStyleSheet("color:#666;font-size:10px");
+
     layout->addWidget(currentTime);
     layout->addWidget(baseBar);
     layout->addWidget(remainingTime);

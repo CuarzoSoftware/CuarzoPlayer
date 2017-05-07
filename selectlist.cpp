@@ -24,7 +24,7 @@ SelectList::SelectList(QJsonArray list)
 }
 
 void SelectList::mousePressEvent(QMouseEvent *eventPress){
-    menu->move(mapToGlobal(pos()).x() - 10,mapToGlobal(pos()).y() - 10);
+    menu->move(mapToGlobal(pos()).x() - 15,mapToGlobal(pos()).y() - 15);
     menu->show();
 }
 

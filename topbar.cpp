@@ -4,8 +4,8 @@
 TopBar::TopBar()
 {
     QJsonArray data;
-    setMouseTracking(true);
-    layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
+    addWidget(frame);
+    setMovable(false);
     setStyleSheet("TopBar{border:none;background:#FFF;border-bottom:1px solid #DDD;}");
     data.append(QJsonObject({{"icon",":res/img/local.svg"},{"text","Local"},{"selected",true}}));
     data.append(QJsonObject({{"icon",":res/img/cloud.svg"},{"text","Cloud"},{"selected",false}}));
@@ -13,6 +13,5 @@ TopBar::TopBar()
     modeList = new SelectList(data);
     modeList->setFixedWidth(130);
     modeList->menu->setFixedWidth(135);
-    layout->addWidget(modeList);
-
+    frameLayout->addWidget(modeList);
 }
