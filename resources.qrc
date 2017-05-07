@@ -26,5 +26,6 @@
         <file>img/all.svg</file>
         <file>img/cloud.svg</file>
         <file>img/local.svg</file>
+        <file>img/google-logo.png</file>
     </qresource>
 </RCC>

@@ -5,6 +5,7 @@ Menu::Menu()
     QPalette pal = palette();
     pal.setColor(QPalette::Background, QColor(0,0,0,0));
     setPalette(pal);
+    setParent(0);
     setWindowFlags(Qt::ToolTip);
     layout->addWidget(frame);
     layout->setMargin(0);

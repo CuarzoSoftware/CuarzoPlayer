@@ -55,7 +55,8 @@ SOURCES += main.cpp\
     selectlist.cpp \
     selectlistitem.cpp \
     icon.cpp \
-    menu.cpp
+    menu.cpp \
+    userpicture.cpp
 
 
 
@@ -74,7 +75,8 @@ HEADERS  += \
     selectlist.h \
     selectlistitem.h \
     icon.h \
-    menu.h
+    menu.h \
+    userpicture.h
 
 
 

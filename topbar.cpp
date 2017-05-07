@@ -13,5 +13,6 @@ TopBar::TopBar()
     modeList = new SelectList(data);
     modeList->setFixedWidth(130);
     modeList->menu->setFixedWidth(135);
+    frameLayout->addWidget(userPicture);
     frameLayout->addWidget(modeList);
 }

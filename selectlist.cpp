@@ -19,12 +19,13 @@ SelectList::SelectList(QJsonArray list)
     layout->addWidget(currentText);
     layout->addWidget(selectIcon);
     menu->setMaximumWidth(width());
+    setMaximumHeight(27);
 
 
 }
 
 void SelectList::mousePressEvent(QMouseEvent *eventPress){
-    menu->move(mapToGlobal(pos()).x() - 15,mapToGlobal(pos()).y() - 15);
+    menu->move(mapToGlobal(QPoint(geometry().left()- 60,geometry().top() - 20)));
     menu->show();
 }
 
