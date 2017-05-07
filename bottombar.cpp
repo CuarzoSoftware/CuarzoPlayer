@@ -8,6 +8,7 @@ extern QString lightGray;
 
 BottomBar::BottomBar()
 {
+    setMouseTracking(true);
     loopState = 1;
     shuffleState = 1;
     loopButton = new OpButton(":res/img/loop.svg",27,27,blue);
@@ -16,12 +17,9 @@ BottomBar::BottomBar()
     connect(loopButton,SIGNAL(released()),this,SLOT(toggleLoop()));
     connect(shuffleButton,SIGNAL(released()),this,SLOT(toggleShuffle()));
 
-    setStyleSheet("QToolBar{border:none;background:#FFF;border-top:1px solid #DDD;}");
-    setMovable(false);
-    frame = new QWidget();
-    layout = new QBoxLayout(QBoxLayout::LeftToRight,frame);
+    setStyleSheet("BottomBar{border:none;background:#FFF;border-top:1px solid #DDD;}");
+    layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     layout->setSpacing(5);
-    addWidget(frame);
 
     layout->addWidget(songInfo,0);
     layout->addWidget(playerButtons,0);

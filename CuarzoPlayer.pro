@@ -77,8 +77,6 @@ HEADERS  += \
     menu.h
 
 
-FORMS    += \
-    playerwindow.ui
 
 RESOURCES += \
     resources.qrc

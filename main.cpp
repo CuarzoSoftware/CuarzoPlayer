@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
     a.setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    PlayerWindow w;
-    w.show();
+    PlayerWindow *w = new PlayerWindow();
+    w->show();
 
     return a.exec();
 }
