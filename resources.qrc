@@ -22,5 +22,9 @@
         <file>img/volume-high.svg</file>
         <file>img/volume-low.svg</file>
         <file>img/volume-medium.svg</file>
+        <file>img/listArrow.svg</file>
+        <file>img/all.svg</file>
+        <file>img/cloud.svg</file>
+        <file>img/local.svg</file>
     </qresource>
 </RCC>

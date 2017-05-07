@@ -50,7 +50,12 @@ SOURCES += main.cpp\
     timebar.cpp \
     volumebar.cpp \
     topbar.cpp \
-    library.cpp
+    library.cpp \
+    id.cpp \
+    selectlist.cpp \
+    selectlistitem.cpp \
+    icon.cpp \
+    menu.cpp
 
 
 
@@ -64,7 +69,12 @@ HEADERS  += \
     timebar.h \
     volumebar.h \
     topbar.h \
-    library.h
+    library.h \
+    id.h \
+    selectlist.h \
+    selectlistitem.h \
+    icon.h \
+    menu.h
 
 
 FORMS    += \
