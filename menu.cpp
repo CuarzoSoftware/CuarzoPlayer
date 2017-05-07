@@ -2,9 +2,8 @@
 
 Menu::Menu()
 {
-    QPalette pal = palette();
-    pal.setColor(QPalette::Background, QColor(0,0,0,0));
-    setPalette(pal);
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_TranslucentBackground, false);
     setParent(0);
     setWindowFlags(Qt::ToolTip);
     layout->addWidget(frame);
