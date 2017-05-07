@@ -2,10 +2,10 @@
 
 Menu::Menu()
 {
-    setAttribute(Qt::WA_NoSystemBackground);
+    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_TranslucentBackground, false);
     setParent(0);
-    setWindowFlags(Qt::ToolTip);
     layout->addWidget(frame);
     layout->setMargin(0);
     menuLayout->setContentsMargins(0,5,0,5);
