@@ -6,6 +6,8 @@
 #include <QBoxLayout>
 #include "selectlist.h"
 #include "userpicture.h"
+#include "storagebar.h"
+#include "searchbar.h"
 
 class TopBar : public QToolBar
 {
@@ -15,6 +17,8 @@ public:
     QWidget *frame = new QWidget();
     QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,frame);
     UserPicture *userPicture = new UserPicture();
+    StorageBar *storageBar = new StorageBar();
+    SearchBar *searchBar = new SearchBar();
 };
 
 #endif // TOPBAR_H

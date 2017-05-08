@@ -9,6 +9,7 @@ PlayerWindow::PlayerWindow()
     setUnifiedTitleAndToolBarOnMac(true);
     addToolBar(Qt::TopToolBarArea,topBar);
     addToolBar(Qt::BottomToolBarArea,bottomBar);
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 

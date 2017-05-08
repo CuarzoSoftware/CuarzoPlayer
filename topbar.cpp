@@ -1,5 +1,4 @@
 #include "topbar.h"
-#include <QLabel>
 
 TopBar::TopBar()
 {
@@ -13,6 +12,11 @@ TopBar::TopBar()
     modeList = new SelectList(data);
     modeList->setFixedWidth(130);
     modeList->menu->setFixedWidth(135);
+    frameLayout->setMargin(5);
+    frameLayout->setContentsMargins(8,2,8,8);
     frameLayout->addWidget(userPicture);
+    frameLayout->addWidget(storageBar);
     frameLayout->addWidget(modeList);
+    frameLayout->addWidget(searchBar);
+
 }
