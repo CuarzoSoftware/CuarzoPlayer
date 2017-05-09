@@ -3,7 +3,7 @@
 
 #include <QBoxLayout>
 #include <QLabel>
-#include <QToolBar>
+#include <QFrame>
 #include "songinfo.h"
 #include "playerbuttons.h"
 #include "timebar.h"
@@ -12,13 +12,12 @@
 
 
 
-class BottomBar : public QToolBar
+class BottomBar : public QFrame
 {
     Q_OBJECT
 public:
     BottomBar();
-    QWidget *frame = new QWidget();
-    QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,frame);
+    QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     SongInfo *songInfo = new SongInfo();
     PlayerButtons *playerButtons = new PlayerButtons();
     TimeBar *timeBar = new TimeBar();

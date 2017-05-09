@@ -14,7 +14,7 @@ public:
     bool on = false;
     SearchBar();
     Icon *icon = new Icon(":res/img/search.svg","#444",13,13);
-    QPropertyAnimation *animation;
+    QPropertyAnimation *anim;
     void setPosition (float x){
         icon->move(x,6);
         this->setStyleSheet("SearchBar{border-radius:5;padding:2px;padding-left:"+QString::number(x+17)+"px;border:1px solid #CCC}");
@@ -24,8 +24,7 @@ public:
     }
     void focusOutEvent(QFocusEvent *);
     void focusInEvent(QFocusEvent *);
-public slots:
-    void focusOn();
+
 
 };
 

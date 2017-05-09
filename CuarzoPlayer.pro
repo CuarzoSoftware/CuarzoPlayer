@@ -21,6 +21,7 @@ macx {
         -L$$_PRO_FILE_PWD_/lib/mac/lib \
         -ltag\
         -lz
+    LIBS += -framework CoreFoundation -framework Carbon -lobjc
 }
 unix:!macx {
 
@@ -58,7 +59,9 @@ SOURCES += main.cpp\
     menu.cpp \
     userpicture.cpp \
     storagebar.cpp \
-    searchbar.cpp
+    searchbar.cpp \
+    middleview.cpp \
+    titlebar.cpp
 
 
 
@@ -80,7 +83,9 @@ HEADERS  += \
     menu.h \
     userpicture.h \
     storagebar.h \
-    searchbar.h
+    searchbar.h \
+    middleview.h \
+    titlebar.h
 
 
 

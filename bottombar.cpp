@@ -15,10 +15,9 @@ BottomBar::BottomBar()
 
     connect(loopButton,SIGNAL(released()),this,SLOT(toggleLoop()));
     connect(shuffleButton,SIGNAL(released()),this,SLOT(toggleShuffle()));
+    setMaximumHeight(75);
 
-    setStyleSheet("BottomBar{border:none;background:#FFF;border-top:1px solid #DDD;}");
-    setMovable(false);
-    addWidget(frame);
+    setStyleSheet("BottomBar{border:none;background:transparent;border-top:1px solid #DDD;}");
     frameLayout->setSpacing(5);
 
     frameLayout->addWidget(songInfo,0);

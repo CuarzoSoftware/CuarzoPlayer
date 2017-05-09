@@ -2,20 +2,20 @@
 #define TOPBAR_H
 
 #include <QJsonObject>
-#include <QToolBar>
+#include <QFrame>
 #include <QBoxLayout>
 #include "selectlist.h"
 #include "userpicture.h"
 #include "storagebar.h"
 #include "searchbar.h"
 
-class TopBar : public QToolBar
+class TopBar : public QFrame
 {
+    Q_OBJECT
 public:
     TopBar();
     SelectList *modeList;
-    QWidget *frame = new QWidget();
-    QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,frame);
+    QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     UserPicture *userPicture = new UserPicture();
     StorageBar *storageBar = new StorageBar();
     SearchBar *searchBar = new SearchBar();
