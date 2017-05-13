@@ -1,4 +1,5 @@
 #include "playerwindow.h"
+#include "objectivec.h"
 #include <QApplication>
 #include <QSystemTrayIcon>
 #include <QString>
@@ -14,14 +15,12 @@ QString path = QDir::homePath() + "/Music";
 
 int main(int argc, char *argv[])
 {
-
     QApplication a(argc, argv);
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
     a.setAttribute(Qt::AA_EnableHighDpiScaling);
     PlayerWindow *w = new PlayerWindow();
-    QSystemTrayIcon *tray = new QSystemTrayIcon(QIcon(":res/img/icon.png"));
-    tray->show();
-    QObject::connect(tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),w,SLOT(showWindow()));
+    ObjectiveC *obc = new ObjectiveC();
+    obc->Display(w);
     w->show();
     return a.exec();
 }

@@ -2,5 +2,6 @@
 
 MiddleView::MiddleView()
 {
-
+    setHandleWidth(1);
+    addWidget(leftBar);
 }

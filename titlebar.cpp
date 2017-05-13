@@ -3,7 +3,7 @@
 TitleBar::TitleBar()
 {
     setMaximumHeight(32);
-    installEventFilter(this);
+    setMouseTracking(true);
     setAttribute(Qt::WA_Hover, true);
     layout->setAlignment(Qt::AlignLeft);
     layout->addWidget(close);

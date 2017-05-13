@@ -13,6 +13,7 @@ public:
     OpButton *back = new OpButton(":res/img/back.svg",size,size);
     OpButton *play = new OpButton(":res/img/play.svg",size,size);
     OpButton *next = new OpButton(":res/img/next.svg",size,size);
+
 signals:
 
 public slots:

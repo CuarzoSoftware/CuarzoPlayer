@@ -1,8 +1,9 @@
 #ifndef PLAYERWINDOW_H
 #define PLAYERWINDOW_H
 
-#include <QFrame>
+#include <QWidget>
 #include <QBoxLayout>
+#include <QMouseEvent>
 #include "library.h"
 #include "titlebar.h"
 #include "topbar.h"
@@ -11,10 +12,9 @@
 #include "id.h"
 
 
-class PlayerWindow : public QFrame
+class PlayerWindow : public QWidget
 {
     Q_OBJECT
-
 public:
     PlayerWindow();
     QBoxLayout *mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -27,12 +27,8 @@ public:
     BottomBar *bottomBar = new BottomBar();
     ID id;
 
-
 public slots:
-    void closeWindow();
-    void minimizeWindow();
-    void maximizeWindow();
-    void showWindow();
+
 };
 
 #endif // PLAYERWINDOW_H

@@ -9,14 +9,14 @@ StorageBar::StorageBar()
     setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     setFixedSize(100,20);
     setObjectName("main");
-    setStyleSheet("#main{background:#999;border-radius:4px}");
+    setStyleSheet("#main{background:#999;border-radius:6px}");
 
 
     bar->setParent(this);
     bar->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     bar->setFixedSize(40,20);
     bar->setObjectName("bar");
-    bar->setStyleSheet("#bar{background:"+blue+";border-top-left-radius:4px;border-bottom-left-radius:4px}");
+    bar->setStyleSheet("#bar{background:"+blue+";border-top-left-radius:6px;border-bottom-left-radius:6px}");
     //bar->move(1,1);
 
     text->setParent(this);

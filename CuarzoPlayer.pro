@@ -20,8 +20,13 @@ macx {
         -L/usr/local/lib \
         -L$$_PRO_FILE_PWD_/lib/mac/lib \
         -ltag\
-        -lz
-    LIBS += -framework CoreFoundation -framework Carbon -lobjc
+        -lz\
+        -lobjc
+    LIBS += -framework Foundation
+    LIBS += -framework AppKit
+
+    OBJECTIVE_SOURCES += objectivec.mm
+    HEADERS +=  objectivec.h
 }
 unix:!macx {
 
@@ -61,8 +66,11 @@ SOURCES += main.cpp\
     storagebar.cpp \
     searchbar.cpp \
     middleview.cpp \
-    titlebar.cpp
-
+    titlebar.cpp \
+    leftbar.cpp \
+    leftbaritem.cpp \
+    artistslist.cpp \
+    artistlistitem.cpp
 
 
 HEADERS  += \
@@ -85,7 +93,11 @@ HEADERS  += \
     storagebar.h \
     searchbar.h \
     middleview.h \
-    titlebar.h
+    titlebar.h \
+    leftbar.h \
+    leftbaritem.h \
+    artistslist.h \
+    artistlistitem.h
 
 
 
