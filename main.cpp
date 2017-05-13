@@ -1,9 +1,12 @@
 #include "playerwindow.h"
-#include "objectivec.h"
 #include <QApplication>
 #include <QSystemTrayIcon>
 #include <QString>
 #include <QDir>
+
+#ifdef Q_OS_MAC
+    #include "objectivec.h"
+#endif
 
 QString blue = "#2687FB";
 QString red = "#FF1D25";
@@ -19,7 +22,9 @@ int main(int argc, char *argv[])
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
     a.setAttribute(Qt::AA_EnableHighDpiScaling);
     PlayerWindow *w = new PlayerWindow();
-    ObjectiveC *obc = new ObjectiveC();
+    #ifdef Q_OS_MAC
+        ObjectiveC *obc = new ObjectiveC();
+    #endif
     obc->Display(w);
     w->show();
     return a.exec();
