@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
     PlayerWindow *w = new PlayerWindow();
     #ifdef Q_OS_MAC
         ObjectiveC *obc = new ObjectiveC();
+        obc->Display(w);
     #endif
-    obc->Display(w);
     w->show();
     return a.exec();
 }
