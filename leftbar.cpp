@@ -3,6 +3,8 @@
 LeftBar::LeftBar()
 {
  setAutoFillBackground(true);
+ setFixedWidth(170);
+ setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Expanding);
  QPalette pal = palette();
  pal.setColor(QPalette::Background, QColor("#FAFAFA"));
  setPalette(pal);
@@ -10,7 +12,8 @@ LeftBar::LeftBar()
  scrollLayout->setMargin(0);
  scrollLayout->setSpacing(0);
  scroll->setWidget(frame);
- scroll->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+ scroll->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+ scroll->setWidgetResizable( true );
  scroll->setStyleSheet("QScrollArea{border:none}");
 
  layout->setMargin(0);

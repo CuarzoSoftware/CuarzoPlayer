@@ -5,17 +5,18 @@
 #include <QBoxLayout>
 #include <QScrollArea>
 #include "leftbaritem.h"
+#include "artistlistitem.h"
 
-class ArtistsList
+class ArtistsList:public QFrame
 {
     Q_OBJECT
 public:
     explicit ArtistsList();
-    QBoxLayout *scrollLayout = new QBoxLayout(QBoxLayout::TopToBottom,this);
+    QBoxLayout *scrollLayout = new QBoxLayout(QBoxLayout::TopToBottom, this);
     QScrollArea *scroll = new QScrollArea();
-    QWidget *frame = new QWidget();
+    QFrame *frame = new QFrame();
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,frame);
-    ArtistsListItem *items[10000] = {nullptr};
+    ArtistListItem *items[10000] = {nullptr};
 };
 
 #endif // ARTISTSLIST_H

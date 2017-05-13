@@ -5,7 +5,6 @@ extern QString blue;
 LeftBarItem::LeftBarItem(QString _id,QString _icon,QString _text)
 {
     id = _id;
-    setMinimumHeight(30);
     icon = new Icon(_icon,"#888",15,15);
     text = new CropLabel(_text,"font-size:11px;color:#888");
     setAutoFillBackground(true);

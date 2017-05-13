@@ -2,6 +2,10 @@
 
 MiddleView::MiddleView()
 {
-    setHandleWidth(1);
+    setChildrenCollapsible(false);
+    setHandleWidth(0);
     addWidget(leftBar);
+    addWidget(artistsList);
+    addWidget(new QWidget());
+    setStyleSheet("QSplitter::handle{background-color: black;}");
 }

@@ -28,15 +28,6 @@
         <file>img/local.svg</file>
         <file>img/google-logo.png</file>
         <file>img/search.svg</file>
-        <file>img/window-close-active.svg</file>
-        <file>img/window-close-hover.svg</file>
-        <file>img/window-close.svg</file>
-        <file>img/window-maximize-active.svg</file>
-        <file>img/window-maximize.svg</file>
-        <file>img/window-minimize-active.svg</file>
-        <file>img/window-minimize-hover.svg</file>
-        <file>img/window-minimize.svg</file>
-        <file>img/window-maximize-hover.svg</file>
         <file>img/icon.png</file>
     </qresource>
 </RCC>

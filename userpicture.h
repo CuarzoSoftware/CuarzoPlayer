@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLabel>
+#include "pix.h"
 
 class UserPicture : public QFrame
 {

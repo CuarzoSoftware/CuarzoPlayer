@@ -97,7 +97,8 @@ HEADERS  += \
     leftbar.h \
     leftbaritem.h \
     artistslist.h \
-    artistlistitem.h
+    artistlistitem.h \
+    pix.h
 
 
 
