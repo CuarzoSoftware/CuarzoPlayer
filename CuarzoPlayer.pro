@@ -70,7 +70,11 @@ SOURCES += main.cpp\
     leftbar.cpp \
     leftbaritem.cpp \
     artistslist.cpp \
-    artistlistitem.cpp
+    artistlistitem.cpp \
+    artistview.cpp \
+    artistviewtitle.cpp \
+    album.cpp \
+    albumsong.cpp
 
 
 HEADERS  += \
@@ -98,7 +102,11 @@ HEADERS  += \
     leftbaritem.h \
     artistslist.h \
     artistlistitem.h \
-    pix.h
+    pix.h \
+    artistview.h \
+    artistviewtitle.h \
+    album.h \
+    albumsong.h
 
 
 

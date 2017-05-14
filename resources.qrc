@@ -29,5 +29,9 @@
         <file>img/google-logo.png</file>
         <file>img/search.svg</file>
         <file>img/icon.png</file>
+        <file>img/download.svg</file>
+        <file>img/more.svg</file>
+        <file>img/upload.svg</file>
+        <file>img/more-big.svg</file>
     </qresource>
 </RCC>

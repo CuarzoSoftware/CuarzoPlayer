@@ -12,7 +12,7 @@ LeftBar::LeftBar()
  scrollLayout->setMargin(0);
  scrollLayout->setSpacing(0);
  scroll->setWidget(frame);
- scroll->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+ scroll->setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded);
  scroll->setWidgetResizable( true );
  scroll->setStyleSheet("QScrollArea{border:none}");
 

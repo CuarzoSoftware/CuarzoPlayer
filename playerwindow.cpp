@@ -7,7 +7,7 @@ PlayerWindow::PlayerWindow()
 {
     setContextMenuPolicy(Qt::NoContextMenu);
     setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    setMinimumSize(800,400);
+    setMinimumSize(1000,600);
     setLayout(mainLayout);
     mainLayout->setMargin(0);
     mainLayout->addWidget(frame);

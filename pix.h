@@ -31,6 +31,16 @@ public:
         QPixmap img = QPixmap::fromImage(copy);
         return img;
     }
+    QPixmap borderRadius(QImage image,int radius){
+        QPixmap img = rect(image);
+        QBitmap  mask(img.size());
+        QPainter painter(&mask);
+        mask.fill(Qt::white);
+        painter.setBrush(Qt::black);
+        painter.drawRoundRect(0,0,mask.width(),mask.height(),radius,radius);
+        img.setMask(mask);
+        return img;
+    }
 };
 
 

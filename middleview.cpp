@@ -6,6 +6,7 @@ MiddleView::MiddleView()
     setHandleWidth(0);
     addWidget(leftBar);
     addWidget(artistsList);
-    addWidget(new QWidget());
+    addWidget(artistView);
+
     setStyleSheet("QSplitter::handle{background-color: black;}");
 }

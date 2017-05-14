@@ -6,14 +6,11 @@ ArtistListItem::ArtistListItem(QString _icon,QString _text,QString _id)
 {
     id = _id;
     setAutoFillBackground(true);
-    QPalette pal = palette();
-    pal.setColor(QPalette::Background, QColor("#FFF"));
-    setPalette(pal);
     setObjectName("item");
-    setStyleSheet("#item{border-bottom:1px solid #EEE}");
-    text = new CropLabel(_text,"color:#444");
+    setStyleSheet("#item{border-bottom:1px solid #EEE;border-radius:0}");
+    text = new CropLabel(_text,"color:#888");
     Pix r;
-    icon->setPixmap(r.round(QImage("/users/eduardo/mac.jpg")));
+    icon->setPixmap(r.round(QImage(_icon)));
     icon->setFixedSize(40,40);
     icon->setScaledContents(true);
     layout->setMargin(8);
@@ -29,14 +26,10 @@ void ArtistListItem::mousePressEvent(QMouseEvent *event){
 void ArtistListItem::setSelected(bool selected){
     if(selected){
         text->setStyleSheet("color:#FFF");
-        QPalette pal = palette();
-        pal.setColor(QPalette::Background, QColor(blue));
-        setPalette(pal);
+        setStyleSheet("#item{background:"+blue+";border-bottom:1px solid #EEE;border-radius:0}");
     }
     else{
         text->setStyleSheet("color:#888");
-        QPalette pal = palette();
-        pal.setColor(QPalette::Background, QColor("transparent"));
-        setPalette(pal);
+        setStyleSheet("#item{background:#FFF;border-bottom:1px solid #EEE;border-radius:0}");
     }
 }
