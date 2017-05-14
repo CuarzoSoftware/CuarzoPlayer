@@ -10,13 +10,16 @@
 #include "middleview.h"
 #include "bottombar.h"
 #include "id.h"
+#include "player.h"
 
 
 class PlayerWindow : public QWidget
 {
     Q_OBJECT
 public:
+    QString viewMode;
     PlayerWindow();
+    Player *player = new Player();
     QBoxLayout *mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
     QWidget *frame = new QWidget();
     TitleBar *titleBar = new TitleBar();
@@ -28,6 +31,10 @@ public:
     ID id;
 
 public slots:
+    void leftItemSelected(QString);
+    void artistSelected(json data);
+    void setLibrary();
+    void createPlayList(json);
 
 };
 

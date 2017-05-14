@@ -13,10 +13,12 @@ TopBar::TopBar()
     modeList->setFixedWidth(130);
     modeList->menu->setFixedWidth(135);
     frameLayout->setAlignment(Qt::AlignLeft);
-    frameLayout->setContentsMargins(8,8,8,8);
+    frameLayout->setContentsMargins(8,8,15,8);
     frameLayout->addWidget(userPicture);
     frameLayout->addWidget(storageBar);
     frameLayout->addWidget(modeList);
+    frameLayout->addWidget(new QWidget(),10);
     frameLayout->addWidget(searchBar);
-
+    frameLayout->addWidget(addButton);
 }
+

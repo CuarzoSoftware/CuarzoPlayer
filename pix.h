@@ -41,6 +41,18 @@ public:
         img.setMask(mask);
         return img;
     }
+    QString timeFromSecconds(int secs){
+        int mins = secs/60;
+        int sec = secs%60;
+        QString segundos;
+        if(sec<10){
+            segundos = "0" + QString::number(sec);
+        }
+        else{
+            segundos = QString::number(sec);
+        }
+        return QString::number(mins)+":"+segundos;
+    }
 };
 
 

@@ -20,8 +20,8 @@ public:
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QWidget *leftFrame = new QWidget();
     QBoxLayout *leftLayout = new QBoxLayout(QBoxLayout::TopToBottom,leftFrame);
-    CropLabel *artistName = new CropLabel("Mac DeMarco","color:#444;font-size:30px;font-weight:bold");
-    CropLabel *artistInfo = new CropLabel("4 álbumes, 50 canciones","color:#888;font-size:15px");
+    CropLabel *artistName = new CropLabel("","color:#444;font-size:30px;font-weight:bold");
+    CropLabel *artistInfo = new CropLabel("","color:#888;font-size:15px");
     OpButton *shuffle = new OpButton(":res/img/shuffle.svg",bSize,bSize,blue);
     //OpButton *download = new OpButton(":res/img/download.svg",bSize,bSize,red);
     OpButton *sync = new OpButton(":res/img/cloud.svg",bSize,bSize,blue);

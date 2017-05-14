@@ -1,24 +1,30 @@
 #include "songinfo.h"
 
+extern QString path;
+
 SongInfo::SongInfo()
 {
+    setMinimumWidth(180);
     artWork = new QLabel();
-    artWork->setPixmap(QPixmap(":res/img/artWork.png"));
+    artWork->setPixmap(r.borderRadius(QImage(":res/img/artWork.png"),10));
     artWork->setScaledContents(true);
-    artWork->setMaximumWidth(50);
-    artWork->setMaximumHeight(50);
-    song = new CropLabel("Strawberry Fields Forever","font-size:11px;color:#444;font-weight:bold");
-    artist = new CropLabel("The Beatles","font-size:10px;color:#666");
+    artWork->setFixedSize(50,50);
+    song = new CropLabel("Song","font-size:11px;color:#444;font-weight:bold");
+    artist = new CropLabel("Album","font-size:10px;color:#666");
     layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QWidget *textFrame = new QWidget();
-    textFrame->setSizeIncrement(1,1);
-    textFrame->setMinimumWidth(140);
     QBoxLayout *textLayout = new QBoxLayout(QBoxLayout::TopToBottom,textFrame);
     textLayout->setMargin(0);
     textLayout->setSpacing(0);
     textLayout->addWidget(song);
     textLayout->addWidget(artist);
     layout->addWidget(artWork);
-    layout->addWidget(textFrame);
+    layout->addWidget(textFrame,10);
     layout->setMargin(0);
+}
+
+void SongInfo::setData(json data){
+    artWork->setPixmap(r.borderRadius(QImage(path + "/Cuarzo Player/Artwork/" + QString::fromStdString(data["artist"]) + "/" + QString::fromStdString(data["album"]) + ".png") ,10));
+    song->changeText(QString::fromStdString(data["title"]));
+    artist->changeText(QString::fromStdString(data["artist"]));
 }

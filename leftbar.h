@@ -24,7 +24,7 @@ public:
     QLabel *title2 = new QLabel("Playlists");
     LeftBarItem *items[10000] = {nullptr};
 signals:
-
+    void sendSelected(QString id);
 public slots:
     void itemSelected(QString id);
 };

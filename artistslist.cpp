@@ -2,7 +2,9 @@
 
 ArtistsList::ArtistsList()
 {
+
     setAutoFillBackground(true);
+    setMinimumWidth(190);
     setFixedWidth(190);
 
     QPalette pal = palette();
@@ -19,23 +21,35 @@ ArtistsList::ArtistsList()
     scroll->setWidgetResizable( true );
     scroll->setStyleSheet("QScrollArea{border:none}");
 
-    items[0] = new ArtistListItem("/users/eduardo/dylan.jpg","Bob Dylan","1");
-    items[1] = new ArtistListItem("/users/eduardo/cold.jpg","Coldplay","2");
-    items[2] = new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3");
-
-    layout->addWidget(items[0]);
-    layout->addWidget(items[1]);
-    layout->addWidget(items[2]);
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-    layout->addWidget(new ArtistListItem("/users/eduardo/mac.jpg","Mac DeMarco","3"));
-
     layout->setMargin(0);
     layout->setSpacing(0);
     layout->setAlignment(Qt::AlignTop);
+
+}
+
+void ArtistsList::artistSelected(int index){
+    int i = 0;
+    while(items[i] != nullptr){
+        items[i]->setSelected(false);
+        i++;
+    }
+    items[index]->setSelected(true);
+    sendSelectedArtist(items[index]->data);
+}
+
+void ArtistsList::setData(json _data){
+    data = _data;
+    int ii = 0;
+    while(items[ii] != nullptr){
+        delete items[ii];
+        items[ii] = nullptr;
+        ii++;
+    }
+    int i = 0;
+    for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
+        items[i] = new ArtistListItem(i,it.value());
+        layout->addWidget(items[i]);
+        connect(items[i],SIGNAL(selected(int)),this,SLOT(artistSelected(int)));
+        i++;
+    }
 }

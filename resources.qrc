@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/res">
-        <file>cache/id.count</file>
         <file>img/add.svg</file>
         <file>img/albums.svg</file>
         <file>img/artists.svg</file>
@@ -33,5 +32,7 @@
         <file>img/more.svg</file>
         <file>img/upload.svg</file>
         <file>img/more-big.svg</file>
+        <file>img/download-border.svg</file>
+        <file>img/sync-border.svg</file>
     </qresource>
 </RCC>

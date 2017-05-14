@@ -9,13 +9,24 @@
 #include <QJsonObject>
 #include <QFileInfo>
 #include <fstream>
+#include "id.h"
+#include <QFileDialog>
+#include <fileref.h>
+#include <tag.h>
+#include <id3v2tag.h>
+#include <mpegfile.h>
+#include <attachedpictureframe.h>
+#include "json.hpp"
 
+using json = nlohmann::json;
 
-class Library
+class Library:public QObject
 {
+    Q_OBJECT
 public:
     Library();
-    QJsonObject localLibrary;
+    ID uid;
+    json localLibrary;
     QJsonObject cloudLibrary;
     QJsonObject settings;
     void readLocalLibrary();
@@ -24,6 +35,10 @@ public:
     void saveCloudLibrary();
     void readSettings();
     void saveSettings();
+public slots:
+    void addMusic();
+signals:
+    void musicAdded();
 };
 
 #endif // LIBRARY_H

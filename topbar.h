@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QFrame>
 #include <QBoxLayout>
+#include "opbutton.h"
 #include "selectlist.h"
 #include "userpicture.h"
 #include "storagebar.h"
@@ -19,6 +20,7 @@ public:
     UserPicture *userPicture = new UserPicture();
     StorageBar *storageBar = new StorageBar();
     SearchBar *searchBar = new SearchBar();
+    OpButton *addButton = new OpButton(":res/img/add.svg",35,35);
 };
 
 #endif // TOPBAR_H

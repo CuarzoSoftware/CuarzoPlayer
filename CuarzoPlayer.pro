@@ -57,7 +57,6 @@ SOURCES += main.cpp\
     volumebar.cpp \
     topbar.cpp \
     library.cpp \
-    id.cpp \
     selectlist.cpp \
     selectlistitem.cpp \
     icon.cpp \
@@ -74,7 +73,8 @@ SOURCES += main.cpp\
     artistview.cpp \
     artistviewtitle.cpp \
     album.cpp \
-    albumsong.cpp
+    albumsong.cpp \
+    player.cpp
 
 
 HEADERS  += \
@@ -106,7 +106,10 @@ HEADERS  += \
     artistview.h \
     artistviewtitle.h \
     album.h \
-    albumsong.h
+    albumsong.h \
+    json.hpp \
+    player.h
+
 
 
 

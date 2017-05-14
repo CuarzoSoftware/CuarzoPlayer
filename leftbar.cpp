@@ -57,6 +57,7 @@ LeftBar::LeftBar()
 }
 
 void LeftBar::itemSelected(QString id){
+    sendSelected(id);
     int i = 0;
     while(items[i] != nullptr){
         if(items[i]->id != id){

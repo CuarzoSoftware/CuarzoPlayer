@@ -1,21 +1,21 @@
 #include "album.h"
-
-Album::Album()
+using json = nlohmann::json;
+extern QString path;
+Album::Album(int _id, json _data)
 {
-    setStyleSheet("background:#FFF");
-    artWork->setPixmap(p.borderRadius(QImage("/users/eduardo/mac.jpg"),12));
+    id = _id;
+    setData(_data);
     artWork->setScaledContents(true);
     artWork->setMaximumSize(150,150);
     artWork->setStyleSheet("border-radius:10px;border:2px solid #EEE");
-    songsNumber->setText("14 canciones");
     songsNumber->setStyleSheet("color:#888");
-    albumName = new CropLabel("This Old Dog","font-size:20px;color:#444;font-weight:bold");
-    albumInfo = new CropLabel("Pop - 2017","font-size:13px;color:#888");
+
 
     layout->addWidget(artWorkFrame);
     layout->addWidget(rightFrame,10);
     layout->setMargin(0);
     layout->setAlignment(Qt::AlignTop);
+    layout->setSpacing(25);
 
     artWorkLayout->addWidget(artWork);
     artWorkLayout->addWidget(artWorkBottomFrame);
@@ -40,4 +40,41 @@ Album::Album()
     nameLayout->setMargin(0);
     nameLayout->addWidget(albumName);
     nameLayout->addWidget(albumInfo);
+
+    songsLayout->setAlignment(Qt::AlignTop);
+    songsLayout->setMargin(0);
+    songsLayout->setSpacing(0);
+
 }
+
+void Album::setData(json _data){
+    data = _data;
+    if((bool)data.begin().value()["artWork"]){
+        artWork->setPixmap(p.borderRadius(QImage(path + "/Cuarzo Player/Artwork/" + QString::fromStdString(data.begin().value()["artist"]) + "/" + QString::fromStdString(data.begin().value()["album"]) + ".png"),12));
+    }
+    else{
+        artWork->setPixmap(p.borderRadius(QImage(":res/img/artWork.png"),12));
+
+    }
+    albumName= new CropLabel(QString::fromStdString(data.begin().value()["album"]),"font-size:20px;color:#444;font-weight:bold");
+    albumInfo = new CropLabel(QString::fromStdString(data.begin().value()["genre"]) + " - " + QString::number((int)data.begin().value()["year"]),"font-size:13px;color:#888");
+    int songsCount = 0;
+    for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
+        songs[songsCount] = new AlbumSong(it.value());
+        songsLayout->addWidget(songs[songsCount]);
+        connect(songs[songsCount],SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
+        connect(songs[songsCount],SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
+        songsCount++;
+    }
+    songsNumber->setText(QString::number(songsCount) + " canciones");
+}
+
+void Album::sendSelectedSong(int id){
+    songSelected(id);
+}
+
+void Album::sendPlayedSong(json _data){
+    songPlayed(_data);
+}
+
+

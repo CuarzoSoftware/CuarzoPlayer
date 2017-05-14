@@ -1,16 +1,17 @@
 #include "artistlistitem.h"
 
 extern QString blue;
+extern QString path;
 
-ArtistListItem::ArtistListItem(QString _icon,QString _text,QString _id)
+using json = nlohmann::json;
+
+ArtistListItem::ArtistListItem(int _id, json _data)
 {
     id = _id;
+    setData(_data);
     setAutoFillBackground(true);
     setObjectName("item");
     setStyleSheet("#item{border-bottom:1px solid #EEE;border-radius:0}");
-    text = new CropLabel(_text,"color:#888");
-    Pix r;
-    icon->setPixmap(r.round(QImage(_icon)));
     icon->setFixedSize(40,40);
     icon->setScaledContents(true);
     layout->setMargin(8);
@@ -18,8 +19,20 @@ ArtistListItem::ArtistListItem(QString _icon,QString _text,QString _id)
     layout->addWidget(text);
 }
 
+void ArtistListItem::setData(json _data){
+    data = _data;
+    json fSong = _data.begin().value().begin().value();
+    text = new CropLabel(QString::fromStdString(fSong["artist"]),"color:#888");
+
+    if((bool)fSong["artWork"]){
+        icon->setPixmap(r.round(QImage(path + "/Cuarzo Player/Artwork/"+QString::fromStdString(fSong["artist"])+"/"+QString::fromStdString(fSong["album"])+".png")));
+    }
+    else{
+        icon->setPixmap(r.round(QImage(":res/img/artWork.png")));
+    }
+}
+
 void ArtistListItem::mousePressEvent(QMouseEvent *event){
-    setSelected(true);
     selected(id);
 }
 

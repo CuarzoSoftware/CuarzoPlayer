@@ -8,5 +8,8 @@ MiddleView::MiddleView()
     addWidget(artistsList);
     addWidget(artistView);
 
+    artistsList->hide();
+    artistView->hide();
+
     setStyleSheet("QSplitter::handle{background-color: black;}");
 }

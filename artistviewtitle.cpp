@@ -14,4 +14,5 @@ ArtistViewTitle::ArtistViewTitle()
     layout->addWidget(sync);
     layout->addWidget(shuffle);
     layout->addWidget(more);
+    hide();
 }
