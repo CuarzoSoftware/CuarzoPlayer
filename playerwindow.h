@@ -29,7 +29,6 @@ public:
     TopBar *topBar = new TopBar();
     BottomBar *bottomBar = new BottomBar();
     ID id;
-
 public slots:
     void leftItemSelected(QString);
     void artistSelected(json data);

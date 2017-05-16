@@ -19,13 +19,23 @@ PlayerWindow::PlayerWindow()
     frameLayout->addWidget(middleView);
     frameLayout->addWidget(bottomBar);
     setLibrary();
+
+    //ADD MUSIC
     connect(topBar->addButton,SIGNAL(released()),library,SLOT(addMusic()));
+    connect(library,SIGNAL(musicAdded()),this,SLOT(setLibrary()));
+
+    //SONGS EVENTS
     connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(createPlayList(json)));
     connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
     connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
-    connect(library,SIGNAL(musicAdded()),this,SLOT(setLibrary()));
 
+    //PLAYER EVENTS
     connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
+    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
+    connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
+    connect(player->player,SIGNAL(buffering(int)),bottomBar->timeBar,SLOT(setLoadPosition(int)));
+    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->audio,SLOT(setVolume(int)));
+
 }
 
 void PlayerWindow::leftItemSelected(QString id){

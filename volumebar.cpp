@@ -9,6 +9,7 @@ VolumeBar::VolumeBar(QWidget *parent) : QWidget(parent)
     icon->setScaledContents(true);
     slider->setMaximum(100);
     slider->setMinimum(0);
+    slider->setValue(100);
     layout->addWidget(icon);
     layout->addWidget(slider);
 

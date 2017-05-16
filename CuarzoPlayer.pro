@@ -4,8 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-QT       += multimedia
+QT       += core
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -13,17 +12,24 @@ TARGET = CuarzoPlayer
 TEMPLATE = app
 ICON = icon.icns
 
-macx {
 
-    INCLUDEPATH += $$_PRO_FILE_PWD_/lib/mac/include/taglib/
+macx {
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
+    QMAKE_LFLAGS += -F"../CuarzoPlayer/lib/mac/frameworks/"
+
+    INCLUDEPATH += "./CuarzoPlayer/lib/mac/include/taglib/"
+    INCLUDEPATH += "./CuarzoPlayer/lib/mac/frameworks/VLCQtCore.framework/Headers"
+
     LIBS += \
         -L/usr/local/lib \
         -L$$_PRO_FILE_PWD_/lib/mac/lib \
         -ltag\
         -lz\
         -lobjc
+
     LIBS += -framework Foundation
     LIBS += -framework AppKit
+    LIBS += -framework VLCQtCore
 
     OBJECTIVE_SOURCES += objectivec.mm
     HEADERS +=  objectivec.h
@@ -43,8 +49,6 @@ win32 {
 
 }
 
-
-DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
     opbutton.cpp \
@@ -75,6 +79,7 @@ SOURCES += main.cpp\
     album.cpp \
     albumsong.cpp \
     player.cpp
+
 
 
 HEADERS  += \
@@ -115,4 +120,8 @@ HEADERS  += \
 
 RESOURCES += \
     resources.qrc
+
+
+
+
 

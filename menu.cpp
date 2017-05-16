@@ -1,5 +1,4 @@
 #include "menu.h"
-
 Menu::Menu()
 {
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);

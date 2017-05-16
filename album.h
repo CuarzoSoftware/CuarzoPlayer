@@ -10,6 +10,7 @@
 #include "pix.h"
 #include "json.hpp"
 
+
 using json = nlohmann::json;
 
 extern QString blue;

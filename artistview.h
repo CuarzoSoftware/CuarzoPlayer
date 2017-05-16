@@ -8,6 +8,7 @@
 #include "album.h"
 #include "json.hpp"
 
+
 using json = nlohmann::json;
 
 class ArtistView : public QWidget

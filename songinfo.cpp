@@ -4,7 +4,7 @@ extern QString path;
 
 SongInfo::SongInfo()
 {
-    setMinimumWidth(180);
+    setFixedWidth(180);
     artWork = new QLabel();
     artWork->setPixmap(r.borderRadius(QImage(":res/img/artWork.png"),10));
     artWork->setScaledContents(true);
