@@ -2,11 +2,7 @@
 #define PLAYER_H
 
 #include <QObject>
-#include <VLC/Common.h>
-#include <VLC/Media.h>
-#include <VLC/Instance.h>
-#include <VLC/MediaPlayer.h>
-#include <VLC/Audio.h>
+#include <QMediaPlayer>
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -18,16 +14,15 @@ public:
     explicit Player();
     json currentSong;
     json playList;
-    VlcInstance *vlc = new VlcInstance(VlcCommon::args(), this);
-    VlcMediaPlayer *player = new VlcMediaPlayer(vlc);
-    VlcAudio *audio = new VlcAudio(player);
+    QMediaPlayer *player = new QMediaPlayer(this);
+
 signals:
     void songPlaying(json);
     void sendTimePosition(float,float);
 public slots:
     void playSong(json);
     void setTime(float percent);
-    void timeChanged(int t);
+    void timeChanged(qint64 t);
 };
 
 #endif // PLAYER_H

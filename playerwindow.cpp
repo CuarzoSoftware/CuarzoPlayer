@@ -33,8 +33,8 @@ PlayerWindow::PlayerWindow()
     connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
     connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
     connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
-    connect(player->player,SIGNAL(buffering(int)),bottomBar->timeBar,SLOT(setLoadPosition(int)));
-    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->audio,SLOT(setVolume(int)));
+    //connect(player->player,SIGNAL(buffering(int)),bottomBar->timeBar,SLOT(setLoadPosition(int)));
+    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player,SLOT(setVolume(int)));
 
 }
 

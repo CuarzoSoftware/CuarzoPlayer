@@ -5,6 +5,8 @@
 #-------------------------------------------------
 
 QT       += core
+QT       += multimedia
+QT       += svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,10 +14,12 @@ TARGET = CuarzoPlayer
 TEMPLATE = app
 ICON = icon.icns
 
-
 macx {
-    QMAKE_RPATHDIR += @executable_path/../Frameworks
-    QMAKE_LFLAGS += -F"../CuarzoPlayer/lib/mac/frameworks/"
+
+    #UNUSED VLC
+    #QMAKE_RPATHDIR += @executable_path/../Frameworks
+    #QMAKE_LFLAGS += -F"../CuarzoPlayer/lib/mac/frameworks/"
+    #LIBS += -framework VLCQtCore
 
     INCLUDEPATH += "../CuarzoPlayer/lib/mac/include/taglib/"
 
@@ -28,7 +32,6 @@ macx {
 
     LIBS += -framework Foundation
     LIBS += -framework AppKit
-    LIBS += -framework VLCQtCore
 
     OBJECTIVE_SOURCES += objectivec.mm
     HEADERS +=  objectivec.h
