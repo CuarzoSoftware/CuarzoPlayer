@@ -1,0 +1,42 @@
+os:
+  - linux
+  - osx
+
+env:
+  - QT_VERSION=5
+  - QT_VERSION=4
+
+matrix:
+  exclude:
+    - os: osx
+      env: QT_VERSION=4
+
+branches:
+  except:
+    - project/appveyor
+    - project/docs
+    - feature/experiments
+
+language: cpp
+
+before_install: . tools/ci/$TRAVIS_OS_NAME/before_install.sh
+install: . tools/ci/$TRAVIS_OS_NAME/install.sh
+script: . tools/ci/$TRAVIS_OS_NAME/script.sh
+after_success:
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && . tools/ci/$TRAVIS_OS_NAME/after_success.sh || true'
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+      - g++-4.8
+      - libqt4-dev
+      - libvlc-dev
+      - libvlccore-dev
+      - vlc
+      - p7zip-full
+  artifacts:
+    paths:
+      - ./install/artifacts

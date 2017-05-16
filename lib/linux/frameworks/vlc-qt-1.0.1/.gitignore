@@ -1,0 +1,13 @@
+# Possible build dirs:
+build*/
+homebrew/
+release/
+
+# System files
+*.DS_Store*
+
+# Project files
+CMakeLists.txt.user*
+
+# Debian/build
+obj*

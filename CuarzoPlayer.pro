@@ -17,8 +17,7 @@ macx {
     QMAKE_RPATHDIR += @executable_path/../Frameworks
     QMAKE_LFLAGS += -F"../CuarzoPlayer/lib/mac/frameworks/"
 
-    INCLUDEPATH += "./CuarzoPlayer/lib/mac/include/taglib/"
-    INCLUDEPATH += "./CuarzoPlayer/lib/mac/frameworks/VLCQtCore.framework/Headers"
+    INCLUDEPATH += "../CuarzoPlayer/lib/mac/include/taglib/"
 
     LIBS += \
         -L/usr/local/lib \
