@@ -7,6 +7,7 @@
 QT       += core
 QT       += multimedia
 QT       += svg
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -80,7 +81,9 @@ SOURCES += main.cpp\
     artistviewtitle.cpp \
     album.cpp \
     albumsong.cpp \
-    player.cpp
+    player.cpp \
+    login.cpp \
+    googledrive.cpp
 
 
 
@@ -115,7 +118,12 @@ HEADERS  += \
     album.h \
     albumsong.h \
     json.hpp \
-    player.h
+    player.h \
+    jsort.h \
+    login.h \
+    googledrive.h \
+    network.h \
+    maths.h
 
 
 

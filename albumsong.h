@@ -23,13 +23,14 @@ public:
     Pix r;
     json data;
     int id;
+    QWidget *space = new QWidget();
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QLabel *number  = new QLabel();
     QLabel *duration = new QLabel("caca");
-    Icon *status = new Icon(":res/img/volume-high.svg",blue, bSize, bSize);
-    OpButton *sync = new OpButton(":res/img/download-border.svg", bSize, bSize,blue);
-    OpButton *more = new OpButton(":res/img/more.svg", bSize, bSize,blue);
-    CropLabel *name;
+    Icon *status = new Icon(":res/img/volume-high.svg",blue,bSize, bSize);
+    OpButton *sync = new OpButton(":res/img/upload-border.svg", bSize, bSize, blue);
+    OpButton *more = new OpButton(":res/img/more.svg", bSize, bSize, blue);
+    CropLabel *name = new CropLabel("","color:#444");
     void enterEvent(QEvent * event);
     void leaveEvent(QEvent * event);
     void mousePressEvent(QMouseEvent *);

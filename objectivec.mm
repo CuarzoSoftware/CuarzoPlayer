@@ -8,9 +8,9 @@
 
 
 
-void ObjectiveC::Display(PlayerWindow *app)
+void ObjectiveC::Display(WId id)
 {
-    NSView* parentNSView = reinterpret_cast<NSView*>(app->winId());
+    NSView* parentNSView = reinterpret_cast<NSView*>(id);
     NSWindow *mainWindow = [parentNSView window];
     mainWindow.titlebarAppearsTransparent = true;
     mainWindow.backgroundColor =  NSColor.whiteColor;

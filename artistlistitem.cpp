@@ -5,6 +5,8 @@ extern QString path;
 
 using json = nlohmann::json;
 
+//Create an artists list item for the left bar
+
 ArtistListItem::ArtistListItem(int _id, json _data)
 {
     id = _id;
@@ -19,12 +21,16 @@ ArtistListItem::ArtistListItem(int _id, json _data)
     layout->addWidget(text);
 }
 
-void ArtistListItem::setData(json _data){
+//Set the artists info
+
+void ArtistListItem::setData(json _data)
+{
     data = _data;
     json fSong = _data.begin().value().begin().value();
     text = new CropLabel(QString::fromStdString(fSong["artist"]),"color:#888");
 
-    if((bool)fSong["artWork"]){
+    if(fSong["artWork"])
+    {
         icon->setPixmap(r.round(QImage(path + "/Cuarzo Player/Artwork/"+QString::fromStdString(fSong["artist"])+"/"+QString::fromStdString(fSong["album"])+".png")));
     }
     else{
@@ -32,11 +38,8 @@ void ArtistListItem::setData(json _data){
     }
 }
 
-void ArtistListItem::mousePressEvent(QMouseEvent *event){
-    selected(id);
-}
-
-void ArtistListItem::setSelected(bool selected){
+void ArtistListItem::setSelected(bool selected)
+{
     if(selected){
         text->setStyleSheet("color:#FFF");
         setStyleSheet("#item{background:"+blue+";border-bottom:1px solid #EEE;border-radius:0}");
@@ -46,3 +49,9 @@ void ArtistListItem::setSelected(bool selected){
         setStyleSheet("#item{background:#FFF;border-bottom:1px solid #EEE;border-radius:0}");
     }
 }
+
+
+void ArtistListItem::mousePressEvent(QMouseEvent*){
+    selected(id);
+}
+

@@ -4,17 +4,24 @@
 
 using json = nlohmann::json;
 
+extern QString red;
+extern QString green;
+
+
+//Creates the song
+
 AlbumSong::AlbumSong(json _data)
 {
-    setData(_data);
     setAttribute(Qt::WA_Hover);
     setObjectName("song");
     setStyleSheet("#song{border-bottom:1px solid #EEE;background:#FFF;border-radius:0px}");
     number->setStyleSheet("color:#888");
     number->setMinimumWidth(15);
     duration->setStyleSheet("color:#888");
+    space->setMinimumWidth(15);
     layout->setMargin(8);
     layout->addWidget(sync);
+    layout->addWidget(space);
     layout->addWidget(number);
     layout->addWidget(status);
     layout->addWidget(name,10);
@@ -23,26 +30,33 @@ AlbumSong::AlbumSong(json _data)
     sync->hide();
     status->hide();
     more->hide();
+    space->hide();
+    setData(_data);
 }
+
+//Set the songs data
 
 void AlbumSong::setData(json _data){
     data = _data;
     id = data["id"];
-    name = new CropLabel(QString::fromStdString(data["title"]),"color:#444");
+    name->changeText(QString::fromStdString(data["title"]));
     number->setText(QString::number((int)data["track"]));
     duration->setText(r.timeFromSecconds((int)data["duration"]));
-    //qDebug()<<(int)data["duration"];
+    if(!data["local"]){
+        sync->setIcon(QIcon(":res/img/download-border.svg"));
+        sync->show();
+    }
+    else if(!data["cloud"]){
+        sync->show();
+    }else{
+        if(!data["albumSynched"]){
+            space->show();
+        }
+    }
 }
 
-void AlbumSong::mousePressEvent(QMouseEvent *event){
-    setSelected(true);
-    songSelected(id);
-}
 
-void AlbumSong::mouseDoubleClickEvent(QMouseEvent *event){
-    setPlaying(true);
-    songPlayed(data);
-}
+//Set the focus blue color
 
 void AlbumSong::setSelected(bool op)
 {
@@ -67,6 +81,36 @@ void AlbumSong::setSelected(bool op)
 
 }
 
+//Display the playing icon
+
+void AlbumSong::setPlaying(bool isPlaying)
+{
+    if(isPlaying){
+        number->hide();
+        status->show();
+    }
+    else{
+        number->show();
+        status->hide();
+    }
+
+}
+
+
+//Events
+
+void AlbumSong::mousePressEvent(QMouseEvent *event)
+{
+    setSelected(true);
+    songSelected(id);
+}
+
+void AlbumSong::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    setPlaying(true);
+    songPlayed(data);
+}
+
 void AlbumSong::enterEvent(QEvent * event)
 {
     more->show();
@@ -77,17 +121,4 @@ void AlbumSong::leaveEvent(QEvent * event)
 {
     more->hide();
     duration->show();
-}
-
-void AlbumSong::setPlaying(bool op){
-
-    if(op){
-        number->hide();
-        status->show();
-    }
-    else{
-        number->show();
-        status->hide();
-    }
-
 }

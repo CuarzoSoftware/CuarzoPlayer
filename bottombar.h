@@ -24,11 +24,16 @@ public:
     VolumeBar *volumeBar = new VolumeBar();
     OpButton *loopButton;
     OpButton *shuffleButton;
-    int shuffleState, loopState;
+    int loopState;
+    bool shuffleState;
 
 public slots:
     void toggleLoop();
     void toggleShuffle();
+
+signals:
+    void sendLoopMode(int);
+    void sendShuffleMode(bool);
 };
 
 #endif // BOTTOMBAR_H

@@ -9,6 +9,7 @@
 #include "albumsong.h"
 #include "pix.h"
 #include "json.hpp"
+#include "jsort.h"
 
 
 using json = nlohmann::json;
@@ -21,6 +22,7 @@ class Album:public QWidget
 public:
     Album(int _id, json _data);
     Pix p;
+    JSort s;
     int id;
     json data;
     QWidget *artWorkFrame = new QWidget();

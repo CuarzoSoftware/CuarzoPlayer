@@ -24,7 +24,12 @@ SongInfo::SongInfo()
 }
 
 void SongInfo::setData(json data){
-    artWork->setPixmap(r.borderRadius(QImage(path + "/Cuarzo Player/Artwork/" + QString::fromStdString(data["artist"]) + "/" + QString::fromStdString(data["album"]) + ".png") ,10));
+    if(data["artWork"]){
+        artWork->setPixmap(r.borderRadius(QImage(path + "/Cuarzo Player/Artwork/" + QString::fromStdString(data["artist"]) + "/" + QString::fromStdString(data["album"]) + ".png") ,10));
+    }else{
+        artWork->setPixmap(r.borderRadius(QImage(":res/img/artWork.png") ,10));
+
+    }
     song->changeText(QString::fromStdString(data["title"]));
     artist->changeText(QString::fromStdString(data["artist"]));
 }

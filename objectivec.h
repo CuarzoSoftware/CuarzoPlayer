@@ -7,7 +7,7 @@
 class ObjectiveC
 {
 public:
-    static void Display(PlayerWindow*);
+    static void Display(WId);
 };
 
 #endif

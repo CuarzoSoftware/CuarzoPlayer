@@ -10,6 +10,9 @@ public:
     StorageBar();
     QFrame *bar = new QFrame();
     QLabel *text = new QLabel();
+public slots:
+    void setPercent(long used, long total);
+
 };
 
 #endif // STORAGEBAR_H

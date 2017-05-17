@@ -25,9 +25,10 @@ int main(int argc, char *argv[])
     PlayerWindow *w = new PlayerWindow();
     #ifdef Q_OS_MAC
         ObjectiveC *obc = new ObjectiveC();
-        obc->Display(w);
+        obc->Display(w->winId());
+        obc->Display(w->login->winId());
+
     #endif
-    w->show();
     return a.exec();
 }
 

@@ -34,5 +34,8 @@
         <file>img/more-big.svg</file>
         <file>img/download-border.svg</file>
         <file>img/sync-border.svg</file>
+        <file>img/upload-border.svg</file>
+        <file>img/cloud-border.svg</file>
+        <file>img/ready.svg</file>
     </qresource>
 </RCC>

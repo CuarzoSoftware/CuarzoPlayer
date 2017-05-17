@@ -1,6 +1,11 @@
 #include "album.h"
+
 using json = nlohmann::json;
+
 extern QString path;
+
+//Creates the album
+
 Album::Album(int _id, json _data)
 {
     id = _id;
@@ -47,27 +52,54 @@ Album::Album(int _id, json _data)
 
 }
 
-void Album::setData(json _data){
+//Set the albums data
+
+void Album::setData(json _data)
+{
     data = _data;
-    if((bool)data.begin().value()["artWork"]){
+
+    //Detect if the entire albums is synched
+
+    if(data.begin().value()["albumSynched"]){
+        sync->hide();
+    }
+
+    //Sets the artwork
+
+    if(data.begin().value()["artWork"])
+    {
         artWork->setPixmap(p.borderRadius(QImage(path + "/Cuarzo Player/Artwork/" + QString::fromStdString(data.begin().value()["artist"]) + "/" + QString::fromStdString(data.begin().value()["album"]) + ".png"),12));
     }
     else{
         artWork->setPixmap(p.borderRadius(QImage(":res/img/artWork.png"),12));
 
     }
+
+    //Set the album info
+
     albumName= new CropLabel(QString::fromStdString(data.begin().value()["album"]),"font-size:20px;color:#444;font-weight:bold");
     albumInfo = new CropLabel(QString::fromStdString(data.begin().value()["genre"]) + " - " + QString::number((int)data.begin().value()["year"]),"font-size:13px;color:#888");
+
+    //Create the songs
+
     int songsCount = 0;
-    for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
+    json sorted = s.sortByKey(data,"track","int");
+
+    for (json::iterator it = sorted.begin(); it != sorted.end(); ++it)
+    {
         songs[songsCount] = new AlbumSong(it.value());
         songsLayout->addWidget(songs[songsCount]);
         connect(songs[songsCount],SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
         connect(songs[songsCount],SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
         songsCount++;
     }
+
+    //Set the songs count info
+
     songsNumber->setText(QString::number(songsCount) + " canciones");
 }
+
+//Events
 
 void Album::sendSelectedSong(int id){
     songSelected(id);

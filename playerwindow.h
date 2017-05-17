@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QMouseEvent>
+#include <QKeyEvent>
 #include "library.h"
 #include "titlebar.h"
 #include "topbar.h"
@@ -11,6 +12,13 @@
 #include "bottombar.h"
 #include "id.h"
 #include "player.h"
+#include "json.hpp"
+#include "jsort.h"
+#include "login.h"
+#include "googledrive.h"
+#include "maths.h"
+
+using json = nlohmann::json;
 
 
 class PlayerWindow : public QWidget
@@ -18,7 +26,11 @@ class PlayerWindow : public QWidget
     Q_OBJECT
 public:
     QString viewMode;
+    QString playingFrom;
+    Maths math;
     PlayerWindow();
+    GoogleDrive *drive;
+    Login *login = new Login();
     Player *player = new Player();
     QBoxLayout *mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
     QWidget *frame = new QWidget();
@@ -29,11 +41,16 @@ public:
     TopBar *topBar = new TopBar();
     BottomBar *bottomBar = new BottomBar();
     ID id;
+    JSort s;
+    bool eventFilter(QObject *obj, QEvent *event);
 public slots:
     void leftItemSelected(QString);
     void artistSelected(json data);
     void setLibrary();
-    void createPlayList(json);
+    void playFromArtist(json);
+    void loggedIn(QString token, QString refresh);
+    void setUserInfo();
+    void setupSettings();
 
 };
 

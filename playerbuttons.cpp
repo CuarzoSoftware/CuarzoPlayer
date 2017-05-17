@@ -9,4 +9,19 @@ PlayerButtons::PlayerButtons(QWidget *parent) : QWidget(parent)
     layout->addWidget(back);
     layout->addWidget(play);
     layout->addWidget(next);
+    connect(play,SIGNAL(released()),this,SLOT(playPause()));
+}
+
+
+
+void PlayerButtons::playPause(){
+    if(playing){
+        playing = false;
+        setPlay(false);
+        play->setIcon(QIcon(":res/img/pause.svg"));
+    }else{
+        playing = true;
+        setPlay(true);
+        play->setIcon(QIcon(":res/img/play.svg"));
+    }
 }

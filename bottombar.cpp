@@ -9,7 +9,7 @@ extern QString lightGray;
 BottomBar::BottomBar()
 {
     loopState = 1;
-    shuffleState = 1;
+    shuffleState = true;
     loopButton = new OpButton(":res/img/loop.svg",27,27,blue);
     shuffleButton = new OpButton(":res/img/shuffle.svg",27,27,blue);
 
@@ -44,14 +44,16 @@ void BottomBar::toggleLoop(){
         loopButton->setColor(lightGray);
         loopState = 0;
     }
+    sendLoopMode(loopState);
 }
 void BottomBar::toggleShuffle(){
-    if(shuffleState == 0){
+    if(!shuffleState){
         shuffleButton->setColor(blue);
-        shuffleState = 1;
+        shuffleState = true;
     }
     else{
         shuffleButton->setColor(lightGray);
-        shuffleState = 0;
+        shuffleState = false;
     }
+    sendShuffleMode(shuffleState);
 }
