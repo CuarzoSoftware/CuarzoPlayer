@@ -8,6 +8,7 @@ QT       += core
 QT       += multimedia
 QT       += svg
 QT       += network
+QT       += concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -123,7 +124,9 @@ HEADERS  += \
     login.h \
     googledrive.h \
     network.h \
-    maths.h
+    maths.h \
+    pie.h \
+    filemanager.h
 
 
 

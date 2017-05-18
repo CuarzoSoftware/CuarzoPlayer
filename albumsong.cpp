@@ -21,6 +21,7 @@ AlbumSong::AlbumSong(json _data)
     space->setMinimumWidth(15);
     layout->setMargin(8);
     layout->addWidget(sync);
+    layout->addWidget(pie);
     layout->addWidget(space);
     layout->addWidget(number);
     layout->addWidget(status);

@@ -1,5 +1,6 @@
 #include "topbar.h"
 
+
 TopBar::TopBar()
 {
     QJsonArray data;
@@ -18,7 +19,10 @@ TopBar::TopBar()
     frameLayout->addWidget(storageBar);
     frameLayout->addWidget(modeList);
     frameLayout->addWidget(new QWidget(),10);
+    frameLayout->addWidget(pie);
     frameLayout->addWidget(searchBar);
     frameLayout->addWidget(addButton);
+
+
 }
 

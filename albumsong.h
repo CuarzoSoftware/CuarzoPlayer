@@ -9,6 +9,7 @@
 #include "croplabel.h"
 #include "json.hpp"
 #include "pix.h"
+#include "pie.h"
 
 using json = nlohmann::json;
 
@@ -21,6 +22,7 @@ class AlbumSong : public QFrame
 public:
     AlbumSong(json _data);
     Pix r;
+    Pie *pie = new Pie(0,15);
     json data;
     int id;
     QWidget *space = new QWidget();

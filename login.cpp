@@ -23,6 +23,8 @@ Login::Login()
     title->setAlignment(Qt::AlignCenter);
     subtitle->setAlignment(Qt::AlignCenter);
     code->hide();
+    code->setAlignment(Qt::AlignCenter);
+    code->setPlaceholderText("Authentication Code");
     backBtn->hide();
     readyBtn->hide();
     layout->addWidget(new QWidget(),4);
@@ -41,9 +43,17 @@ Login::Login()
     move(screen.width()/2-400,screen.height()/2-400);
     connect(loginBtn,SIGNAL(released()),this,SLOT(getCode()));
     connect(readyBtn,SIGNAL(released()),this,SLOT(getToken()));
+    connect(backBtn,SIGNAL(released()),this,SLOT(cancel()));
 }
 void Login::cancel(){
 
+    title->changeText("Welcome to Cuarzo Player");
+    subtitle->changeText("Listen to your music anywhere\n for free");
+    loginBtn->show();
+    readyBtn->hide();
+    code->hide();
+    backBtn->hide();
+    skipBtn->show();
 
 }
 

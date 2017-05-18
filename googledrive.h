@@ -7,6 +7,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
+#include <QFile>
 #include "network.h"
 #include "json.hpp"
 
@@ -29,12 +30,15 @@ public:
 signals:
     void sendUserInfo(json);
     void tokenRefreshReady();
+    void imageReady();
 public slots:
     void setData(json);
     void getUserInfo();
     void getUserInfoRes(QNetworkReply*res);
     void refreshToken(QString);
     void tokenRefreshed(QNetworkReply *res, QString);
+    void downloadProfileImage();
+    void imageDownloaded(QNetworkReply *);
 };
 
 #endif // GOOGLEDRIVE_H

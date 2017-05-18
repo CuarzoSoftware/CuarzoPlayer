@@ -9,6 +9,7 @@
 #include "userpicture.h"
 #include "storagebar.h"
 #include "searchbar.h"
+#include "pie.h"
 
 class TopBar : public QFrame
 {
@@ -21,6 +22,7 @@ public:
     StorageBar *storageBar = new StorageBar();
     SearchBar *searchBar = new SearchBar();
     OpButton *addButton = new OpButton(":res/img/add.svg",35,35);
+    Pie *pie = new Pie(0,30);
 };
 
 #endif // TOPBAR_H

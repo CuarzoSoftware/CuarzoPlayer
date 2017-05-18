@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLabel>
+#include <QBoxLayout>
 #include "pix.h"
 
 class UserPicture : public QFrame
@@ -10,7 +11,9 @@ class UserPicture : public QFrame
     Q_OBJECT
 public:
     explicit UserPicture();
-    QLabel *image;
+    QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
+    QLabel *image = new QLabel();
+    Pix r;
 signals:
 
 public slots:

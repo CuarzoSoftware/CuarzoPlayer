@@ -1,6 +1,8 @@
 #include "playerwindow.h"
 #include "croplabel.h"
 
+extern QString path;
+
 //Creates the player main window
 
 PlayerWindow::PlayerWindow()
@@ -11,30 +13,11 @@ PlayerWindow::PlayerWindow()
     if(!library->settings["init"])
     {
         login->show();
+        connect(login,SIGNAL(loggedIn(QString,QString)),this,SLOT(loggedIn(QString,QString)));
     }
     else{
-        drive = new GoogleDrive(library->settings);
-        show();
+        setupSettings();
     }
-
-    setContextMenuPolicy(Qt::NoContextMenu);
-    setFocusPolicy(Qt::ClickFocus);
-    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    setMinimumSize(1000,600);
-    setLayout(mainLayout);
-    installEventFilter(this);
-    mainLayout->setMargin(0);
-    mainLayout->addWidget(frame);
-    frame->setObjectName("MainFrame");
-    frame->setStyleSheet("#MainFrame{background:#FFF}");
-    frameLayout->setMargin(0);
-    frameLayout->setSpacing(0);
-    frameLayout->addWidget(topBar);
-    frameLayout->addWidget(middleView);
-    frameLayout->addWidget(bottomBar);
-    setLibrary();
-    setupSettings();
-
 }
 
 //Detect when leftbar category is selected
@@ -112,26 +95,61 @@ void PlayerWindow::playFromArtist(json data)
 void PlayerWindow::setUserInfo()
 {
     drive->setData(library->settings);
-    topBar->storageBar->setPercent(
-        math.fromString(QString::fromStdString(library->settings["usedSpace"])),
-        math.fromString(QString::fromStdString(library->settings["totalSpace"]))
-    );
+
+    long used;
+    long total;
+
+    QString a =  QString::fromStdString(library->settings["usedSpace"]);
+    QString b = QString::fromStdString(library->settings["totalSpace"]);
+
+    used = math.fromString(a);
+    total = math.fromString(b);
+
+    qDebug()<<total;
+    qDebug()<<used;
+
+    topBar->storageBar->setPercent(used,total);
+
 }
 
 //Create connections and setup the saved setting to child elements
 
 void PlayerWindow::setupSettings()
 {
+
+    drive = new GoogleDrive(library->settings);
+
+    setContextMenuPolicy(Qt::NoContextMenu);
+    setFocusPolicy(Qt::ClickFocus);
+    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    setMinimumSize(1000,600);
+    setLayout(mainLayout);
+    installEventFilter(this);
+    mainLayout->setMargin(0);
+    mainLayout->addWidget(frame);
+    frame->setObjectName("MainFrame");
+    frame->setStyleSheet("#MainFrame{background:#FFF}");
+    frameLayout->setMargin(0);
+    frameLayout->setSpacing(0);
+    frameLayout->addWidget(topBar);
+    frameLayout->addWidget(middleView);
+    frameLayout->addWidget(bottomBar);
+
+
     //ADD MUSIC
-    connect(topBar->addButton,SIGNAL(released()),library,SLOT(addMusic()));
-    connect(library,SIGNAL(musicAdded()),this,SLOT(setLibrary()));
+
+    connect(topBar->addButton,SIGNAL(released()),library,SLOT(startMusicAdder()));
+    connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
+    connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
 
     //SONGS EVENTS
+
     connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
     connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
     connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
 
     //PLAYER EVENTS
+
     connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
     connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
     connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
@@ -144,12 +162,15 @@ void PlayerWindow::setupSettings()
     connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
 
     //Google Drive
-    connect(login,SIGNAL(loggedIn(QString,QString)),this,SLOT(loggedIn(QString,QString)));
+
     connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
     connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
+    connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
 
     setUserInfo();
+    setLibrary();
     bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
+    show();
 }
 
 //Save the user data when user is logged
@@ -160,8 +181,18 @@ void PlayerWindow::loggedIn(QString token, QString refresh)
     library->settings["restoreToken"] = refresh.toStdString();
     library->settings["init"] = true;
     library->saveSettings();
-    show();
+    setupSettings();
     delete login;
+}
+
+//When prfile image is downloaded
+
+void PlayerWindow::imageReady()
+{
+    if(library->settings["userPicture"] != ""){
+        topBar->userPicture->image->setPixmap(p.round(QImage(path + "/Cuarzo Player/User/ProfileImage.jpg")));
+    }
+
 }
 
 //Events

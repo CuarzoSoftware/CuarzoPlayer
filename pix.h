@@ -11,6 +11,8 @@ class Pix
 {
 public:
     QPixmap round(QImage image){
+
+        image = image.scaled(256,256,Qt::IgnoreAspectRatio,Qt::FastTransformation);
         QPixmap img = rect(image);
         QBitmap  mask(img.size());
         QPainter painter(&mask);

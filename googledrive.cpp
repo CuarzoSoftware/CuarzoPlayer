@@ -1,5 +1,7 @@
 #include "googledrive.h"
 
+extern QString path;
+
 GoogleDrive::GoogleDrive(json s)
 {
     setData(s);
@@ -22,7 +24,7 @@ void GoogleDrive::getUserInfo(){
 
 void GoogleDrive::getUserInfoRes(QNetworkReply*res){
 
-    json jres = json::parse(res->readAll());
+    json jres = json::parse(res->readAll().toStdString());
 
     if(!jres["error"].is_null()){
         qDebug()<<"Token Expired";
@@ -33,16 +35,29 @@ void GoogleDrive::getUserInfoRes(QNetworkReply*res){
     settings["totalSpace"] = jres["quotaBytesTotal"];
     settings["usedSpace"] = jres["quotaBytesUsed"];
     settings["email"] = jres["user"]["email"];
-    settings["userName"] = jres["name"];
-    settings["userPicture"] = jres["user"]["picture"]["url"];
+    settings["userName"] = jres["user"]["displayName"];
+    if(jres["user"]["picture"].is_null()){
+        settings["userPicture"] = "";
+    }
+    else{
+        settings["userPicture"] = jres["user"]["picture"]["url"];
+    }
+
+    //qDebug()<<QString::fromStdString(settings["userPicture"]);
+
 
     sendUserInfo(settings);
+
+    if(settings["userPicture"] != ""){
+       downloadProfileImage();
+    }
+
 
 }
 
 void GoogleDrive::tokenRefreshed(QNetworkReply *res, QString callback){
 
-    json jres = json::parse(res->readAll());
+    json jres = json::parse(res->readAll().toStdString());
     settings["token"] = jres["access_token"];
 
     qDebug()<<"Token Refreshed";
@@ -70,3 +85,22 @@ void GoogleDrive::refreshToken(QString callback){
     network->post(request, postData.toString(QUrl::FullyEncoded).toUtf8());
 
 }
+
+void GoogleDrive::downloadProfileImage()
+{
+    Network *network = new Network(NULL,this);
+    connect(network,SIGNAL(finished(QNetworkReply*)),this,SLOT(imageDownloaded(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString::fromStdString(settings["userPicture"])));
+    network->get(request);
+}
+
+void GoogleDrive::imageDownloaded(QNetworkReply *res)
+{
+    QFile file;
+    file.setFileName(path + "/Cuarzo Player/User/ProfileImage.jpg");
+    file.open(QIODevice::WriteOnly);
+    file.write(res->readAll());
+    file.close();
+    imageReady();
+}
+

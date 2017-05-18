@@ -14,6 +14,10 @@ Library::Library()
     if(!QDir(path+"/Cuarzo Player").exists()){
         QDir().mkdir(path+"/Cuarzo Player");
     }
+    //Check if user folder exist
+    if(!QDir(path+"/Cuarzo Player/User").exists()){
+        QDir().mkdir(path+"/Cuarzo Player/User");
+    }
     //Check if artwork folder exist
     if(!QDir(path+"/Cuarzo Player/Artwork").exists()){
         QDir().mkdir(path+"/Cuarzo Player/Artwork");
@@ -56,11 +60,12 @@ Library::Library()
         settings["logged"] = false;
         settings["token"] = "";
         settings["restoreToken"] = "";
-        settings["totalSpace"] = 0;
-        settings["usedSpace"] = 0;
+        settings["totalSpace"] = "";
+        settings["usedSpace"] = "";
         settings["userName"] = "";
         settings["email"] = "";
         settings["userPicture"] = "";
+
 
         QJsonDocument doc =  QJsonDocument::fromJson(QString::fromStdString(settings.dump()).toUtf8());
         QFile file;
@@ -72,6 +77,8 @@ Library::Library()
     else{
         readSettings();
     }
+
+
 }
 
 void Library::readLibrary(){
@@ -113,121 +120,64 @@ void Library::saveSettings(){
 }
 
 void Library::setUserInfo(json jres){
-    settings["totalSpace"] = jres["totalSpace"];
-    settings["usedSpace"] = jres["usedSpace"];
+
+    std::string total = jres["totalSpace"];
+    std::string used = jres["usedSpace"];
+
+    settings["totalSpace"] = total;
+    settings["usedSpace"] = used;
     settings["email"] = jres["email"];
     settings["userName"] = jres["userName"];
     settings["userPicture"] = jres["userPicture"];
-    settings["toke"] = jres["token"];
+    settings["token"] = jres["token"];
     saveSettings();
     userInfoChanged();
 }
 
-void Library::addMusic(){
 
-      QList<QUrl> files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",QUrl(""),"MP3 (*.mp3)");
+void Library::newSongAdded(int songID, int track, int year, int duration, QString artist, QString album, QString title, QString genre, QString format, bool artWork){
 
-      for(int i = 0; i < files.length(); i++){
+    songsAdded++;
+    float per = 100/(float)songsToAdd*(float)songsAdded;
+    percentAdded((int)per);
 
-      TagLib::MPEG::File file(files[i].path().toStdString().c_str());
-      TagLib::ID3v2::Tag *m_tag = file.ID3v2Tag(true);
-
-      QString artist, album, title, genre, format;
-      int track, year, songID, duration;
-      bool artWork;
+    qDebug()<<songsAdded;
+    qDebug()<<songsToAdd;
 
 
-      if(m_tag->artist().isEmpty()){
-        artist = "Unknown";
-      }
-      else{
-        artist = m_tag->artist().toCString();
-      }
-
-      if(m_tag->album().isEmpty()){
-        album = "Unknown";
-      }
-      else{
-        album = m_tag->album().toCString();
-      }
-
-      if(m_tag->title().isEmpty()){
-        title = "Unknown";
-      }
-      else{
-        title = m_tag->title().toCString();
-      }
-
-      track = m_tag->track();
-      year = m_tag->year();
-      duration = file.audioProperties()->lengthInSeconds();
-      genre = QString::fromStdString(m_tag->genre().toCString());
-      songID = uid.newID();
-      format = "mp3";
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["year"] = year;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["duration"] = duration;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artist"] = artist.toStdString();
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["album"] = album.toStdString();
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["title"] = title.toStdString();
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["genre"] = genre.toStdString();
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["format"] = format.toStdString();
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWork"] = artWork;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["cloud"] = false;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["local"] = true;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["albumSynched"] = false;
 
 
-      TagLib::ID3v2::FrameList frameList = m_tag->frameList("APIC");
-
-      if(!frameList.isEmpty()) {
-
-          artWork = true;
-
-          //Check if artist folder exist
-
-          if(!QDir(path+"/Cuarzo Player/Artwork/"+artist).exists()){
-              QDir().mkdir(path+"/Cuarzo Player/Artwork/"+artist);
-          }
-
-          QFileInfo check_file(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
-          if (!check_file.exists()) {
-              TagLib::ID3v2::AttachedPictureFrame *coverImg = static_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameList.front());
-              QImage coverQImg;
-              coverQImg.loadFromData((const uchar *) coverImg->picture().data(), coverImg->picture().size());
-              bool b = coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
-          }
-      }
-      else{
-          artWork = false;
-      }
-
-      //Check if artist folder exist
-
-      if(!QDir(path+"/Cuarzo Player/Music/"+artist).exists()){
-          QDir().mkdir(path+"/Cuarzo Player/Music/"+artist);
-      }
-
-      //Check if album folder exist
-
-      if(!QDir(path+"/Cuarzo Player/Music/"+artist+"/"+album).exists()){
-          QDir().mkdir(path+"/Cuarzo Player/Music/"+artist+"/"+album);
-      }
-
-      //Copy file
-
-      std::ifstream  src(files[i].path().toStdString(), std::ios::binary);
-      std::ofstream  dst(path.toStdString()+"/Cuarzo Player/Music/"+artist.toStdString()+"/"+album.toStdString()+"/"+QString::number(songID).toStdString()+".mp3",   std::ios::binary);
-
-      dst << src.rdbuf();
-
-
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["year"] = year;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["duration"] = duration;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artist"] = artist.toStdString();
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["album"] = album.toStdString();
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["title"] = title.toStdString();
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["genre"] = genre.toStdString();
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["format"] = format.toStdString();
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWork"] = artWork;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["cloud"] = false;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["local"] = true;
-      library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["albumSynched"] = false;
-
-
+    if(songsAdded == songsToAdd){
+        saveLibrary();
+        musicAddComplete();
     }
 
-    saveLibrary();
-    musicAdded();
+}
 
+void Library::startMusicAdder(){
+
+    QList<QUrl> files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",QUrl(""),"MP3 (*.mp3)");
+
+    songsToAdd = files.length();
+    songsAdded = 0;
+
+    for(int i = 0; i < files.length(); i++){
+        FileManager *man = new FileManager(files[i]);
+        connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
+        connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
+        man->start();
+    }
 }

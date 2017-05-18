@@ -17,6 +17,7 @@
 #include "login.h"
 #include "googledrive.h"
 #include "maths.h"
+#include "pix.h"
 
 using json = nlohmann::json;
 
@@ -28,6 +29,9 @@ public:
     QString viewMode;
     QString playingFrom;
     Maths math;
+    ID id;
+    JSort s;
+    Pix p;
     PlayerWindow();
     GoogleDrive *drive;
     Login *login = new Login();
@@ -40,8 +44,6 @@ public:
     Library *library = new Library();
     TopBar *topBar = new TopBar();
     BottomBar *bottomBar = new BottomBar();
-    ID id;
-    JSort s;
     bool eventFilter(QObject *obj, QEvent *event);
 public slots:
     void leftItemSelected(QString);
@@ -51,6 +53,7 @@ public slots:
     void loggedIn(QString token, QString refresh);
     void setUserInfo();
     void setupSettings();
+    void imageReady();
 
 };
 
