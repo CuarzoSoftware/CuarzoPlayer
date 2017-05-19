@@ -108,11 +108,20 @@ void PlayerWindow::setUserInfo()
     long used;
     long total;
 
-    QString a =  QString::fromStdString(library->settings["usedSpace"]);
-    QString b = QString::fromStdString(library->settings["totalSpace"]);
+    #ifdef __linux__
 
-    used = math.fromString(a);
-    total = math.fromString(b);
+        used =  library->settings["usedSpace"];
+        total  = library->settings["totalSpace"];
+
+    #endif
+
+    #ifdef Q_OS_MAC
+        QString a =  QString::fromStdString(library->settings["usedSpace"]);
+        QString b = QString::fromStdString(library->settings["totalSpace"]);
+
+        used = math.fromString(a);
+        total = math.fromString(b);
+    #endif
 
     qDebug()<<total;
     qDebug()<<used;
