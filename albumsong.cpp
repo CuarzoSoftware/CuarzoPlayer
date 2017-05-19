@@ -14,11 +14,12 @@ AlbumSong::AlbumSong(json _data)
 {
     setAttribute(Qt::WA_Hover);
     setObjectName("song");
+    setFixedHeight(35);
     setStyleSheet("#song{border-bottom:1px solid #EEE;background:#FFF;border-radius:0px}");
     number->setStyleSheet("color:#888");
-    number->setMinimumWidth(15);
+    number->setFixedWidth(15);
     duration->setStyleSheet("color:#888");
-    space->setMinimumWidth(15);
+    space->setFixedWidth(23);
     layout->setMargin(8);
     layout->addWidget(sync);
     layout->addWidget(pie);
@@ -28,31 +29,44 @@ AlbumSong::AlbumSong(json _data)
     layout->addWidget(name,10);
     layout->addWidget(duration);
     layout->addWidget(more);
+    pie->hide();
     sync->hide();
     status->hide();
     more->hide();
     space->hide();
     setData(_data);
+    connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
 }
 
 //Set the songs data
 
-void AlbumSong::setData(json _data){
+void AlbumSong::setData(json _data)
+{
+
     data = _data;
     id = data["id"];
     name->changeText(QString::fromStdString(data["title"]));
     number->setText(QString::number((int)data["track"]));
     duration->setText(r.timeFromSecconds((int)data["duration"]));
-    if(!data["local"]){
+
+    if(!data["local"])
+    {
         sync->setIcon(QIcon(":res/img/download-border.svg"));
         sync->show();
     }
-    else if(!data["cloud"]){
+    else if(!data["cloud"])
+    {
         sync->show();
+
     }else{
-        if(!data["albumSynched"]){
+
+        sync->hide();
+
+        if(!data["albumSynched"])
+        {
             space->show();
         }
+
     }
 }
 
@@ -61,7 +75,8 @@ void AlbumSong::setData(json _data){
 
 void AlbumSong::setSelected(bool op)
 {
-    if(op){
+    if(op)
+    {
         setStyleSheet("#song{border-bottom:1px solid transparent;background:"+blue+";border-radius:5px}");
         number->setStyleSheet("color:#FFF");
         duration->setStyleSheet("color:#FFF");
@@ -70,7 +85,8 @@ void AlbumSong::setSelected(bool op)
         status->setColor("#FFF");
         more->setColor("#FFF");
     }
-    else{
+    else
+    {
         setStyleSheet("#song{border-bottom:1px solid #EEE;background:transparent;border-radius:0px}");
         number->setStyleSheet("color:#888");
         duration->setStyleSheet("color:#888");
@@ -86,11 +102,14 @@ void AlbumSong::setSelected(bool op)
 
 void AlbumSong::setPlaying(bool isPlaying)
 {
-    if(isPlaying){
+
+    if(isPlaying)
+    {
         number->hide();
         status->show();
     }
-    else{
+    else
+    {
         number->show();
         status->hide();
     }
@@ -99,6 +118,13 @@ void AlbumSong::setPlaying(bool isPlaying)
 
 
 //Events
+
+
+void AlbumSong::syncClicked()
+{
+    syncSong(data);
+}
+
 
 void AlbumSong::mousePressEvent(QMouseEvent *event)
 {

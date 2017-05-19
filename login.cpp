@@ -76,22 +76,6 @@ void Login::getCode(){
         QString url = "https://accounts.google.com/o/oauth2/v2/auth?scope="+scope+"&key="+apiKey+"&redirect_uri="+redirect+"&client_id="+clientID+"&response_type=code";
         QDesktopServices::openUrl(QUrl(url));
 
-       /*Add folder
-
-        QNetworkAccessManager *network = new QNetworkAccessManager(this);
-        connect(network,SIGNAL(finished(QNetworkReply*)),this,SLOT(response(QNetworkReply*)));
-
-
-        json js;
-
-        js["name"] = "PeitoFolder";
-        js["mimeType"] = "application/vnd.google-apps.folder";
-
-        QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files"));
-        request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json;charset=UTF-8");
-        request.setRawHeader("Authorization",QString("Bearer "+token).toUtf8());
-        network->post(request,QString::fromStdString(js.dump()).toUtf8());
-     */
 }
 void Login::getToken(){
 

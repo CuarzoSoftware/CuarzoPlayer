@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QPainter>
 #include <QLabel>
+#include <QDebug>
 
 class Pie : public QPushButton
 {
@@ -14,6 +15,7 @@ public:
     int siz;
     bool overlay = false;
     int savedPer;
+    QColor color = Qt::gray;
 
     Pie(int percent, int size)
     {
@@ -23,6 +25,12 @@ public:
         siz = size;
         setFixedSize(size,size);
         setPercent(percent);
+
+    }
+
+    void setColor(QColor col){
+        color = col;
+        setPercent(savedPer);
     }
 
     void enterEvent(QEvent*)
@@ -37,11 +45,11 @@ public:
 
         QPainter painter(&img);
         painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::gray);
+        painter.setBrush(color);
 
         painter.drawRect(wi*6,wi*6,si-wi*12,si-wi*12);
         painter.setBrush(Qt::NoBrush);
-        QPen pen(Qt::gray);
+        QPen pen(color);
         pen.setWidth(wi);
         painter.setPen(pen);
         painter.drawEllipse(wi,wi,si-wi*2,si-wi*2);
@@ -58,8 +66,11 @@ public slots:
     {
         if(overlay)return;
 
-        int si = siz*4;
+        int si = siz*5;
         float wi = si/18;
+
+        float grade = ((float)360/(float)100)*(float)per;
+
         savedPer = per;
 
         QImage img(QSize(si,si),QImage::Format_ARGB32);
@@ -67,11 +78,11 @@ public slots:
 
         QPainter painter(&img);
         painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::gray);
+        painter.setBrush(color);
 
-        painter.drawPie(QRect(wi,wi,si-wi*2,si-wi*2),90*16,-(per*16));
+        painter.drawPie(QRect(wi,wi,si-wi*2,si-wi*2),90*16,-(grade*16));
         painter.setBrush(Qt::NoBrush);
-        QPen pen(Qt::gray);
+        QPen pen(color);
         pen.setWidth(wi);
         painter.setPen(pen);
         painter.drawEllipse(wi,wi,si-wi*2,si-wi*2);

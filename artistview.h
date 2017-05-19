@@ -26,11 +26,15 @@ public:
 
 public slots:
     void songSelected(int id);
-    void songPlayed(json);
+    void songPlayed(json song);
     void setData(json _data);
+    void sendSyncSong(json song);
+    void setSongUploadPercent(int per, int id);
+    void songUploaded(json _data);
 
 signals:
-    void sendSongPlayed(json);
+    void sendSongPlayed(json song);
+    void syncSong(json song);
 public slots:
 };
 

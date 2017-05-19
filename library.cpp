@@ -58,14 +58,18 @@ Library::Library()
         settings["shuffle"] = false;
         settings["init"] = false;
         settings["logged"] = false;
-        settings["token"] = "";
-        settings["restoreToken"] = "";
-        settings["totalSpace"] = "";
-        settings["usedSpace"] = "";
-        settings["userName"] = "";
-        settings["email"] = "";
-        settings["userPicture"] = "";
-
+        settings["token"] = NULL;
+        settings["restoreToken"] = NULL;
+        settings["totalSpace"] = NULL;
+        settings["usedSpace"] = NULL;
+        settings["userName"] = NULL;
+        settings["email"] = NULL;
+        settings["userPicture"] = NULL;
+        settings["folderId"] = NULL;
+        settings["artworkId"] = NULL;
+        settings["musicId"] = NULL;
+        settings["libraryId"] = NULL;
+        settings["libraryURL"] = NULL;
 
         QJsonDocument doc =  QJsonDocument::fromJson(QString::fromStdString(settings.dump()).toUtf8());
         QFile file;
@@ -130,20 +134,66 @@ void Library::setUserInfo(json jres){
     settings["userName"] = jres["userName"];
     settings["userPicture"] = jres["userPicture"];
     settings["token"] = jres["token"];
+    settings["libraryId"] = jres["libraryId"];
+    settings["folderId"] = jres["folderId"];
+    settings["musicId"] = jres["musicId"];
+    settings["artworkId"] = jres["artworkId"];
     saveSettings();
     userInfoChanged();
 }
 
+void Library::getCloud(json cld)
+{
+    cloud = cld;
+
+    for (json::iterator cloudArtist = cld["artists"].begin(); cloudArtist != cld["artists"].end(); ++cloudArtist)
+    {
+        for (json::iterator cloudAlbum = cloudArtist.value().begin(); cloudAlbum != cloudArtist.value().end(); ++cloudAlbum)
+        {
+
+        }
+    }
+}
+
+void Library::songUploaded(json sng)
+{
+    for (json::iterator artist = library["artists"].begin(); artist != library["artists"].end(); ++artist)
+    {
+        for (json::iterator album = artist.value().begin(); album != artist.value().end(); ++album)
+        {
+            for (json::iterator song = album.value().begin(); song != album.value().end(); ++song)
+            {
+                if(song.value()["id"] == sng["id"])
+                {
+
+                    json updatedSong = song.value();
+
+                    updatedSong["musicId"] = sng["musicId"];
+                    updatedSong["downloadURL"] = sng["downloadURL"];
+                    updatedSong["musicId"] = sng["musicId"];
+                    updatedSong["cloud"] = true;
+
+                    std::string artist = song.value()["artist"];
+                    std::string album = song.value()["album"];
+                    std::string id = QString::number((int)song.value()["id"]).toStdString();
+
+                    library["artists"][artist][album][id] = updatedSong;
+
+                    saveLibrary();
+                    musicAddComplete();
+
+                    return;
+                }
+            }
+        }
+    }
+}
 
 void Library::newSongAdded(int songID, int track, int year, int duration, QString artist, QString album, QString title, QString genre, QString format, bool artWork){
 
     songsAdded++;
     float per = 100/(float)songsToAdd*(float)songsAdded;
     percentAdded((int)per);
-
-    qDebug()<<songsAdded;
-    qDebug()<<songsToAdd;
-
 
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
@@ -158,26 +208,39 @@ void Library::newSongAdded(int songID, int track, int year, int duration, QStrin
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["cloud"] = false;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["local"] = true;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["albumSynched"] = false;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWorkId"] = NULL;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["musicId"] = NULL;
+    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["downloadURL"] = NULL;
 
 
     if(songsAdded == songsToAdd){
         saveLibrary();
         musicAddComplete();
     }
+    else{
+        FileManager *man = new FileManager(files[songsAdded]);
+        connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
+        connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
+        man->start();
+    }
 
 }
 
 void Library::startMusicAdder(){
 
-    QList<QUrl> files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",QUrl(""),"MP3 (*.mp3)");
+    files.clear();
+    files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",QUrl(path),"MP3 (*.mp3)");
+
+    if(files.length() == 0){
+        return;
+    }
 
     songsToAdd = files.length();
     songsAdded = 0;
 
-    for(int i = 0; i < files.length(); i++){
-        FileManager *man = new FileManager(files[i]);
-        connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
-        connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
-        man->start();
-    }
+    FileManager *man = new FileManager(files[0]);
+    connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
+    connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
+    man->start();
+
 }

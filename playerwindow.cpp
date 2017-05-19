@@ -41,6 +41,12 @@ void PlayerWindow::artistSelected(json data)
     middleView->artistView->setData(data);
     middleView->artistView->artistViewTitle->show();
     middleView->artistView->show();
+
+    if(player->player->isSeekable())
+    {
+       middleView->artistView->songPlayed(player->currentSong);
+    }
+
 }
 
 
@@ -48,7 +54,10 @@ void PlayerWindow::artistSelected(json data)
 
 void PlayerWindow::setLibrary()
 {
+    topBar->pie->hide();
+
     middleView->artistsList->setData(library->library["artists"]);
+
 }
 
 //Play song and create playlist if song is played from artist view
@@ -138,7 +147,7 @@ void PlayerWindow::setupSettings()
 
     //ADD MUSIC
 
-    connect(topBar->addButton,SIGNAL(released()),library,SLOT(startMusicAdder()));
+    connect(topBar->addButton,SIGNAL(released()),this,SLOT(addMusic()));
     connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
     connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
 
@@ -163,9 +172,14 @@ void PlayerWindow::setupSettings()
 
     //Google Drive
 
+    connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
+    connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
+    connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
     connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
+    connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
     connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
     connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
+    connect(drive,SIGNAL(sendSongUploadProgress(int,int)),middleView->artistView,SLOT(setSongUploadPercent(int,int)));
 
     setUserInfo();
     setLibrary();
@@ -193,6 +207,13 @@ void PlayerWindow::imageReady()
         topBar->userPicture->image->setPixmap(p.round(QImage(path + "/Cuarzo Player/User/ProfileImage.jpg")));
     }
 
+}
+
+
+void PlayerWindow::addMusic()
+{
+    topBar->pie->show();
+    library->startMusicAdder();
 }
 
 //Events

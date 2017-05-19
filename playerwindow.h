@@ -46,6 +46,7 @@ public:
     BottomBar *bottomBar = new BottomBar();
     bool eventFilter(QObject *obj, QEvent *event);
 public slots:
+    void addMusic();
     void leftItemSelected(QString);
     void artistSelected(json data);
     void setLibrary();

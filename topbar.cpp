@@ -22,6 +22,7 @@ TopBar::TopBar()
     frameLayout->addWidget(pie);
     frameLayout->addWidget(searchBar);
     frameLayout->addWidget(addButton);
+    pie->hide();
 
 
 }

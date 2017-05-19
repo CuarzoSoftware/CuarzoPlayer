@@ -1,4 +1,6 @@
 #include "googledrive.h"
+#include <QHttpPart>
+#include <QJsonDocument>
 
 extern QString path;
 
@@ -26,7 +28,8 @@ void GoogleDrive::getUserInfoRes(QNetworkReply*res){
 
     json jres = json::parse(res->readAll().toStdString());
 
-    if(!jres["error"].is_null()){
+    if(!jres["error"].is_null())
+    {
         qDebug()<<"Token Expired";
         refreshToken("getUserInfo");
         return;
@@ -52,7 +55,226 @@ void GoogleDrive::getUserInfoRes(QNetworkReply*res){
        downloadProfileImage();
     }
 
+    readFolder("","root");
 
+}
+
+void GoogleDrive::readFolder(QString folderId, QString callback)
+{
+
+    Network *network = new Network(callback,this);
+    connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(readFolderRes(QNetworkReply*,QString)));
+    QUrl url("https://www.googleapis.com/drive/v2/files/"+folderId);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
+    network->get(request);
+
+}
+
+void GoogleDrive::readFolderRes(QNetworkReply *res, QString callback)
+{
+
+    json jres = json::parse(res->readAll().toStdString());
+
+    //Check if token expired
+
+    //Check if library exist on Google Drive
+
+    if(callback == "root")
+    {
+
+        QString libraryId = NULL;
+
+        for (json::iterator it = jres["items"].begin(); it != jres["items"].end(); ++it)
+        {
+
+            if(!it.value()["title"].is_null())
+            {
+                if(it.value()["title"] == "library.czlib")
+                {
+                    libraryId = QString::fromStdString(it.value()["id"]);
+                }
+            }
+        }
+
+
+        if(libraryId == NULL){
+            qDebug()<<"Library not Found";
+            createFolder("CuarzoPlayer","root", "CuarzoPlayer");
+        }
+        else{
+            settings["libraryId"] = libraryId.toStdString();
+            sendUserInfo(settings);
+            qDebug()<<"Library ID is: " + libraryId;
+        }
+    }
+}
+
+void GoogleDrive::createFolder(QString name, QString parent, QString callback){
+
+
+    Network *network = new Network(callback,this);
+    connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(createFolderRes(QNetworkReply*,QString)));
+
+    json js;
+    js["name"] = name.toStdString();
+    js["parents"][0] = parent.toStdString();
+    js["mimeType"] = "application/vnd.google-apps.folder";
+
+    QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json;charset=UTF-8");
+    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
+    network->post(request,QString::fromStdString(js.dump()).toUtf8());
+
+}
+
+void GoogleDrive::createFolderRes(QNetworkReply*res, QString callback){
+    json jres = json::parse(res->readAll().toStdString());
+    if(callback == "CuarzoPlayer"){
+        settings["folderId"] = jres["id"];
+        createFolder("Music",QString::fromStdString(settings["folderId"]), "Music");
+        qDebug()<<"Cuarzo Folder ID: "+ QString::fromStdString(settings["folderId"]);
+    }
+    if(callback == "Music"){
+        settings["musicId"] = jres["id"];
+        createFolder("Artwork",QString::fromStdString(settings["folderId"]), "Artwork");
+        qDebug()<<"Music Folder ID: "+ QString::fromStdString(settings["musicId"]);
+
+    }
+    if(callback == "Artwork"){
+        settings["artworkId"] = jres["id"];
+        qDebug()<<"ArtWork Folder ID: "+ QString::fromStdString(settings["artworkId"]);
+        updateLibrary(NULL,NULL);
+        sendUserInfo(settings);
+    }
+}
+
+void GoogleDrive::updateLibrary(QString id, QByteArray bin){
+
+    Network *network = new Network(id,this);
+    connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(updateLibraryRes(QNetworkReply*,QString)));
+
+    json js;
+
+    if(id != NULL)
+        //Updates library
+    {
+        js["id"] = id.toStdString();
+    }
+    else
+        //Create new library
+    {
+        json lib;
+        lib["artists"] = {};
+        lib["playlists"] = {};
+        lib["folderId"] = settings["folderId"];
+        lib["artworkId"] = settings["artworkId"];
+        lib["musicId"] = settings["musicId"];
+        lib["libraryId"] = settings["libraryId"];
+        QJsonDocument doc =  QJsonDocument::fromJson(QString::fromStdString(lib.dump()).toUtf8());
+        bin = doc.toBinaryData();
+        cloud = lib;
+    }
+
+    js["title"] = "library.czlib";
+    js["parents"][0]["id"] = settings["folderId"];
+    js["mimeType"] = "text/plain";
+
+
+
+    QByteArray boundary = "CUARZO_BOUND";
+
+    QNetworkRequest req(QUrl("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart"));
+
+    QByteArray data;
+    data += "\r\n--"+boundary+"\r\n";
+    data += "Content-Type: application/json\r\n\r\n";
+    data += QString::fromStdString(js.dump()).toUtf8();
+    data += "\r\n--"+boundary+"\r\n";
+    data += "Content-Type: text/plain\r\n\r\n";
+    data += bin;
+    data += "\r\n--"+boundary+"--";
+
+    req.setRawHeader("Authorization","Bearer " + QString::fromStdString(settings["token"]).toUtf8());
+    req.setRawHeader("Content-Type","multipart/related; boundary=\""+boundary+"\"");
+    req.setRawHeader("Content-Length",QString::number(data.size()).toUtf8());
+
+    network->post(req,data);
+
+}
+
+void GoogleDrive::updateLibraryRes(QNetworkReply *res, QString callback)
+{
+    json jres = json::parse(res->readAll().toStdString());
+
+    if(callback == NULL)
+    {
+        settings["libraryId"] = jres["id"];
+        settings["libraryURL"] = jres["downloadUrl"];
+        sendUserInfo(settings);
+        sendCloud(cloud);
+        qDebug()<<"Library created";
+    }
+
+}
+
+void GoogleDrive::syncSong(json song)
+{
+    if(song["cloud"] == false)
+    {
+        uploadSong(song);
+    }
+}
+
+void GoogleDrive::uploadSong(json song)
+{
+    Network *network = new Network(QString::number((int) song["id"]),this);
+    connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(uploadSongRes(QNetworkReply*,QString)));
+    json js;
+    js["title"] = QString::number((int) song["id"]).toStdString() + ".mp3";
+    js["parents"][0]["id"] = settings["musicId"];
+    js["mimeType"] = "audio/mpeg";
+
+    QByteArray boundary = "CUARZO_BOUND";
+
+    QNetworkRequest req(QUrl("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart"));
+
+    QFile file(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + ".mp3");
+    file.open(QIODevice::ReadOnly);
+    QByteArray data;
+    data += "\r\n--"+boundary+"\r\n";
+    data += "Content-Type: application/json\r\n\r\n";
+    data += QString::fromStdString(js.dump()).toUtf8();
+    data += "\r\n--"+boundary+"\r\n";
+    data += "Content-Type: audio/mpeg\r\n\r\n";
+    data += file.readAll();
+    data += "\r\n--"+boundary+"--";
+
+    req.setRawHeader("Authorization","Bearer " + QString::fromStdString(settings["token"]).toUtf8());
+    req.setRawHeader("Content-Type","multipart/related; boundary=\""+boundary+"\"");
+    req.setRawHeader("Content-Length",QString::number(data.size()).toUtf8());
+
+    Reply *reply = new Reply((int) song["id"],network->post(req,data));
+
+    connect(reply, SIGNAL(percentReady(int,int)), this, SLOT(songUploadProgress(int,int)));
+
+}
+
+void GoogleDrive::uploadSongRes(QNetworkReply *res, QString songId)
+{
+    json jres = json::parse(res->readAll().toStdString());
+    json song;
+    song["id"] = songId.toInt();
+    song["musicId"] = jres["id"];
+    song["downloadURL"] = jres["downloadUrl"];
+    songUploaded(song);
+    qDebug()<<res->readAll();
+}
+
+void GoogleDrive::songUploadProgress(int percent, int id)
+{
+    sendSongUploadProgress(percent,id);
 }
 
 void GoogleDrive::tokenRefreshed(QNetworkReply *res, QString callback){

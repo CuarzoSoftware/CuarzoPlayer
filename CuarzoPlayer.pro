@@ -126,7 +126,8 @@ HEADERS  += \
     network.h \
     maths.h \
     pie.h \
-    filemanager.h
+    filemanager.h \
+    reply.h
 
 
 

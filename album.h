@@ -55,14 +55,15 @@ public:
 signals:
     void songSelected(int);
     void songPlayed(json);
+    void syncSong(json);
 
 public slots:
     void sendSelectedSong(int);
     void sendPlayedSong(json);
     void setData(json);
-
-
+    void sendSyncSong(json);
 };
+
 
 
 

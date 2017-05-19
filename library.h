@@ -22,9 +22,11 @@ class Library:public QObject
 
 public:
     Library();
+    QList<QUrl> files;
     int songsToAdd;
     int songsAdded;
     json library;
+    json cloud;
     json settings;
     void readLibrary();
     void saveLibrary();
@@ -33,6 +35,8 @@ public:
 public slots:
     void newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool);
     void setUserInfo(json);
+    void getCloud(json);
+    void songUploaded(json);
     void startMusicAdder();
 signals:
     void userInfoChanged();

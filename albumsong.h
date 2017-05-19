@@ -22,7 +22,7 @@ class AlbumSong : public QFrame
 public:
     AlbumSong(json _data);
     Pix r;
-    Pie *pie = new Pie(0,15);
+    Pie *pie = new Pie(0,19);
     json data;
     int id;
     QWidget *space = new QWidget();
@@ -42,10 +42,12 @@ public slots:
     void setSelected(bool);
     void setPlaying(bool);
     void setData(json);
+    void syncClicked();
 
 signals:
     void songSelected(int);
     void songPlayed(json);
+    void syncSong(json);
 };
 
 #endif // ALBUMSONG_H

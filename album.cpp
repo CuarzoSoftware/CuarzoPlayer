@@ -82,15 +82,27 @@ void Album::setData(json _data)
 
     //Create the songs
 
+    bool isAlbumSynched = true;
+
+    for (json::iterator it = data.begin(); it != data.end(); ++it)
+    {
+        if(!it.value()["cloud"] || !it.value()["local"]){
+            isAlbumSynched = false;
+            break;
+        }
+    }
+
     int songsCount = 0;
     json sorted = s.sortByKey(data,"track","int");
 
     for (json::iterator it = sorted.begin(); it != sorted.end(); ++it)
     {
+        it.value()["albumSynched"] = isAlbumSynched;
         songs[songsCount] = new AlbumSong(it.value());
         songsLayout->addWidget(songs[songsCount]);
         connect(songs[songsCount],SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
         connect(songs[songsCount],SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
+        connect(songs[songsCount],SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
         songsCount++;
     }
 
@@ -108,5 +120,9 @@ void Album::sendSelectedSong(int id){
 void Album::sendPlayedSong(json _data){
     songPlayed(_data);
 }
+void Album::sendSyncSong(json _data){
+    syncSong(_data);
+}
+
 
 

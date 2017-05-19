@@ -112,11 +112,7 @@ protected:
 
 
         QFile::copy(uri.path(),path+"/Cuarzo Player/Music/"+artist+"/"+album+"/"+QString::number(songID) +".mp3");
-        //QString des = path+"/Cuarzo Player/Music/"+artist+"/"+album+"/"+QString::number(songID) +".mp3";
 
-        //std::ifstream  src(uri.path().toStdString(), std::ios::binary);
-        //std::ofstream  dst(des.toStdString(),   std::ios::binary);
-        //dst << src.rdbuf();
 
         newSongAdded(songID,track,year,duration,artist,album,title,genre,format,artWork);
     }
