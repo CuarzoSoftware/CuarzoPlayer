@@ -108,23 +108,24 @@ void PlayerWindow::setUserInfo()
     long used;
     long total;
 
-    #ifdef __linux__
-
-        used =  library->settings["usedSpace"];
-        total  = library->settings["totalSpace"];
-
-    #endif
-
-    #ifdef Q_OS_MAC
+    if(library->settings["usedSpace"].is_string()){
         QString a =  QString::fromStdString(library->settings["usedSpace"]);
-        QString b = QString::fromStdString(library->settings["totalSpace"]);
-
         used = math.fromString(a);
+    }
+    else{
+        used = library->settings["usedSpace"];
+    }
+    if(library->settings["totalSpace"].is_string()){
+        QString b =  QString::fromStdString(library->settings["totalSpace"]);
         total = math.fromString(b);
-    #endif
+    }
+    else{
+         total = library->settings["totalSpace"];
+    }
 
-    qDebug()<<total;
-    qDebug()<<used;
+
+    //qDebug()<<total;
+    //qDebug()<<used;
 
     topBar->storageBar->setPercent(used,total);
 
