@@ -183,6 +183,7 @@ void PlayerWindow::setupSettings()
     //Google Drive
 
     connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
+    connect(middleView->artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
     connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
     connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
     connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));

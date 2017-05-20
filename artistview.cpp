@@ -53,6 +53,7 @@ void ArtistView::setData(json _data){
         connect(albums[albumsCount],SIGNAL(songPlayed(json)),this,SIGNAL(sendSongPlayed(json)));
         connect(albums[albumsCount],SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
         connect(albums[albumsCount],SIGNAL(songSelected(int)),this,SLOT(songSelected(int)));
+        connect(albums[albumsCount],SIGNAL(sendCancelSongUpload(int)),this,SLOT(cancelSongUpload(int)));
 
         for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2)
         {
@@ -171,4 +172,9 @@ void ArtistView::songUploaded(json _data)
         }
         i++;
     }
+}
+
+void ArtistView::cancelSongUpload(int sid)
+{
+    sendCancelSongUpload(sid);
 }

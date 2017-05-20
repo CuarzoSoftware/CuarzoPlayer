@@ -232,7 +232,8 @@ void GoogleDrive::uploadSong(json song)
     Network *network = new Network(QString::number((int) song["id"]),this);
     connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(uploadSongRes(QNetworkReply*,QString)));
     json js;
-    js["title"] = QString::number((int) song["id"]).toStdString() + ".mp3";
+    QString title = QString::number((int) song["id"]) + "." + QString::fromStdString(song["format"]);
+    js["title"] = title.toStdString();
     js["parents"][0]["id"] = settings["musicId"];
     js["mimeType"] = "audio/mpeg";
 
@@ -240,7 +241,7 @@ void GoogleDrive::uploadSong(json song)
 
     QNetworkRequest req(QUrl("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart"));
 
-    QFile file(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + ".mp3");
+    QFile file(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]));
     file.open(QIODevice::ReadOnly);
     QByteArray data;
     data += "\r\n--"+boundary+"\r\n";
@@ -256,6 +257,7 @@ void GoogleDrive::uploadSong(json song)
     req.setRawHeader("Content-Length",QString::number(data.size()).toUtf8());
 
     Reply *reply = new Reply((int) song["id"],network->post(req,data));
+    replies.append(reply);
 
     connect(reply, SIGNAL(percentReady(int,int)), this, SLOT(songUploadProgress(int,int)));
 
@@ -263,18 +265,56 @@ void GoogleDrive::uploadSong(json song)
 
 void GoogleDrive::uploadSongRes(QNetworkReply *res, QString songId)
 {
+    qDebug()<<res->errorString();
+
+    int id = songId.toInt();
+
+    if(res->errorString() == "Operation canceled")
+    {
+        for(int i= 0; i<replies.length();i++)
+        {
+            if(replies[i]->_id == id)
+            {
+                replies[i]->res->abort();
+                replies.removeAt(i);
+                return;
+            }
+        }
+        return;
+    }
+    else if(res->errorString() != "Unknown error")
+    {
+        return;
+    }
+
+
+
     json jres = json::parse(res->readAll().toStdString());
     json song;
     song["id"] = songId.toInt();
     song["musicId"] = jres["id"];
     song["downloadURL"] = jres["downloadUrl"];
     songUploaded(song);
-    qDebug()<<res->readAll();
+
+
 }
 
 void GoogleDrive::songUploadProgress(int percent, int id)
 {
     sendSongUploadProgress(percent,id);
+}
+
+void GoogleDrive::cancelSongUpload(int id)
+{
+    for(int i= 0; i<replies.length();i++)
+    {
+        if(replies[i]->_id == id)
+        {
+            replies[i]->res->abort();
+            replies.removeAt(i);
+            return;
+        }
+    }
 }
 
 void GoogleDrive::tokenRefreshed(QNetworkReply *res, QString callback){

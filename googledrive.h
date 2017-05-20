@@ -8,6 +8,7 @@
 #include <QUrlQuery>
 #include <QDebug>
 #include <QFile>
+#include <QList>
 #include "network.h"
 #include "reply.h"
 #include "json.hpp"
@@ -20,7 +21,7 @@ class GoogleDrive : public QObject
 public:
     explicit GoogleDrive(json settings);
 
-
+    QList<Reply*> replies;
     QString key = "AIzaSyCQXTMwalQiq-twGJrBrnXmDFNJeGwWs0g";
     QString client_id = "677866894523-ejp2cte1mn0mnb7v7m62kiuteng6mo8v.apps.googleusercontent.com";
     QString client_secret = "QW5thR07Nwo4dfUy4oozRofU";
@@ -56,7 +57,7 @@ public slots:
     void uploadSong(json song);
     void uploadSongRes(QNetworkReply*res, QString callback);
     void songUploadProgress(int percent, int id);
-
+    void cancelSongUpload(int id);
 
 
 

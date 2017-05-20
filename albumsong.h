@@ -43,11 +43,13 @@ public slots:
     void setPlaying(bool);
     void setData(json);
     void syncClicked();
+    void piePressed();
 
 signals:
     void songSelected(int);
     void songPlayed(json);
     void syncSong(json);
+    void cancelDownload(int);
 };
 
 #endif // ALBUMSONG_H

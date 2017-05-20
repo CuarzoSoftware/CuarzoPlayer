@@ -56,12 +56,14 @@ signals:
     void songSelected(int);
     void songPlayed(json);
     void syncSong(json);
+    void sendCancelSongUpload(int);
 
 public slots:
     void sendSelectedSong(int);
     void sendPlayedSong(json);
     void setData(json);
     void sendSyncSong(json);
+    void cancelSongUpload(int);
 };
 
 

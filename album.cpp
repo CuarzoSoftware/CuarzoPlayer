@@ -78,7 +78,33 @@ void Album::setData(json _data)
     //Set the album info
 
     albumName= new CropLabel(QString::fromStdString(data.begin().value()["album"]),"font-size:20px;color:#444;font-weight:bold");
-    albumInfo = new CropLabel(QString::fromStdString(data.begin().value()["genre"]) + " - " + QString::number((int)data.begin().value()["year"]),"font-size:13px;color:#888");
+
+    QString genre = QString::fromStdString(data.begin().value()["genre"]);
+    QString year = QString::number((int)data.begin().value()["year"]);
+    QString inf = "";
+
+    if(genre != "")
+    {
+        inf += genre;
+    }
+    if(genre != NULL && year != "0")
+    {
+        inf += (" - " + year);
+    }
+    if(genre == NULL && year != "0")
+    {
+        inf += year;
+    }
+
+    if(inf != "")
+    {
+        albumInfo = new CropLabel(inf ,"font-size:13px;color:#888");
+    }
+    else{
+        albumInfo = new CropLabel("" ,"font-size:13px;color:#888");
+        albumInfo->hide();
+    }
+
 
     //Create the songs
 
@@ -103,6 +129,7 @@ void Album::setData(json _data)
         connect(songs[songsCount],SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
         connect(songs[songsCount],SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
         connect(songs[songsCount],SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
+        connect(songs[songsCount],SIGNAL(cancelDownload(int)),this,SLOT(cancelSongUpload(int)));
         songsCount++;
     }
 
@@ -122,6 +149,11 @@ void Album::sendPlayedSong(json _data){
 }
 void Album::sendSyncSong(json _data){
     syncSong(_data);
+}
+
+void Album::cancelSongUpload(int sid)
+{
+    sendCancelSongUpload(sid);
 }
 
 

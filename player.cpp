@@ -19,7 +19,7 @@ void Player::playSong(json song)
 {
     currentSong = song;
     songPlaying(song);
-    player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + ".mp3"));
+    player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"])));
     player->play();
 }
 

@@ -31,10 +31,13 @@ public slots:
     void sendSyncSong(json song);
     void setSongUploadPercent(int per, int id);
     void songUploaded(json _data);
+    void cancelSongUpload(int);
+
 
 signals:
     void sendSongPlayed(json song);
     void syncSong(json song);
+    void sendCancelSongUpload(int);
 public slots:
 };
 

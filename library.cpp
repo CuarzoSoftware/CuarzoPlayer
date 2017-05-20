@@ -229,7 +229,7 @@ void Library::newSongAdded(int songID, int track, int year, int duration, QStrin
 void Library::startMusicAdder(){
 
     files.clear();
-    files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",QUrl(path),"MP3 (*.mp3)");
+    files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",path,"ALL (*.mp3 *.m4a) ;; MP3 (*.mp3) ;; M4A (*.m4a)");
 
     if(files.length() == 0){
         return;

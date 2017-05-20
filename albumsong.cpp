@@ -36,6 +36,7 @@ AlbumSong::AlbumSong(json _data)
     space->hide();
     setData(_data);
     connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
+    connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
 }
 
 //Set the songs data
@@ -123,6 +124,13 @@ void AlbumSong::setPlaying(bool isPlaying)
 void AlbumSong::syncClicked()
 {
     syncSong(data);
+}
+
+void AlbumSong::piePressed()
+{
+    cancelDownload(id);
+    pie->hide();
+    sync->show();
 }
 
 
