@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QList>
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -16,7 +17,7 @@ public:
     int loopMode = 0;
     QString playFrom;
     json currentSong;
-    json playList;
+    QList<json> playList;
     QMediaPlayer *player = new QMediaPlayer(this);
 
 signals:

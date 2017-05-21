@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QList>
 #include "croplabel.h"
 #include "opbutton.h"
 #include "albumsong.h"
@@ -50,7 +51,7 @@ public:
     OpButton *more = new OpButton(":res/img/more.svg",20,20,blue);
     OpButton *sync = new OpButton(":res/img/sync-border.svg",20,20,blue);
 
-    AlbumSong *songs[2048] = {nullptr};
+    QList<AlbumSong*>songs;
 
 signals:
     void songSelected(int);

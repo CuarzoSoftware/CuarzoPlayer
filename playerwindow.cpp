@@ -69,25 +69,21 @@ void PlayerWindow::playFromArtist(json data)
 
     if(playingFrom != "artistView" || data["artist"] != player->currentSong["artist"])
     {
-        qDebug()<<"Playlist created";
         //Read the artist songs
 
         json artist = library->library["artists"][QString::fromStdString(data["artist"]).toStdString()];
 
         //Create the artist playlist
 
-        json list;
-
-        int index = 0;
+        QList<json> list;
 
         for (json::iterator a = artist.begin(); a != artist.end(); ++a)
         {
-            json ar = s.sortByKey(a.value(),"track","int");
+            //json ar = s.sortByKey(a.value(),"track","int");
 
-            for (json::iterator s = ar.begin(); s != ar.end(); ++s)
+            for (json::iterator s = a.value().begin(); s != a.value().end(); ++s)
             {
-                list[index] = s.value();
-                index++;
+                list.append(s.value());
             }
         }
 
@@ -194,6 +190,8 @@ void PlayerWindow::setupSettings()
     setLibrary();
     bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
     bottomBar->volumeBar->positionChanged(library->settings["volume"]);
+    bottomBar->setLoopMode(library->settings["loop"]);
+    bottomBar->setShuffleMode(library->settings["shuffle"]);
     show();
 }
 

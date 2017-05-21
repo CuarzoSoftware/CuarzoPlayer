@@ -99,19 +99,32 @@ void Player::play(bool op)
 
 void Player::playNext()
 {
-    int size = 0;
-    int songIndex = 0;
+    qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
+        int ans = QString::fromStdString(a["album"]).compare(QString::fromStdString(b["album"]));
+        return (a["track"] <= b["track"] && ans == 0) || ans == -1;
+    });
+
+    int size = playList.length();
+    int songIndex = -1;
 
     //Gets the current song index in playlist and its size
 
-    for (json::iterator s = playList.begin(); s != playList.end(); ++s)
+    foreach(json song,playList)
     {
-        if(s.value()["id"] == currentSong["id"])
+         songIndex++;
+        if(song["id"] == currentSong["id"])
         {
-            songIndex = size;
+
+            break;
         }
-        size++;
+
     }
+
+    if(songIndex == -1) return;
+
+   // if(loopMode == 0){
+    //    songIndex = a + rand() * (b-a)
+    //}
 
     if(songIndex == size - 1)
     {
@@ -124,18 +137,17 @@ void Player::playNext()
 }
 void Player::playBack(){
 
-    int size = 0;
+    int size = playList.length();
     int songIndex = 0;
 
     //Gets the current song index in playlist and its size
 
-    for (json::iterator s = playList.begin(); s != playList.end(); ++s)
+    foreach(json song,playList)
     {
-        if(s.value()["id"] == currentSong["id"])
+        if(song["id"] == currentSong["id"])
         {
             songIndex = size;
         }
-        size++;
     }
 
     if(songIndex==0)

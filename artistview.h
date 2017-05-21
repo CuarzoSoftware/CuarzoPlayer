@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QScrollArea>
+#include <QList>
 #include "artistviewtitle.h"
 #include "album.h"
 #include "json.hpp"
@@ -22,7 +23,7 @@ public:
     QWidget *albumsFrame = new QWidget();
     QBoxLayout *albumsLayout = new QBoxLayout(QBoxLayout::TopToBottom,albumsFrame);
     ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
-    Album *albums[2048] = {nullptr};
+    QList<Album*> albums;
 
 public slots:
     void songSelected(int id);
@@ -32,6 +33,8 @@ public slots:
     void setSongUploadPercent(int per, int id);
     void songUploaded(json _data);
     void cancelSongUpload(int);
+    bool existSong(int id);
+    AlbumSong *getSongById(int id);
 
 
 signals:

@@ -79,21 +79,23 @@ void AlbumSong::setSelected(bool op)
     if(op)
     {
         setStyleSheet("#song{border-bottom:1px solid transparent;background:"+blue+";border-radius:5px}");
-        number->setStyleSheet("color:#FFF");
         duration->setStyleSheet("color:#FFF");
+        number->setStyleSheet("color:#FFF");
         name->setStyleSheet("color:#FFF");
-        sync->setColor("#FFF");
+        pie->setColor(Qt::white);
         status->setColor("#FFF");
+        sync->setColor("#FFF");
         more->setColor("#FFF");
     }
     else
     {
         setStyleSheet("#song{border-bottom:1px solid #EEE;background:transparent;border-radius:0px}");
-        number->setStyleSheet("color:#888");
         duration->setStyleSheet("color:#888");
+        number->setStyleSheet("color:#888");
         name->setStyleSheet("color:#444");
-        sync->setColor(blue);
+        pie->setColor(Qt::gray);
         status->setColor(blue);
+        sync->setColor(blue);
         more->setColor(blue);
     }
 

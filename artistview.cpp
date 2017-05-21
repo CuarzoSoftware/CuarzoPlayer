@@ -29,44 +29,34 @@ void ArtistView::setData(json _data){
 
     //Cleans the previus albums
 
-    int i = 0;
-
-    while (albums[i] != nullptr)
-    {
-        delete albums[i];
-        albums[i] = nullptr;
-        i++;
-    }
+    qDeleteAll(albums);
+    albums.clear();
 
     data = _data;
 
     //Create the albums
 
-    int albumsCount = 0;
     int songsCount = 0;
 
-    for (json::iterator it = _data.begin(); it != _data.end(); ++it)
+    for (json::iterator it = data.begin(); it != data.end(); ++it)
     {
-        albums[albumsCount] = new Album(albumsCount,it.value());
-        albumsLayout->addWidget(albums[albumsCount]);
+        Album *album = new Album(0,it.value());
+        albumsLayout->addWidget(album);
 
-        connect(albums[albumsCount],SIGNAL(songPlayed(json)),this,SIGNAL(sendSongPlayed(json)));
-        connect(albums[albumsCount],SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
-        connect(albums[albumsCount],SIGNAL(songSelected(int)),this,SLOT(songSelected(int)));
-        connect(albums[albumsCount],SIGNAL(sendCancelSongUpload(int)),this,SLOT(cancelSongUpload(int)));
+        connect(album,SIGNAL(songPlayed(json)),this,SIGNAL(sendSongPlayed(json)));
+        connect(album,SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
+        connect(album,SIGNAL(songSelected(int)),this,SLOT(songSelected(int)));
+        connect(album,SIGNAL(sendCancelSongUpload(int)),this,SLOT(cancelSongUpload(int)));
 
-        for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2)
-        {
-            songsCount++;
-        }
+        songsCount += album->songs.length();
 
-        albumsCount++;
+        albums.append(album);
     }
 
     //Set the artist info in the top bar
 
     artistViewTitle->artistName->changeText(QString::fromStdString(data.begin().value().begin().value()["artist"]));
-    artistViewTitle->artistInfo->changeText(QString::number(albumsCount) + " álbumes, " + QString::number(songsCount) + " canciones");
+    artistViewTitle->artistInfo->changeText(QString::number(albums.length()) + " álbumes, " + QString::number(songsCount) + " canciones");
 }
 
 void ArtistView::sendSyncSong(json song)
@@ -78,103 +68,91 @@ void ArtistView::sendSyncSong(json song)
 
 void ArtistView::songSelected(int id)
 {
-    int i = 0;
+    if(!existSong(id)) return;
 
-    while(albums[i] != nullptr)
+    foreach(Album *album,albums)
     {
-        int ii = 0;
-
-        while(albums[i]->songs[ii] != nullptr)
+        foreach (AlbumSong *song, album->songs)
         {
-            albums[i]->songs[ii]->setSelected(false);
-            albums[i]->songs[ii]->pie->setColor(Qt::gray);
-
-            if(albums[i]->songs[ii]->id == id)
-            {
-                albums[i]->songs[ii]->setSelected(true);
-                albums[i]->songs[ii]->pie->setColor(Qt::white);
-            }
-            ii++;
+            song->setSelected(false);
         }
-        i++;
     }
+
+   getSongById(id)->setSelected(true);
 
 }
 
 void ArtistView::setSongUploadPercent(int per, int id)
 {
-    int i = 0;
-
-    while(albums[i] != nullptr)
-    {
-        int ii = 0;
-
-        while(albums[i]->songs[ii] != nullptr)
-        {
-
-            if(albums[i]->songs[ii]->id == id)
-            {
-                albums[i]->songs[ii]->pie->show();
-                albums[i]->songs[ii]->sync->hide();
-                albums[i]->songs[ii]->pie->setPercent(per);
-                return;
-            }
-            ii++;
-        }
-        i++;
-    }
-
+    if(!existSong(id)) return;
+    AlbumSong *song = getSongById(id);
+    song->pie->show();
+    song->sync->hide();
+    song->pie->setPercent(per);
+    return;
 }
 
 //Set the song playing icon visible
 
 void ArtistView::songPlayed(json _data)
 {
-    int i = 0;
+    int id = _data["id"];
+    if(!existSong(id)) return;
 
-    while(albums[i] != nullptr)
+    foreach(Album *album,albums)
     {
-        int ii = 0;
-
-        while(albums[i]->songs[ii] != nullptr)
+        foreach (AlbumSong *song, album->songs)
         {
-            albums[i]->songs[ii]->setPlaying(false);
-
-            if(albums[i]->songs[ii]->id == (int)_data["id"])
-            {
-                albums[i]->songs[ii]->setPlaying(true);
-            }
-            ii++;
+            song->setPlaying(false);
         }
-        i++;
     }
+
+   getSongById(id)->setPlaying(true);
 }
 
 //Hide the upload pie when song finishes upload
 
 void ArtistView::songUploaded(json _data)
 {
-    int i = 0;
+    int id = _data["id"];
+    if(!existSong(id)) return;
 
-    while(albums[i] != nullptr)
-    {
-        int ii = 0;
-
-        while(albums[i]->songs[ii] != nullptr)
-        {
-
-            if(albums[i]->songs[ii]->data["id"] == _data["id"])
-            {
-                albums[i]->songs[ii]->pie->hide();
-                albums[i]->songs[ii]->space->show();
-            }
-            ii++;
-        }
-        i++;
-    }
+    AlbumSong *song = getSongById(id);
+    song->pie->hide();
+    song->space->show();
 }
 
 void ArtistView::cancelSongUpload(int sid)
 {
     sendCancelSongUpload(sid);
 }
+
+bool ArtistView::existSong(int sid)
+{
+    foreach(Album *album,albums)
+    {
+        foreach (AlbumSong *song, album->songs)
+        {
+            if(song->data["id"] == sid)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+AlbumSong *ArtistView::getSongById(int sid)
+{
+    foreach(Album *album,albums)
+    {
+        foreach (AlbumSong *song, album->songs)
+        {
+            if(song->data["id"] == sid)
+            {
+                return song;
+            }
+        }
+    }
+}
+

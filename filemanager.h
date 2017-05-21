@@ -56,7 +56,6 @@ protected:
              else                           album = MP3->album().toCString();
              if(MP3->title().isEmpty())     title = "Unknown";
              else                           title = MP3->title().toCString();
-
              track = MP3->track();
              year = MP3->year();
              duration = MP3FILE.audioProperties()->lengthInSeconds();

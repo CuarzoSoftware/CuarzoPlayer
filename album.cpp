@@ -77,65 +77,56 @@ void Album::setData(json _data)
 
     //Set the album info
 
-    albumName= new CropLabel(QString::fromStdString(data.begin().value()["album"]),"font-size:20px;color:#444;font-weight:bold");
+    albumName = new CropLabel(QString::fromStdString(data.begin().value()["album"]),"font-size:20px;color:#444;font-weight:bold");
 
     QString genre = QString::fromStdString(data.begin().value()["genre"]);
     QString year = QString::number((int)data.begin().value()["year"]);
     QString inf = "";
 
-    if(genre != "")
-    {
-        inf += genre;
-    }
-    if(genre != NULL && year != "0")
-    {
-        inf += (" - " + year);
-    }
-    if(genre == NULL && year != "0")
-    {
-        inf += year;
-    }
+    if(genre != "")                     inf += genre;
+    if(genre != NULL && year != "0")    inf += (" - " + year);
+    if(genre == NULL && year != "0")    inf += year;
+    if(inf != "")                       albumInfo = new CropLabel(inf ,"font-size:13px;color:#888");
+    else                                albumInfo = new CropLabel("" ,"font-size:13px;color:#888"); albumInfo->hide();
 
-    if(inf != "")
-    {
-        albumInfo = new CropLabel(inf ,"font-size:13px;color:#888");
-    }
-    else{
-        albumInfo = new CropLabel("" ,"font-size:13px;color:#888");
-        albumInfo->hide();
-    }
 
 
     //Create the songs
 
     bool isAlbumSynched = true;
 
+    QList<json> list;
+
     for (json::iterator it = data.begin(); it != data.end(); ++it)
     {
-        if(!it.value()["cloud"] || !it.value()["local"]){
+        list.append(it.value());
+        if(!it.value()["cloud"] || !it.value()["local"])
+        {
             isAlbumSynched = false;
-            break;
         }
     }
 
-    int songsCount = 0;
-    json sorted = s.sortByKey(data,"track","int");
+    qSort(list.begin(), list.end(),[](json a, json b) -> bool {
+        int ans = QString::fromStdString(a["album"]).compare(QString::fromStdString(b["album"]));
+        return (a["track"] <= b["track"] && ans == 0) || ans == -1;
+    });
 
-    for (json::iterator it = sorted.begin(); it != sorted.end(); ++it)
+    foreach(json jsong , list)
     {
-        it.value()["albumSynched"] = isAlbumSynched;
-        songs[songsCount] = new AlbumSong(it.value());
-        songsLayout->addWidget(songs[songsCount]);
-        connect(songs[songsCount],SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
-        connect(songs[songsCount],SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
-        connect(songs[songsCount],SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
-        connect(songs[songsCount],SIGNAL(cancelDownload(int)),this,SLOT(cancelSongUpload(int)));
-        songsCount++;
+        jsong["albumSynched"] = isAlbumSynched;
+        AlbumSong *song = new AlbumSong(jsong);
+        songsLayout->addWidget(song);
+        connect(song,SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
+        connect(song,SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
+        connect(song,SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
+        connect(song,SIGNAL(cancelDownload(int)),this,SLOT(cancelSongUpload(int)));
+        songs.append(song);
     }
+
 
     //Set the songs count info
 
-    songsNumber->setText(QString::number(songsCount) + " canciones");
+    songsNumber->setText(QString::number(songs.length()) + " canciones");
 }
 
 //Events
@@ -155,6 +146,7 @@ void Album::cancelSongUpload(int sid)
 {
     sendCancelSongUpload(sid);
 }
+
 
 
 

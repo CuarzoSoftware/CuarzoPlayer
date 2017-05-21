@@ -30,6 +30,8 @@ public:
 public slots:
     void toggleLoop();
     void toggleShuffle();
+    void setShuffleMode(bool);
+    void setLoopMode(int);
 
 signals:
     void sendLoopMode(int);

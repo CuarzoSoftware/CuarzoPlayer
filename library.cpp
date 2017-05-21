@@ -43,7 +43,7 @@ Library::Library()
         QFile file;
         file.setFileName(path + "/Cuarzo Player/library.czlib");
         file.open(QIODevice::WriteOnly);
-        file.write(doc.toBinaryData());
+        file.write(doc.toJson());
         file.close();
     }
     else{
@@ -75,7 +75,7 @@ Library::Library()
         QFile file;
         file.setFileName(path + "/Cuarzo Player/settings.czconf");
         file.open(QIODevice::WriteOnly);
-        file.write(doc.toBinaryData());
+        file.write(doc.toJson());
         file.close();
     }
     else{
@@ -89,7 +89,7 @@ void Library::readLibrary(){
     QFile loadFile(path + "/Cuarzo Player/library.czlib");
     loadFile.open(QIODevice::ReadOnly);
     QByteArray lib = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromBinaryData(lib));
+    QJsonDocument doc(QJsonDocument::fromJson(lib));
     QString strJson(doc.toJson(QJsonDocument::Compact));
     library = json::parse(strJson.toStdString());
     loadFile.close();
@@ -101,14 +101,14 @@ void Library::saveLibrary(){
     file.open(QIODevice::WriteOnly);
     QString base = QString::fromStdString(library.dump());
     QJsonDocument doc = QJsonDocument::fromJson(base.toUtf8());
-    file.write(doc.toBinaryData());
+    file.write(doc.toJson());
     file.close();
 }
 void Library::readSettings(){
     QFile loadFile(path + "/Cuarzo Player/settings.czconf");
     loadFile.open(QIODevice::ReadOnly);
     QByteArray lib = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromBinaryData(lib));
+    QJsonDocument doc(QJsonDocument::fromJson(lib));
     QString strJson(doc.toJson(QJsonDocument::Compact));
     settings = json::parse(strJson.toStdString());
     loadFile.close();
@@ -119,7 +119,7 @@ void Library::saveSettings(){
     file.open(QIODevice::WriteOnly);
     QString base = QString::fromStdString(settings.dump());
     QJsonDocument doc = QJsonDocument::fromJson(base.toUtf8());
-    file.write(doc.toBinaryData());
+    file.write(doc.toJson());
     file.close();
 }
 
@@ -194,6 +194,8 @@ void Library::newSongAdded(int songID, int track, int year, int duration, QStrin
     songsAdded++;
     float per = 100/(float)songsToAdd*(float)songsAdded;
     percentAdded((int)per);
+
+    qDebug()<<title;
 
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;

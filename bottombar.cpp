@@ -29,25 +29,15 @@ BottomBar::BottomBar()
 }
 
 void BottomBar::toggleLoop(){
-    if(loopState == 0){
-        loopButton->setIcon(QIcon(":res/img/loop.svg"));
-        loopButton->setColor(blue);
-        loopState = 1;
-    }
-    else if(loopState == 1){
-        loopButton->setIcon(QIcon(":res/img/loop-one.svg"));
-        loopButton->setColor(blue);
-        loopState = 2;
-    }
-    else if(loopState == 2){
-        loopButton->setIcon(QIcon(":res/img/loop.svg"));
-        loopButton->setColor(lightGray);
-        loopState = 0;
-    }
-    sendLoopMode(loopState);
+    setLoopMode(loopState);
 }
 void BottomBar::toggleShuffle(){
-    if(!shuffleState){
+    setShuffleMode(!shuffleState);
+}
+
+void BottomBar::setShuffleMode(bool mode)
+{
+    if(mode){
         shuffleButton->setColor(blue);
         shuffleState = true;
     }
@@ -55,5 +45,25 @@ void BottomBar::toggleShuffle(){
         shuffleButton->setColor(lightGray);
         shuffleState = false;
     }
-    sendShuffleMode(shuffleState);
+    sendShuffleMode(mode);
+}
+
+void BottomBar::setLoopMode(int mode)
+{
+    if(mode == 0){
+        loopButton->setIcon(QIcon(":res/img/loop.svg"));
+        loopButton->setColor(blue);
+        loopState = 1;
+    }
+    else if(mode == 1){
+        loopButton->setIcon(QIcon(":res/img/loop-one.svg"));
+        loopButton->setColor(blue);
+        loopState = 2;
+    }
+    else if(mode == 2){
+        loopButton->setIcon(QIcon(":res/img/loop.svg"));
+        loopButton->setColor(lightGray);
+        loopState = 0;
+    }
+    sendLoopMode(loopState);
 }
