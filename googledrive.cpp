@@ -46,8 +46,6 @@ void GoogleDrive::getUserInfoRes(QNetworkReply*res){
         settings["userPicture"] = jres["user"]["picture"]["url"];
     }
 
-    //qDebug()<<QString::fromStdString(settings["userPicture"]);
-
 
     sendUserInfo(settings);
 
@@ -106,7 +104,7 @@ void GoogleDrive::readFolderRes(QNetworkReply *res, QString callback)
         else{
             settings["libraryId"] = libraryId.toStdString();
             sendUserInfo(settings);
-            qDebug()<<"Library ID is: " + libraryId;
+            qDebug()<<"Library Found";
         }
     }
 }

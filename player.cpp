@@ -20,7 +20,7 @@ void Player::playSong(json song)
     currentSong = song;
     songPlaying(song);
     player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"])));
-    player->play();
+    play(true);
 }
 
 //Changes to a custom time song position if there is a song playing
@@ -53,6 +53,17 @@ void Player::mediaChanged(QMediaPlayer::MediaStatus m)
 
 }
 
+void Player::playPause()
+{
+    if(player->state() == QMediaPlayer::PlayingState)
+    {
+        play(false);
+    }
+    else
+    {
+        play(true);
+    }
+}
 
 //Set the loop mode
 
@@ -80,6 +91,8 @@ void Player::play(bool op)
     {
         player->pause();
     }
+
+    sendState(op);
 }
 
 //Play the next song in the playlist

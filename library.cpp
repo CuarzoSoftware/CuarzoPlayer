@@ -232,6 +232,7 @@ void Library::startMusicAdder(){
     files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",path,"ALL (*.mp3 *.m4a) ;; MP3 (*.mp3) ;; M4A (*.m4a)");
 
     if(files.length() == 0){
+        musicAddComplete();
         return;
     }
 

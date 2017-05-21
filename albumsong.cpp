@@ -1,5 +1,4 @@
 #include "albumsong.h"
-#include <QTime>
 #include <QDebug>
 
 using json = nlohmann::json;
@@ -37,6 +36,7 @@ AlbumSong::AlbumSong(json _data)
     setData(_data);
     connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
     connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
+    connect(more,SIGNAL(released()),this,SLOT(showMenu()));
 }
 
 //Set the songs data
@@ -120,6 +120,33 @@ void AlbumSong::setPlaying(bool isPlaying)
 
 //Events
 
+void AlbumSong::showMenu()
+{
+    QMenu contextMenu(tr("Options"),more);
+
+    QAction action1("Edit Info", more);
+    QAction action2("Stop Download", more);
+    QAction action3("Stop Upload", more);
+    QAction action4("Download", more);
+    QAction action5("Upload", more);
+
+    contextMenu.addAction(&action1);
+
+    if(pie->isVisible() && data["cloud"]) contextMenu.addAction(&action2);
+
+    if(pie->isVisible() && !data["cloud"]) contextMenu.addAction(&action3);
+
+    if(!pie->isVisible() && data["cloud"] && !data["local"]) contextMenu.addAction(&action4);
+
+    if(!pie->isVisible() && !data["cloud"] && data["local"]) contextMenu.addAction(&action5);
+
+    connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
+    connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
+    connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+
+    contextMenu.exec(more->mapToGlobal(QPoint(50-contextMenu.width(),0)));
+}
 
 void AlbumSong::syncClicked()
 {

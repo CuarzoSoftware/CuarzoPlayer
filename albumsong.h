@@ -4,6 +4,8 @@
 #include <QFrame>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QAction>
+#include <QMenu>
 #include "opbutton.h"
 #include "icon.h"
 #include "croplabel.h"
@@ -39,6 +41,7 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *event);
 
 public slots:
+    void showMenu();
     void setSelected(bool);
     void setPlaying(bool);
     void setData(json);

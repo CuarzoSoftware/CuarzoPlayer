@@ -22,6 +22,7 @@ public:
 signals:
     void songPlaying(json);
     void sendTimePosition(float,float);
+    void sendState(bool);
 public slots:
     void playSong(json);
     void setTime(float percent);
@@ -29,6 +30,7 @@ public slots:
     void setLoopMode(int);
     void setShuffle(bool);
     void play(bool);
+    void playPause();
     void playNext();
     void playBack();
     void mediaChanged(QMediaPlayer::MediaStatus);

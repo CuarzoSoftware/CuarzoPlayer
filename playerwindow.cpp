@@ -124,9 +124,6 @@ void PlayerWindow::setUserInfo()
     }
 
 
-    //qDebug()<<total;
-    //qDebug()<<used;
-
     topBar->storageBar->setPercent(used,total);
 
 }
@@ -171,12 +168,13 @@ void PlayerWindow::setupSettings()
 
     connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
     connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
-    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
     connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
+    connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
+    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
     connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player,SLOT(setVolume(int)));
+    connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
     connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
     connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
-    connect(bottomBar->playerButtons,SIGNAL(setPlay(bool)),player,SLOT(play(bool)));
     connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
     connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
 
@@ -195,6 +193,7 @@ void PlayerWindow::setupSettings()
     setUserInfo();
     setLibrary();
     bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
+    bottomBar->volumeBar->positionChanged(library->settings["volume"]);
     show();
 }
 
@@ -214,10 +213,14 @@ void PlayerWindow::loggedIn(QString token, QString refresh)
 
 void PlayerWindow::imageReady()
 {
-    if(library->settings["userPicture"] != ""){
-        topBar->userPicture->image->setPixmap(p.round(QImage(path + "/Cuarzo Player/User/ProfileImage.jpg")));
-    }
 
+    if(library->settings["userPicture"] != "")
+    {
+        QImage im(path + "/Cuarzo Player/User/ProfileImage.jpg");
+        if(!im.isNull()){
+            topBar->userPicture->image->setPixmap(p.round(im));
+        }
+    }
 }
 
 
@@ -239,7 +242,7 @@ bool PlayerWindow::eventFilter(QObject *, QEvent *event)
 
         if(keyEvent->key() == Qt::Key_MediaPlay)
         {
-            bottomBar->playerButtons->playPause();
+            //bottomBar->playerButtons->playPause();
         }
 
     }

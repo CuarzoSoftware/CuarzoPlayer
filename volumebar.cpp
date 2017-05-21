@@ -1,4 +1,5 @@
 #include "volumebar.h"
+#include <QDebug>
 
 VolumeBar::VolumeBar(QWidget *parent) : QWidget(parent)
 {
@@ -17,6 +18,7 @@ VolumeBar::VolumeBar(QWidget *parent) : QWidget(parent)
 }
 
 void VolumeBar::positionChanged(int per){
+    qDebug()<<per;
     if(per < 10){
         icon->setPixmap(QPixmap(":res/img/volume-low.svg"));
     }
