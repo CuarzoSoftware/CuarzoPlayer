@@ -88,6 +88,7 @@ void PlayerWindow::playFromArtist(json data)
         }
 
         player->playList = list;
+        player->setShuffle(player->shuffle);
         playingFrom = "artistView";
     }
 

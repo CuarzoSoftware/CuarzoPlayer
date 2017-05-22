@@ -50,6 +50,7 @@ void ArtistView::setData(json _data){
 
         songsCount += album->songs.length();
 
+        songs.append(album->songs);
         albums.append(album);
     }
 
@@ -78,7 +79,41 @@ void ArtistView::songSelected(int id)
         }
     }
 
-   getSongById(id)->setSelected(true);
+    AlbumSong *song = getSongById(id);
+    int index = songs.indexOf(song);
+
+    if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    {
+
+        if(firstSelected == -1)
+        {
+            firstSelected = index;
+            song->setSelected(false);
+        }
+        else
+        {
+            lastSelected = index;
+
+            if(firstSelected > lastSelected)
+            {
+                for(int i = lastSelected; i <= firstSelected; i++)
+                {
+                    songs[i]->setSelected(true);
+                }
+            }
+            else
+            {
+                for(int i = firstSelected; i <= lastSelected; i++)
+                {
+                    songs[i]->setSelected(true);
+                }
+            }
+        }
+    }
+    else{
+        firstSelected = index;
+        song->setSelected(true);
+    }
 
 }
 

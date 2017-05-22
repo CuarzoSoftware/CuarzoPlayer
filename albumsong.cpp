@@ -163,10 +163,18 @@ void AlbumSong::piePressed()
 }
 
 
-void AlbumSong::mousePressEvent(QMouseEvent *event)
+void AlbumSong::mouseReleaseEvent(QMouseEvent *event)
 {
-    setSelected(true);
-    songSelected(id);
+
+    if(event->button() == Qt::RightButton)
+    {
+        showMenu();
+    }
+    else
+    {
+        setSelected(true);
+        songSelected(id);
+    }
 }
 
 void AlbumSong::mouseDoubleClickEvent(QMouseEvent *event)

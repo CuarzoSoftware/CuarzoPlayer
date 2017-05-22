@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QAction>
 #include <QMenu>
+#include <QMouseEvent>
 #include "opbutton.h"
 #include "icon.h"
 #include "croplabel.h"
@@ -37,7 +38,7 @@ public:
     CropLabel *name = new CropLabel("","color:#444");
     void enterEvent(QEvent * event);
     void leaveEvent(QEvent * event);
-    void mousePressEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
     void mouseDoubleClickEvent(QMouseEvent *event);
 
 public slots:

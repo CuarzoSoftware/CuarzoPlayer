@@ -45,7 +45,7 @@ void BottomBar::setShuffleMode(bool mode)
         shuffleButton->setColor(lightGray);
         shuffleState = false;
     }
-    sendShuffleMode(mode);
+    sendShuffleMode(!mode);
 }
 
 void BottomBar::setLoopMode(int mode)

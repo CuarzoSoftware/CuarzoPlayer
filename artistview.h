@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QScrollArea>
+#include <QApplication>
 #include <QList>
 #include "artistviewtitle.h"
 #include "album.h"
@@ -24,6 +25,9 @@ public:
     QBoxLayout *albumsLayout = new QBoxLayout(QBoxLayout::TopToBottom,albumsFrame);
     ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
     QList<Album*> albums;
+    QList<AlbumSong*> songs;
+    int firstSelected = -1;
+    int lastSelected = -1;
 
 public slots:
     void songSelected(int id);

@@ -70,6 +70,7 @@ void Player::playPause()
 void Player::setLoopMode(int mode)
 {
     loopMode = mode;
+
 }
 
 //Set the shuffle mode
@@ -77,6 +78,20 @@ void Player::setLoopMode(int mode)
 void  Player::setShuffle(bool mode)
 {
     shuffle = mode;
+
+    if(mode)
+    {
+        qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
+            int ans = QString::fromStdString(a["album"]).compare(QString::fromStdString(b["album"]));
+            return (a["track"] <= b["track"] && ans == 0) || ans == -1;
+        });
+    }
+    else{
+        qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
+            return qrand() % ((1 + 1) - 0) + 0;
+        });
+    }
+
 }
 
 //Toggle the play state
@@ -99,10 +114,11 @@ void Player::play(bool op)
 
 void Player::playNext()
 {
-    qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
-        int ans = QString::fromStdString(a["album"]).compare(QString::fromStdString(b["album"]));
-        return (a["track"] <= b["track"] && ans == 0) || ans == -1;
-    });
+    if(loopMode == 2)
+    {
+        playSong(currentSong);
+        return;
+    }
 
     int size = playList.length();
     int songIndex = -1;
@@ -111,10 +127,9 @@ void Player::playNext()
 
     foreach(json song,playList)
     {
-         songIndex++;
+        songIndex++;
         if(song["id"] == currentSong["id"])
         {
-
             break;
         }
 
@@ -128,7 +143,14 @@ void Player::playNext()
 
     if(songIndex == size - 1)
     {
-        playSong(playList[0]);
+        if(loopMode == 0){
+            playSong(playList[0]);
+            play(false);
+        }
+        else{
+            playSong(playList[0]);
+        }
+
     }
     else
     {
@@ -137,16 +159,23 @@ void Player::playNext()
 }
 void Player::playBack(){
 
+    if(loopMode == 2)
+    {
+        playSong(currentSong);
+        return;
+    }
+
     int size = playList.length();
-    int songIndex = 0;
+    int songIndex = -1;
 
     //Gets the current song index in playlist and its size
 
     foreach(json song,playList)
     {
+        songIndex++;
         if(song["id"] == currentSong["id"])
         {
-            songIndex = size;
+            break;
         }
     }
 
