@@ -19,7 +19,50 @@ void Player::playSong(json song)
 {
     currentSong = song;
     songPlaying(song);
-    player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"])));
+    if(song["local"])
+    {
+        reply->abort();
+        player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"])));
+    }
+    else
+    {
+        qDebug()<<QString::fromStdString(song["musicId"]);
+        buffer->open(QIODevice::ReadWrite);
+        //buffer->setBuffer(data);
+        downloadTempSong(song);
+        player->setMedia(QMediaContent(), buffer);
+
+
+
+    }
+    play(true);
+}
+
+void Player::downloadTempSong(json song)
+{
+    QNetworkAccessManager *network = new QNetworkAccessManager(this);
+    QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
+    reply = network->get(request);
+    connect(reply, SIGNAL(readyRead()),this,SLOT(setBuffer()));
+    connect(reply,SIGNAL(finished()),this,SLOT(endBuffer()));
+    //file->setFileName("/tmp/caca.mp3");
+    //file->open(QIODevice::WriteOnly);
+}
+
+void Player::setBuffer()
+{
+   // data->append(reply->read(reply->bytesAvailable()));
+    //buffer->open(QIODevice::ReadWrite);
+    buffer->write(reply->read(reply->bytesAvailable()));
+
+}
+
+void Player::endBuffer()
+{
+    //file->close();
+    //player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
     play(true);
 }
 
@@ -53,8 +96,11 @@ void Player::mediaChanged(QMediaPlayer::MediaStatus m)
 
 }
 
+
 void Player::playPause()
 {
+    if(!player->isSeekable()) return;
+
     if(player->state() == QMediaPlayer::PlayingState)
     {
         play(false);
@@ -188,3 +234,4 @@ void Player::playBack(){
     }
 
 }
+

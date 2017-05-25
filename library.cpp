@@ -43,7 +43,7 @@ Library::Library()
         QFile file;
         file.setFileName(path + "/Cuarzo Player/library.czlib");
         file.open(QIODevice::WriteOnly);
-        file.write(doc.toJson());
+        file.write(doc.toBinaryData());
         file.close();
     }
     else{
@@ -75,7 +75,7 @@ Library::Library()
         QFile file;
         file.setFileName(path + "/Cuarzo Player/settings.czconf");
         file.open(QIODevice::WriteOnly);
-        file.write(doc.toJson());
+        file.write(doc.toBinaryData());
         file.close();
     }
     else{
@@ -89,7 +89,7 @@ void Library::readLibrary(){
     QFile loadFile(path + "/Cuarzo Player/library.czlib");
     loadFile.open(QIODevice::ReadOnly);
     QByteArray lib = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(lib));
+    QJsonDocument doc(QJsonDocument::fromBinaryData(lib));
     QString strJson(doc.toJson(QJsonDocument::Compact));
     library = json::parse(strJson.toStdString());
     loadFile.close();
@@ -101,14 +101,14 @@ void Library::saveLibrary(){
     file.open(QIODevice::WriteOnly);
     QString base = QString::fromStdString(library.dump());
     QJsonDocument doc = QJsonDocument::fromJson(base.toUtf8());
-    file.write(doc.toJson());
+    file.write(doc.toBinaryData());
     file.close();
 }
 void Library::readSettings(){
     QFile loadFile(path + "/Cuarzo Player/settings.czconf");
     loadFile.open(QIODevice::ReadOnly);
     QByteArray lib = loadFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(lib));
+    QJsonDocument doc(QJsonDocument::fromBinaryData(lib));
     QString strJson(doc.toJson(QJsonDocument::Compact));
     settings = json::parse(strJson.toStdString());
     loadFile.close();
@@ -119,7 +119,7 @@ void Library::saveSettings(){
     file.open(QIODevice::WriteOnly);
     QString base = QString::fromStdString(settings.dump());
     QJsonDocument doc = QJsonDocument::fromJson(base.toUtf8());
-    file.write(doc.toJson());
+    file.write(doc.toBinaryData());
     file.close();
 }
 
@@ -195,8 +195,6 @@ void Library::newSongAdded(int songID, int track, int year, int duration, QStrin
     float per = 100/(float)songsToAdd*(float)songsAdded;
     percentAdded((int)per);
 
-    qDebug()<<title;
-
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
     library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["year"] = year;
@@ -245,5 +243,128 @@ void Library::startMusicAdder(){
     connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
     connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
     man->start();
+
+}
+
+void Library::deleteSongs(QList<json> songs, QString from)
+{
+    QList<json> deleted;
+    QList<json> unlocal;
+    QList<json> uncloud;
+
+    int localCount = 0;
+    int cloudCount = 0;
+
+    foreach(json song,songs)
+    {
+        if(song["local"]) localCount++;
+        if(song["cloud"]) cloudCount++;
+    }
+
+    foreach(json song,songs)
+    {
+
+        std::string artist = song["artist"];
+        std::string album = song["album"];
+        std::string id = QString::number((int)song["id"]).toStdString();
+
+        qDebug("deleted");
+
+        if(from == "local")
+        {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText("You are about to permanently delete " + QString::number(localCount) + " song(s) from your local library.");
+            msgBox.setInformativeText("Do you wish to continue?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+            int ret = msgBox.exec();
+
+            if(ret != QMessageBox::Yes) return;
+
+            if(song["local"] && song["cloud"])
+            {
+                library["artists"][artist][album][id]["local"] = false;
+                unlocal.append(song);
+                continue;
+            }
+
+            if(song["local"])
+            {
+                library["artists"][artist][album].erase(id);
+                deleted.append(song);
+                continue;
+            }
+
+        }
+
+        else if(from == "cloud")
+        {
+
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText("You are about to permanently delete " + QString::number(cloudCount) + " song(s) from your cloud library.");
+            msgBox.setInformativeText("Do you wish to continue?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+            int ret = msgBox.exec();
+
+            if(ret != QMessageBox::Yes) return;
+            if(song["local"] && song["cloud"])
+            {
+                library["artists"][artist][album][id]["cloud"] = false;
+                uncloud.append(song);
+                continue;
+            }
+
+            if(song["cloud"])
+            {
+                library["artists"][artist][album].erase(id);
+                deleted.append(song);
+                continue;
+            }
+
+        }
+
+        else if(from == "both")
+        {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText("You are about to permanently delete " + QString::number(songs.length()) + " song(s) from everywhere.");
+            msgBox.setInformativeText("Do you wish to continue?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+            int ret = msgBox.exec();
+            library["artists"][artist][album].erase(id);
+            deleted.append(song);
+            continue;
+        }
+
+    }
+
+    saveLibrary();
+    musicAddComplete();
+
+    foreach(json song,unlocal)
+    {
+        song["local"] = false;
+        deleteFromLocal(song);
+        QFile file (path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]));
+        file.remove();
+    }
+
+    foreach(json song,uncloud)
+    {
+        song["cloud"] = false;
+        deleteFromCloud(song);
+    }
+
+    foreach(json song,deleted)
+    {
+        deleteFromBoth(song);
+        if(!song["local"]) continue;
+        QFile file (path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]));
+        file.remove();
+    }
 
 }

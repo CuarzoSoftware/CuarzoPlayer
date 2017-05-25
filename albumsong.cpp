@@ -95,7 +95,8 @@ void AlbumSong::setSelected(bool op)
         name->setStyleSheet("color:#444");
         pie->setColor(Qt::gray);
         status->setColor(blue);
-        sync->setColor(blue);
+        if(data["local"] && !data["cloud"]) sync->setColor(blue);
+        if(!data["local"] && data["cloud"]) sync->setColor(red);
         more->setColor(blue);
     }
 
@@ -131,6 +132,9 @@ void AlbumSong::showMenu()
     QAction action3("Stop Upload", more);
     QAction action4("Download", more);
     QAction action5("Upload", more);
+    QAction action6("Delete from local", more);
+    QAction action7("Delete from cloud", more);
+    QAction action8("Delete from everywhere", more);
 
     contextMenu.addAction(&action1);
 
@@ -142,10 +146,26 @@ void AlbumSong::showMenu()
 
     if(!pie->isVisible() && !data["cloud"] && data["local"]) contextMenu.addAction(&action5);
 
+    if(data["cloud"] && data["local"])
+    {
+        contextMenu.addAction(&action6); contextMenu.addAction(&action7); contextMenu.addAction(&action8);
+    }
+    else if(data["cloud"] && !data["local"])
+    {
+        contextMenu.addAction(&action7);
+    }
+    else if(!data["cloud"] && data["local"])
+    {
+        contextMenu.addAction(&action6);
+    }
+
     connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
     connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
     connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
     connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    connect(&action6, SIGNAL(triggered()), this, SLOT(deleteFromLocal()));
+    connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
+    connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
 
     contextMenu.exec(more->mapToGlobal(QPoint(50-contextMenu.width(),0)));
 }
@@ -162,13 +182,28 @@ void AlbumSong::piePressed()
     sync->show();
 }
 
+void AlbumSong::deleteFromLocal()
+{
+    deleteSong(data,"local");
+}
+
+void AlbumSong::deleteFromCloud()
+{
+    deleteSong(data,"cloud");
+}
+
+void AlbumSong::deleteFromBoth()
+{
+    deleteSong(data,"both");
+}
+
 
 void AlbumSong::mouseReleaseEvent(QMouseEvent *event)
 {
 
     if(event->button() == Qt::RightButton)
     {
-        showMenu();
+        songRightClicked((int)data["id"]);
     }
     else
     {

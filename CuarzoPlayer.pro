@@ -18,12 +18,8 @@ ICON = icon.icns
 
 macx {
 
-    #UNUSED VLC
-    #QMAKE_RPATHDIR += @executable_path/../Frameworks
-    #QMAKE_LFLAGS += -F"../CuarzoPlayer/lib/mac/frameworks/"
-    #LIBS += -framework VLCQtCore
-
     INCLUDEPATH += "../CuarzoPlayer/lib/mac/include/taglib/"
+    INCLUDEPATH += "/Library/Frameworks/GStreamer.framework/Headers/"
 
     LIBS += \
         -L/usr/local/lib \
@@ -34,6 +30,7 @@ macx {
 
     LIBS += -framework Foundation
     LIBS += -framework AppKit
+    LIBS += -framework GStreamer
 
     OBJECTIVE_SOURCES += objectivec.mm
     HEADERS +=  objectivec.h

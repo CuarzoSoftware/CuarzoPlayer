@@ -12,6 +12,7 @@
 #include <QThread>
 #include "filemanager.h"
 #include <QFileDialog>
+#include <QMessageBox>
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -38,10 +39,15 @@ public slots:
     void getCloud(json);
     void songUploaded(json);
     void startMusicAdder();
+    void deleteSongs(QList<json>,QString);
 signals:
     void userInfoChanged();
     void musicAddComplete();
     void percentAdded(int);
+
+    void deleteFromCloud(json);
+    void deleteFromLocal(json);
+    void deleteFromBoth(json);
 };
 
 #endif // LIBRARY_H

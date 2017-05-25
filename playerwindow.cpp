@@ -155,6 +155,13 @@ void PlayerWindow::setupSettings()
     connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
     connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
 
+    //DELETE SONGS
+
+    connect(middleView->artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
+    connect(library,SIGNAL(deleteFromBoth(json)),middleView->artistView,SLOT(hideSong(json)));
+    connect(library,SIGNAL(deleteFromLocal(json)),middleView->artistView,SLOT(changeSong(json)));
+    connect(library,SIGNAL(deleteFromCloud(json)),middleView->artistView,SLOT(changeSong(json)));
+
     //SONGS EVENTS
 
     connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
@@ -193,6 +200,7 @@ void PlayerWindow::setupSettings()
     bottomBar->volumeBar->positionChanged(library->settings["volume"]);
     bottomBar->setLoopMode(library->settings["loop"]);
     bottomBar->setShuffleMode(library->settings["shuffle"]);
+    player->settings = library->settings;
     show();
 }
 

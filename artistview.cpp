@@ -27,7 +27,12 @@ ArtistView::ArtistView()
 
 void ArtistView::setData(json _data){
 
+    songs.clear();
+
     //Cleans the previus albums
+
+    firstSelected = -1;
+    lastSelected = -1;
 
     qDeleteAll(albums);
     albums.clear();
@@ -47,6 +52,8 @@ void ArtistView::setData(json _data){
         connect(album,SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
         connect(album,SIGNAL(songSelected(int)),this,SLOT(songSelected(int)));
         connect(album,SIGNAL(sendCancelSongUpload(int)),this,SLOT(cancelSongUpload(int)));
+        connect(album,SIGNAL(songRightClicked(int)),this,SLOT(songRightClicked(int)));
+        connect(album,SIGNAL(deleteSong(json,QString)),this,SLOT(deleteSong(json,QString)));
 
         songsCount += album->songs.length();
 
@@ -58,6 +65,7 @@ void ArtistView::setData(json _data){
 
     artistViewTitle->artistName->changeText(QString::fromStdString(data.begin().value().begin().value()["artist"]));
     artistViewTitle->artistInfo->changeText(QString::number(albums.length()) + " álbumes, " + QString::number(songsCount) + " canciones");
+
 }
 
 void ArtistView::sendSyncSong(json song)
@@ -69,15 +77,14 @@ void ArtistView::sendSyncSong(json song)
 
 void ArtistView::songSelected(int id)
 {
+
     if(!existSong(id)) return;
 
-    foreach(Album *album,albums)
+    foreach (AlbumSong *song, songs)
     {
-        foreach (AlbumSong *song, album->songs)
-        {
-            song->setSelected(false);
-        }
+        song->setSelected(false);
     }
+
 
     AlbumSong *song = getSongById(id);
     int index = songs.indexOf(song);
@@ -115,6 +122,30 @@ void ArtistView::songSelected(int id)
         song->setSelected(true);
     }
 
+}
+
+void ArtistView::songRightClicked(int id)
+{
+    QMenu contextMenu(tr("Options"),this);
+
+    QAction action1("Edit Info", this);
+    QAction action2("Stop Download", this);
+    QAction action3("Stop Upload", this);
+    QAction action4("Download", this);
+    QAction action5("Upload", this);
+
+    contextMenu.addAction(&action1);
+    contextMenu.addAction(&action2);
+    contextMenu.addAction(&action3);
+    contextMenu.addAction(&action4);
+    contextMenu.addAction(&action5);
+
+    //connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
+    //connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
+    //connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    //connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+
+    //contextMenu.exec(QCursor::pos());
 }
 
 void ArtistView::setSongUploadPercent(int per, int id)
@@ -160,6 +191,27 @@ void ArtistView::songUploaded(json _data)
 void ArtistView::cancelSongUpload(int sid)
 {
     sendCancelSongUpload(sid);
+}
+
+void ArtistView::deleteSong(json song, QString from)
+{
+    QList<json>_songs;
+    _songs.append(song);
+    deleteSongs(_songs,from);
+}
+
+void ArtistView::hideSong(json song)
+{
+    int id = song["id"];
+    if(!existSong(id)) return;
+    getSongById(id)->hide();
+}
+
+void ArtistView::changeSong(json song)
+{
+    int id = song["id"];
+    if(!existSong(id)) return;
+    getSongById(id)->setData(song);
 }
 
 bool ArtistView::existSong(int sid)

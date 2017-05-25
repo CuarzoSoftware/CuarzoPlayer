@@ -49,11 +49,20 @@ public slots:
     void syncClicked();
     void piePressed();
 
+    void deleteFromLocal();
+    void deleteFromCloud();
+    void deleteFromBoth();
+
 signals:
     void songSelected(int);
     void songPlayed(json);
     void syncSong(json);
     void cancelDownload(int);
+    void songRightClicked(int);
+
+    void deleteSong(json data,QString from);
+
+
 };
 
 #endif // ALBUMSONG_H

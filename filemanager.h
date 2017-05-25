@@ -40,6 +40,7 @@ protected:
 
         QStringList urlParts = uri.path().split( "." );
         QString format = urlParts.last();
+        QString filename = uri.fileName();
 
         QString artist, album, title, genre;
         int track, year, songID, duration;
@@ -51,15 +52,15 @@ protected:
              TagLib::ID3v2::Tag *MP3 = MP3FILE.ID3v2Tag(true);
 
              if(MP3->artist().isEmpty())    artist = "Unknown";
-             else                           artist = MP3->artist().toCString();
+             else                           artist = QString::fromStdWString(MP3->artist().toWString());
              if(MP3->album().isEmpty())     album = "Unknown";
-             else                           album = MP3->album().toCString();
-             if(MP3->title().isEmpty())     title = "Unknown";
-             else                           title = MP3->title().toCString();
+             else                           album = QString::fromStdWString(MP3->album().toWString());
+             if(MP3->title().isEmpty())     title = filename;
+             else                           title = QString::fromStdWString(MP3->title().toWString());
              track = MP3->track();
              year = MP3->year();
              duration = MP3FILE.audioProperties()->lengthInSeconds();
-             genre = QString::fromStdString(MP3->genre().toCString());
+             genre = QString::fromStdWString(MP3->genre().toWString());
              songID = uid.newID();
 
              TagLib::ID3v2::FrameList frameList = MP3->frameList("APIC");
@@ -93,16 +94,16 @@ protected:
             TagLib::MP4::Tag *M4A = M4AFILE.tag();
 
             if(M4A->artist().isEmpty())    artist = "Unknown";
-            else                           artist = M4A->artist().toCString();
+            else                           artist = QString::fromStdWString(M4A->artist().toWString());
             if(M4A->album().isEmpty())     album = "Unknown";
-            else                           album = M4A->album().toCString();
-            if(M4A->title().isEmpty())     title = "Unknown";
-            else                           title = M4A->title().toCString();
+            else                           album = QString::fromStdWString(M4A->album().toWString());
+            if(M4A->title().isEmpty())     title = filename;
+            else                           title = QString::fromStdWString(M4A->title().toWString());
 
             track = M4A->track();
             year = M4A->year();
             duration = M4AFILE.audioProperties()->lengthInSeconds();
-            genre = QString::fromStdString(M4A->genre().toCString());
+            genre = QString::fromStdWString(M4A->genre().toWString());
             songID = uid.newID();
 
             TagLib::MP4::ItemListMap itemsListMap = M4A->itemListMap();

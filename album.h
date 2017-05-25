@@ -58,6 +58,8 @@ signals:
     void songPlayed(json);
     void syncSong(json);
     void sendCancelSongUpload(int);
+    void songRightClicked(int);
+    void deleteSong(json,QString);
 
 public slots:
     void sendSelectedSong(int);

@@ -3,8 +3,14 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QNetworkReply>
+#include <QNetworkAccessManager>
+#include <QBuffer>
 #include <QList>
 #include "json.hpp"
+
+#include <gst/gst.h>
+#include <glib.h>
 
 using json = nlohmann::json;
 
@@ -17,8 +23,13 @@ public:
     int loopMode = 0;
     QString playFrom;
     json currentSong;
+    json settings;
     QList<json> playList;
-    QMediaPlayer *player = new QMediaPlayer(this);
+    QMediaPlayer *player = new QMediaPlayer(this,QMediaPlayer::StreamPlayback);
+    QNetworkReply *reply;
+    QBuffer *buffer = new QBuffer(this);
+    QFile *file = new QFile();
+    QByteArray *data = new QByteArray();
 
 signals:
     void songPlaying(json);
@@ -34,7 +45,10 @@ public slots:
     void playPause();
     void playNext();
     void playBack();
+    void downloadTempSong(json song);
     void mediaChanged(QMediaPlayer::MediaStatus);
+    void setBuffer();
+    void endBuffer();
 
 };
 

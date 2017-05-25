@@ -294,6 +294,7 @@ void GoogleDrive::uploadSongRes(QNetworkReply *res, QString songId)
     song["downloadURL"] = jres["downloadUrl"];
     songUploaded(song);
 
+    qDebug()<<QString::fromStdString(jres["downloadUrl"]);
 
 }
 

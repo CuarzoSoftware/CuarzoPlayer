@@ -120,6 +120,8 @@ void Album::setData(json _data)
         connect(song,SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));
         connect(song,SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
         connect(song,SIGNAL(cancelDownload(int)),this,SLOT(cancelSongUpload(int)));
+        connect(song,SIGNAL(songRightClicked(int)),this,SIGNAL(songRightClicked(int)));
+        connect(song,SIGNAL(deleteSong(json,QString)),this,SIGNAL(deleteSong(json,QString)));
         songs.append(song);
     }
 
