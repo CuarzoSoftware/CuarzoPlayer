@@ -50,10 +50,10 @@ void TimeBar::setTimePosition(float percent)
 
 void TimeBar::getTimePosition(float c,float t)
 {
-    float per = (1000/t/1000) *c;
+    float per = 1000/t*c;
     setTimePosition(per);
-    currentTime->setText(r.timeFromSecconds(c/1000));
-    remainingTime->setText("- " + r.timeFromSecconds(t - c/1000));
+    currentTime->setText(r.timeFromSecconds(c));
+    remainingTime->setText("- " + r.timeFromSecconds(t - c));
 }
 
 
@@ -67,7 +67,7 @@ bool TimeBar::eventFilter(QObject *obj, QEvent *event)
     if (obj == baseBar && event->type() == QEvent::MouseButtonPress)
     {
         QMouseEvent *mEvent = static_cast<QMouseEvent *>(event);
-        positionChanged((float)1000/(float)baseBar->width()*(float)mEvent->localPos().x());
+        positionChanged((float)1/(float)baseBar->width()*(float)mEvent->localPos().x());
     }
 
     return false;

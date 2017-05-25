@@ -42,10 +42,13 @@ void PlayerWindow::artistSelected(json data)
     middleView->artistView->artistViewTitle->show();
     middleView->artistView->show();
 
+
+    //middleView->artistView->songPlayed(player->currentSong);
+    /*
     if(player->player->isSeekable())
     {
-       middleView->artistView->songPlayed(player->currentSong);
     }
+    */
 
 }
 
@@ -175,7 +178,7 @@ void PlayerWindow::setupSettings()
     connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
     connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
     connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
-    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player,SLOT(setVolume(int)));
+    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player->audio(),SLOT(setVolume(int)));
     connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
     connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
     connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));

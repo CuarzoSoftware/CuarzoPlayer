@@ -7,10 +7,14 @@
 #include <QNetworkAccessManager>
 #include <QBuffer>
 #include <QList>
-#include "json.hpp"
 
-#include <gst/gst.h>
-#include <glib.h>
+#include "Common.h"
+#include "Instance.h"
+#include "Media.h"
+#include "Audio.h"
+#include "MediaPlayer.h"
+
+#include "json.hpp"
 
 using json = nlohmann::json;
 
@@ -25,20 +29,22 @@ public:
     json currentSong;
     json settings;
     QList<json> playList;
-    QMediaPlayer *player = new QMediaPlayer(this,QMediaPlayer::StreamPlayback);
     QNetworkReply *reply;
-    QBuffer *buffer = new QBuffer(this);
     QFile *file = new QFile();
-    QByteArray *data = new QByteArray();
+    VlcInstance *vlc = new VlcInstance(VlcCommon::args(), this);
+    VlcMediaPlayer *player = new VlcMediaPlayer(vlc);
+
 
 signals:
     void songPlaying(json);
     void sendTimePosition(float,float);
     void sendState(bool);
 public slots:
+    void positionChanged(float position);
+
+
     void playSong(json);
     void setTime(float percent);
-    void timeChanged(qint64 t);
     void setLoopMode(int);
     void setShuffle(bool);
     void play(bool);
@@ -46,9 +52,9 @@ public slots:
     void playNext();
     void playBack();
     void downloadTempSong(json song);
-    void mediaChanged(QMediaPlayer::MediaStatus);
     void setBuffer();
     void endBuffer();
+    void downloadProg(qint64,qint64);
 
 };
 

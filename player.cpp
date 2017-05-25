@@ -2,106 +2,48 @@
 #include <QDebug>
 
 
-
 extern QString path;
-
-//Creates the media player
 
 Player::Player()
 {
-    connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(timeChanged(qint64)));
-    connect(player,SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),this,SLOT(mediaChanged(QMediaPlayer::MediaStatus)));
+    connect(player,SIGNAL(positionChanged(float)),this,SLOT(positionChanged(float)));
+    connect(player,SIGNAL(end()),this,SLOT(playNext()));
+
 }
 
-//Plays the selected song
+
+/* Emits the current song position */
+
+void Player::positionChanged(float position)
+{
+    float pos = (float)currentSong["duration"] * position;
+    sendTimePosition(pos,(float)currentSong["duration"]);
+}
+
+
+/* Plays the selected song */
 
 void Player::playSong(json song)
 {
     currentSong = song;
     songPlaying(song);
-    if(song["local"])
-    {
-        reply->abort();
-        player->setMedia(QUrl::fromLocalFile(path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"])));
-    }
-    else
-    {
-        qDebug()<<QString::fromStdString(song["musicId"]);
-        buffer->open(QIODevice::ReadWrite);
-        //buffer->setBuffer(data);
-        downloadTempSong(song);
-        player->setMedia(QMediaContent(), buffer);
+
+    //player->open(new VlcMedia("http://www.sample-videos.com/audio/mp3/wave.mp3",false,vlc));
+
+    QString songPath = path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]);
+    player->open(new VlcMedia(songPath,true,vlc));
+    return;
 
 
-
-    }
     play(true);
 }
 
-void Player::downloadTempSong(json song)
-{
-    QNetworkAccessManager *network = new QNetworkAccessManager(this);
-    QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
-    reply = network->get(request);
-    connect(reply, SIGNAL(readyRead()),this,SLOT(setBuffer()));
-    connect(reply,SIGNAL(finished()),this,SLOT(endBuffer()));
-    //file->setFileName("/tmp/caca.mp3");
-    //file->open(QIODevice::WriteOnly);
-}
 
-void Player::setBuffer()
-{
-   // data->append(reply->read(reply->bytesAvailable()));
-    //buffer->open(QIODevice::ReadWrite);
-    buffer->write(reply->read(reply->bytesAvailable()));
-
-}
-
-void Player::endBuffer()
-{
-    //file->close();
-    //player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
-    play(true);
-}
-
-//Changes to a custom time song position if there is a song playing
-
-void Player::setTime(float percent)
-{
-    if(player->isSeekable())
-    {
-        float pos = ((float)currentSong["duration"]*percent);
-        player->setPosition((qint64)pos);
-    }
-}
-
-//Emits the current song position
-
-void Player::timeChanged(qint64 t)
-{
-    sendTimePosition((float)t,(float)currentSong["duration"]);
-
-}
-
-//Song end event
-
-void Player::mediaChanged(QMediaPlayer::MediaStatus m)
-{
-    if(m == QMediaPlayer::EndOfMedia)
-    {
-      playNext();
-    }
-
-}
-
+/* Toggle the player status */
 
 void Player::playPause()
 {
-    if(!player->isSeekable()) return;
-
-    if(player->state() == QMediaPlayer::PlayingState)
+    if(player->state() == Vlc::Playing)
     {
         play(false);
     }
@@ -111,7 +53,33 @@ void Player::playPause()
     }
 }
 
-//Set the loop mode
+
+/* Sets the play state */
+
+void Player::play(bool op)
+{
+    if(op)
+    {
+        player->play();
+    }
+    else
+    {
+        player->pause();
+    }
+
+    sendState(op);
+}
+
+
+/* Changes the player song position */
+
+void Player::setTime(float percent)
+{
+    player->setPosition(percent);
+}
+
+
+/* Sets the loop mode */
 
 void Player::setLoopMode(int mode)
 {
@@ -119,7 +87,8 @@ void Player::setLoopMode(int mode)
 
 }
 
-//Set the shuffle mode
+
+/* Sets the shuffle mode */
 
 void  Player::setShuffle(bool mode)
 {
@@ -140,23 +109,8 @@ void  Player::setShuffle(bool mode)
 
 }
 
-//Toggle the play state
 
-void Player::play(bool op)
-{
-    if(op)
-    {
-        player->play();
-    }
-    else
-    {
-        player->pause();
-    }
-
-    sendState(op);
-}
-
-//Play the next song in the playlist
+/* Skip to the next song */
 
 void Player::playNext()
 {
@@ -183,10 +137,6 @@ void Player::playNext()
 
     if(songIndex == -1) return;
 
-   // if(loopMode == 0){
-    //    songIndex = a + rand() * (b-a)
-    //}
-
     if(songIndex == size - 1)
     {
         if(loopMode == 0){
@@ -203,6 +153,9 @@ void Player::playNext()
         playSong(playList[songIndex + 1]);
     }
 }
+
+/* Play previus song */
+
 void Player::playBack(){
 
     if(loopMode == 2)
@@ -232,6 +185,57 @@ void Player::playBack(){
     else{
         playSong(playList[songIndex - 1]);
     }
+
+}
+
+
+void Player::downloadTempSong(json song)
+{
+    /*
+    QNetworkAccessManager *network = new QNetworkAccessManager(this);
+    QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
+    reply = network->get(request);
+    connect(reply, SIGNAL(readyRead()),this,SLOT(setBuffer()));
+    connect(reply,SIGNAL(finished()),this,SLOT(endBuffer()));
+    connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(downloadProg(qint64,qint64)));
+    file->setFileName("/tmp/caca.mp3");
+    file->open(QIODevice::WriteOnly);
+    */
+}
+
+void Player::setBuffer()
+{
+    /*
+    file->write(reply->read(reply->bytesAvailable()));
+
+    int pos = player->position();
+    player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
+    player->setPosition(pos);
+    play(true);
+    */
+}
+
+void Player::endBuffer()
+{
+    /*
+    file->close();
+    */
+}
+
+void Player::downloadProg(qint64 per,qint64 tot)
+{
+    /*
+    qDebug() << per;
+    if(per > 100000 && player->state() != QMediaPlayer::PlayingState)
+    {
+        //int pos = player->position();
+        //player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
+        //player->setPosition(pos);
+        //play(true);
+    }
+    */
 
 }
 

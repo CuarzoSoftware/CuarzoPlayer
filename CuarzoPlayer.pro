@@ -18,19 +18,21 @@ ICON = icon.icns
 
 macx {
 
-    INCLUDEPATH += "../CuarzoPlayer/lib/mac/include/taglib/"
-    INCLUDEPATH += "/Library/Frameworks/GStreamer.framework/Headers/"
+    INCLUDEPATH += "../CuarzoPlayer/lib/mac/library/libtag/include/"
+    INCLUDEPATH += "../CuarzoPlayer/lib/mac/frameworks/VLCQtCore.framework/Headers/"
+
 
     LIBS += \
-        -L/usr/local/lib \
-        -L$$_PRO_FILE_PWD_/lib/mac/lib \
+        -L$$_PRO_FILE_PWD_/lib/mac/library/libtag/lib \
+        -L$$_PRO_FILE_PWD_/lib/mac/library/portaudio/lib \
         -ltag\
+        -lportaudio\
         -lz\
         -lobjc
 
     LIBS += -framework Foundation
     LIBS += -framework AppKit
-    LIBS += -framework GStreamer
+    LIBS += -framework VLCQtCore
 
     OBJECTIVE_SOURCES += objectivec.mm
     HEADERS +=  objectivec.h
