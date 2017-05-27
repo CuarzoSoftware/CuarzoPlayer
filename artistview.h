@@ -26,10 +26,20 @@ public:
     ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
     QList<Album*> albums;
     QList<AlbumSong*> songs;
+    QList<json> selectedSongs;
+    QString location = "local";
     int firstSelected = -1;
     int lastSelected = -1;
 
 public slots:
+
+    void menuDeleteLocalSongs();
+    void menuDeleteCloudSongs();
+    void menuDeleteBothSongs();
+
+    void menuUploadSongs();
+    void menuDownloadSongs();
+
     void songSelected(int id);
     void songRightClicked(int);
     void songPlayed(json song);

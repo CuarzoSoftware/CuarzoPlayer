@@ -125,6 +125,8 @@ void Library::saveSettings(){
 
 void Library::setUserInfo(json jres){
 
+    if(settings["token"].is_null()) return;
+
     std::string total = jres["totalSpace"];
     std::string used = jres["usedSpace"];
 
@@ -168,8 +170,6 @@ void Library::songUploaded(json sng)
 
                     json updatedSong = song.value();
 
-                    updatedSong["musicId"] = sng["musicId"];
-                    updatedSong["downloadURL"] = sng["downloadURL"];
                     updatedSong["musicId"] = sng["musicId"];
                     updatedSong["cloud"] = true;
 
@@ -261,6 +261,43 @@ void Library::deleteSongs(QList<json> songs, QString from)
         if(song["cloud"]) cloudCount++;
     }
 
+    if(from == "local")
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("You are about to permanently delete " + QString::number(localCount) + " song(s) from your local library.");
+        msgBox.setInformativeText("Do you wish to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int ret = msgBox.exec();
+
+        if(ret != QMessageBox::Yes) return;
+    }
+    if(from == "cloud")
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("You are about to permanently delete " + QString::number(cloudCount) + " song(s) from your cloud library.");
+        msgBox.setInformativeText("Do you wish to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int ret = msgBox.exec();
+
+        if(ret != QMessageBox::Yes) return;
+    }
+    if(from == "both")
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("You are about to permanently delete " + QString::number(songs.length()) + " song(s) from everywhere.");
+        msgBox.setInformativeText("Do you wish to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int ret = msgBox.exec();
+
+        if(ret != QMessageBox::Yes) return;
+    }
+
     foreach(json song,songs)
     {
 
@@ -272,15 +309,6 @@ void Library::deleteSongs(QList<json> songs, QString from)
 
         if(from == "local")
         {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText("You are about to permanently delete " + QString::number(localCount) + " song(s) from your local library.");
-            msgBox.setInformativeText("Do you wish to continue?");
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::No);
-            int ret = msgBox.exec();
-
-            if(ret != QMessageBox::Yes) return;
 
             if(song["local"] && song["cloud"])
             {
@@ -301,15 +329,6 @@ void Library::deleteSongs(QList<json> songs, QString from)
         else if(from == "cloud")
         {
 
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText("You are about to permanently delete " + QString::number(cloudCount) + " song(s) from your cloud library.");
-            msgBox.setInformativeText("Do you wish to continue?");
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::No);
-            int ret = msgBox.exec();
-
-            if(ret != QMessageBox::Yes) return;
             if(song["local"] && song["cloud"])
             {
                 library["artists"][artist][album][id]["cloud"] = false;
@@ -328,13 +347,7 @@ void Library::deleteSongs(QList<json> songs, QString from)
 
         else if(from == "both")
         {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText("You are about to permanently delete " + QString::number(songs.length()) + " song(s) from everywhere.");
-            msgBox.setInformativeText("Do you wish to continue?");
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msgBox.setDefaultButton(QMessageBox::No);
-            int ret = msgBox.exec();
+
             library["artists"][artist][album].erase(id);
             deleted.append(song);
             continue;
@@ -368,3 +381,4 @@ void Library::deleteSongs(QList<json> songs, QString from)
     }
 
 }
+

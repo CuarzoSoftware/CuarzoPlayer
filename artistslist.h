@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QBoxLayout>
+#include <QList>
 #include <QScrollArea>
 #include "leftbaritem.h"
 #include "artistlistitem.h"
@@ -20,10 +21,11 @@ public:
     QFrame *frame = new QFrame();
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,frame);
     json data;
-    ArtistListItem *items[10000] = {nullptr};
+    QString selectedArtist;
+    QList<ArtistListItem*>items;
 public slots:
-    void setData(json);
-    void artistSelected(int);
+    void setData(json,QString);
+    void artistSelected(ArtistListItem*);
 signals:
     void sendSelectedArtist(json data);
 };

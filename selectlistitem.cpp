@@ -1,14 +1,14 @@
 #include "selectlistitem.h"
 
 extern QString blue;
-SelectListItem::SelectListItem(QJsonObject _data,int _index)
+SelectListItem::SelectListItem(json _data,int _index)
 {
     data = _data;
     index = _index;
-    icon = new Icon(_data["icon"].toString(),"#666",16,16);
+    icon = new Icon(QString::fromStdString(data["icon"]),"#666",16,16);
     selectIcon = new Icon(":res/img/checked.svg","#666",12,12);
-    text = new CropLabel(_data["text"].toString(),"");
-    if(!_data["selected"].toBool()){
+    text = new CropLabel(QString::fromStdString(data["text"]),"");
+    if(!data["selected"]){
         selectIcon->setColor("#FFF");
     }
     layout->addWidget(selectIcon);
@@ -29,7 +29,7 @@ void SelectListItem::enterEvent(QEvent * event){
     QPalette pal = palette();
     pal.setColor(QPalette::Background, QColor(blue));
     setPalette(pal);
-    if(data["selected"].toBool()){
+    if(data["selected"]){
         selectIcon->setColor("#FFF");
     }
     else{
@@ -42,7 +42,7 @@ void SelectListItem::leaveEvent(QEvent * event){
     QPalette pal = palette();
     pal.setColor(QPalette::Background, QColor("#FFF"));
     setPalette(pal);
-    if(data["selected"].toBool()){
+    if(data["selected"]){
         selectIcon->setColor("#666");
     }
     else{

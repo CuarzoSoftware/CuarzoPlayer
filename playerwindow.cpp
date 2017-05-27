@@ -3,7 +3,10 @@
 
 extern QString path;
 
-//Creates the player main window
+
+/* -------------------------------*/
+/* Creates the player main window */
+/* -------------------------------*/
 
 PlayerWindow::PlayerWindow()
 {
@@ -18,9 +21,126 @@ PlayerWindow::PlayerWindow()
     else{
         setupSettings();
     }
+
 }
 
-//Detect when leftbar category is selected
+/* ---------------------------------------*/
+/* Save the user data when user is logged */
+/* ---------------------------------------*/
+
+void PlayerWindow::loggedIn(QString token, QString refresh)
+{
+    library->settings["token"] = token.toStdString();
+    library->settings["restoreToken"] = refresh.toStdString();
+    library->settings["init"] = true;
+    library->saveSettings();
+    setupSettings();
+    delete login;
+}
+
+/* -----------------------------------------------------------------*/
+/* Create connections and setup the saved setting to child elements */
+/* -----------------------------------------------------------------*/
+
+void PlayerWindow::setupSettings()
+{
+
+    setContextMenuPolicy(Qt::NoContextMenu);
+    setFocusPolicy(Qt::ClickFocus);
+    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    setMinimumSize(1000,600);
+    setLayout(mainLayout);
+    installEventFilter(this);
+    mainLayout->setMargin(0);
+    mainLayout->addWidget(frame);
+    frame->setObjectName("MainFrame");
+    frame->setStyleSheet("#MainFrame{background:#FFF}");
+    frameLayout->setMargin(0);
+    frameLayout->setSpacing(0);
+    frameLayout->addWidget(topBar);
+    frameLayout->addWidget(middleView);
+    frameLayout->addWidget(bottomBar);
+
+
+    if(library->settings["token"] != "NO"){
+        drive = new GoogleDrive(library->settings);
+        library->library["logged"] = true;
+
+        //Google Drive
+
+        connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
+        connect(middleView->artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
+        connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
+        connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
+        connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
+        connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
+        connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
+        connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
+        connect(drive,SIGNAL(sendSongUploadProgress(int,int)),middleView->artistView,SLOT(setSongUploadPercent(int,int)));
+
+        //DELETE SONGS
+        connect(library,SIGNAL(deleteFromCloud(json)),drive,SLOT(deleteSong(json)));
+        connect(library,SIGNAL(deleteFromBoth(json)),drive,SLOT(deleteSong(json)));
+
+        setUserInfo();
+    }
+    else{
+        topBar->userPicture->image->setPixmap(QPixmap(":res/img/user.svg"));
+        topBar->storageBar->bar->hide();
+        topBar->storageBar->text->setText("No Account");
+    }
+
+    //DISPLAY MODE
+    connect(topBar->modeList,SIGNAL(sendSelected(QString)),this,SLOT(setLibrary(QString)));
+
+    //ADD MUSIC
+
+    connect(topBar->addButton,SIGNAL(released()),this,SLOT(addMusic()));
+    connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
+    connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
+
+    //DELETE SONGS
+
+    connect(middleView->artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
+    connect(library,SIGNAL(deleteFromBoth(json)),middleView->artistView,SLOT(hideSong(json)));
+    connect(library,SIGNAL(deleteFromLocal(json)),middleView->artistView,SLOT(changeSong(json)));
+
+    connect(library,SIGNAL(deleteFromCloud(json)),middleView->artistView,SLOT(changeSong(json)));
+
+    //SONGS EVENTS
+
+    connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
+    connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
+    connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
+
+    //PLAYER EVENTS
+
+    connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
+    connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
+    connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
+    connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
+    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
+    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player->audio(),SLOT(setVolume(int)));
+    connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
+    connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
+    connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
+    connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
+    connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
+
+
+    setLibrary("local");
+    bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
+    bottomBar->volumeBar->positionChanged(library->settings["volume"]);
+    bottomBar->setLoopMode(library->settings["loop"]);
+    bottomBar->setShuffleMode(library->settings["shuffle"]);
+    player->settings = library->settings;
+    show();
+}
+
+
+/* ---------------------------------------- */
+/* Detect when leftbar category is selected */
+/* ---------------------------------------- */
 
 void PlayerWindow::leftItemSelected(QString id)
 {
@@ -33,7 +153,10 @@ void PlayerWindow::leftItemSelected(QString id)
     }
 }
 
-//Display artist window when artist list item is selected
+
+/* ------------------------------------------------------- */
+/* Display artist window when artist list item is selected */
+/* ------------------------------------------------------- */
 
 void PlayerWindow::artistSelected(json data)
 {
@@ -42,28 +165,29 @@ void PlayerWindow::artistSelected(json data)
     middleView->artistView->artistViewTitle->show();
     middleView->artistView->show();
 
-
-    //middleView->artistView->songPlayed(player->currentSong);
-    /*
-    if(player->player->isSeekable())
-    {
-    }
-    */
+    if(!player->currentSong.is_null())
+        middleView->artistView->songPlayed(player->currentSong);
 
 }
 
 
-//Sets the current library to child elements
+/* ------------------------------------------ */
+/* Sets the current library to child elements */
+/* ------------------------------------------ */
 
-void PlayerWindow::setLibrary()
+void PlayerWindow::setLibrary(QString location)
 {
+    location = location.toLower();
+    qDebug()<<"Display mode changed to: " + location;
     topBar->pie->hide();
-
-    middleView->artistsList->setData(library->library["artists"]);
+    middleView->artistsList->setData(library->library["artists"],location);
 
 }
 
-//Play song and create playlist if song is played from artist view
+
+/* ---------------------------------------------------------------- */
+/* Play song and create playlist if song is played from artist view */
+/* ---------------------------------------------------------------- */
 
 void PlayerWindow::playFromArtist(json data)
 {
@@ -99,7 +223,9 @@ void PlayerWindow::playFromArtist(json data)
 
 }
 
-//Refresh the Google Drive info if posible
+/* ---------------------------------------- */
+/* Refresh the Google Drive info if posible */
+/* ---------------------------------------- */
 
 void PlayerWindow::setUserInfo()
 {
@@ -128,98 +254,9 @@ void PlayerWindow::setUserInfo()
 
 }
 
-//Create connections and setup the saved setting to child elements
-
-void PlayerWindow::setupSettings()
-{
-
-    drive = new GoogleDrive(library->settings);
-
-    setContextMenuPolicy(Qt::NoContextMenu);
-    setFocusPolicy(Qt::ClickFocus);
-    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    setMinimumSize(1000,600);
-    setLayout(mainLayout);
-    installEventFilter(this);
-    mainLayout->setMargin(0);
-    mainLayout->addWidget(frame);
-    frame->setObjectName("MainFrame");
-    frame->setStyleSheet("#MainFrame{background:#FFF}");
-    frameLayout->setMargin(0);
-    frameLayout->setSpacing(0);
-    frameLayout->addWidget(topBar);
-    frameLayout->addWidget(middleView);
-    frameLayout->addWidget(bottomBar);
-
-
-    //ADD MUSIC
-
-    connect(topBar->addButton,SIGNAL(released()),this,SLOT(addMusic()));
-    connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
-    connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
-
-    //DELETE SONGS
-
-    connect(middleView->artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
-    connect(library,SIGNAL(deleteFromBoth(json)),middleView->artistView,SLOT(hideSong(json)));
-    connect(library,SIGNAL(deleteFromLocal(json)),middleView->artistView,SLOT(changeSong(json)));
-    connect(library,SIGNAL(deleteFromCloud(json)),middleView->artistView,SLOT(changeSong(json)));
-
-    //SONGS EVENTS
-
-    connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
-    connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
-    connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
-
-    //PLAYER EVENTS
-
-    connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
-    connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
-    connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
-    connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
-    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
-    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player->audio(),SLOT(setVolume(int)));
-    connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
-    connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
-    connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
-    connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
-    connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
-
-    //Google Drive
-
-    connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
-    connect(middleView->artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
-    connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
-    connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
-    connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
-    connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
-    connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
-    connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
-    connect(drive,SIGNAL(sendSongUploadProgress(int,int)),middleView->artistView,SLOT(setSongUploadPercent(int,int)));
-
-    setUserInfo();
-    setLibrary();
-    bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
-    bottomBar->volumeBar->positionChanged(library->settings["volume"]);
-    bottomBar->setLoopMode(library->settings["loop"]);
-    bottomBar->setShuffleMode(library->settings["shuffle"]);
-    player->settings = library->settings;
-    show();
-}
-
-//Save the user data when user is logged
-
-void PlayerWindow::loggedIn(QString token, QString refresh)
-{
-    library->settings["token"] = token.toStdString();
-    library->settings["restoreToken"] = refresh.toStdString();
-    library->settings["init"] = true;
-    library->saveSettings();
-    setupSettings();
-    delete login;
-}
-
-//When prfile image is downloaded
+/* ------------------------------- */
+/* When prfile image is downloaded */
+/* ------------------------------- */
 
 void PlayerWindow::imageReady()
 {

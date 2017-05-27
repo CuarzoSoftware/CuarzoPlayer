@@ -49,7 +49,7 @@ public slots:
     void addMusic();
     void leftItemSelected(QString);
     void artistSelected(json data);
-    void setLibrary();
+    void setLibrary(QString location);
     void playFromArtist(json);
     void loggedIn(QString token, QString refresh);
     void setUserInfo();

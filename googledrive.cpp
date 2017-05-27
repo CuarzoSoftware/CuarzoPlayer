@@ -316,6 +316,26 @@ void GoogleDrive::cancelSongUpload(int id)
     }
 }
 
+void GoogleDrive::deleteSong(json song)
+{
+    Network *network = new Network(QString::number((int) song["id"]),this);
+    connect(network,SIGNAL(finished(QNetworkReply*,QString)),this,SLOT(deleteSongRes(QNetworkReply*,QString)));
+    QNetworkRequest req(QUrl("https://www.googleapis.com/drive/v2/files/"+QString::fromStdString(song["musicId"])));
+    req.setRawHeader("Authorization","Bearer " + QString::fromStdString(settings["token"]).toUtf8());
+    network->deleteResource(req);
+}
+
+void GoogleDrive::deleteSongRes(QNetworkReply *res, QString songId)
+{
+    qDebug()<<"Song deleted from cloud";
+
+    if(res->errorString() == "Unknown error")
+    {
+        //songDeleteComplete(song);
+    }
+
+}
+
 void GoogleDrive::tokenRefreshed(QNetworkReply *res, QString callback){
 
     json jres = json::parse(res->readAll().toStdString());

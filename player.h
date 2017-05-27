@@ -41,8 +41,6 @@ signals:
     void sendState(bool);
 public slots:
     void positionChanged(float position);
-
-
     void playSong(json);
     void setTime(float percent);
     void setLoopMode(int);

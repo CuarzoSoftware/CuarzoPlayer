@@ -27,29 +27,38 @@ ArtistsList::ArtistsList()
 
 }
 
-void ArtistsList::artistSelected(int index){
-    int i = 0;
-    while(items[i] != nullptr){
-        items[i]->setSelected(false);
-        i++;
+void ArtistsList::artistSelected(ArtistListItem* item){
+    foreach(ArtistListItem *it,items)
+    {
+        it->setSelected(false);
     }
-    items[index]->setSelected(true);
-    sendSelectedArtist(items[index]->data);
+    item->setSelected(true);
+    selectedArtist = item->artistName;
+    sendSelectedArtist(item->data);
 }
 
-void ArtistsList::setData(json _data){
-    data = _data;
-    int ii = 0;
-    while(items[ii] != nullptr){
-        delete items[ii];
-        items[ii] = nullptr;
-        ii++;
-    }
-    int i = 0;
+void ArtistsList::setData(json _data,QString location){
+
+    qDeleteAll(items);
+    items.clear();
+
     for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
-        items[i] = new ArtistListItem(i,it.value());
-        layout->addWidget(items[i]);
-        connect(items[i],SIGNAL(selected(int)),this,SLOT(artistSelected(int)));
-        i++;
+        bool hasLocalSongs = false;
+        for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
+            for (json::iterator it3 = it2.value().begin(); it3 != it2.value().end(); ++it3) {
+                if(it3.value()["local"]){
+                    hasLocalSongs = true;
+                }
+            }
+        }
+        if(!hasLocalSongs) continue;
+        ArtistListItem *item = new ArtistListItem(it.value());
+        items.append(item);
+        layout->addWidget(item);
+        connect(item,SIGNAL(selected(ArtistListItem*)),this,SLOT(artistSelected(ArtistListItem*)));
+        if(item->artistName == selectedArtist){
+            item->setSelected(true);
+            sendSelectedArtist(item->data);
+        }
     }
 }

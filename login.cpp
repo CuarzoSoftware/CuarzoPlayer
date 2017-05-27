@@ -44,6 +44,7 @@ Login::Login()
     connect(loginBtn,SIGNAL(released()),this,SLOT(getCode()));
     connect(readyBtn,SIGNAL(released()),this,SLOT(getToken()));
     connect(backBtn,SIGNAL(released()),this,SLOT(cancel()));
+    connect(skipBtn,SIGNAL(released()),this,SLOT(continueWithoutLogin()));
 }
 void Login::cancel(){
 
@@ -103,6 +104,11 @@ void Login::getToken(){
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
     network->post(request, postData.toString(QUrl::FullyEncoded).toUtf8());
 
+}
+
+void Login::continueWithoutLogin()
+{
+    loggedIn("NO","NO");
 }
 void Login::response(QNetworkReply*res){
 

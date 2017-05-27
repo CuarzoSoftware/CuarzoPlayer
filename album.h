@@ -51,6 +51,7 @@ public:
     OpButton *more = new OpButton(":res/img/more.svg",20,20,blue);
     OpButton *sync = new OpButton(":res/img/sync-border.svg",20,20,blue);
 
+    QString location = "local";
     QList<AlbumSong*>songs;
 
 signals:

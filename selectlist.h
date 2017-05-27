@@ -2,12 +2,15 @@
 #define SELECTLIST_H
 
 #include <QFrame>
-#include <QJsonArray>
 #include <QBoxLayout>
+#include <QList>
 #include <QLabel>
 #include "icon.h"
 #include "menu.h"
 #include "selectlistitem.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class SelectList : public QFrame
 {
@@ -16,8 +19,8 @@ class SelectList : public QFrame
     Icon *selectIcon;
     QLabel *currentText;
 public:
-    explicit SelectList(QJsonArray items);
-    SelectListItem *items[1000];
+    explicit SelectList(json items);
+    QList<SelectListItem*> items;
     int size;
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     Menu *menu = new Menu();
@@ -25,9 +28,10 @@ public:
 
 
 signals:
-
+    void sendSelected(QString);
 public slots:
     void itemSelected(SelectListItem*);
+    void setData(json);
 };
 
 #endif // SELECTLIST_H

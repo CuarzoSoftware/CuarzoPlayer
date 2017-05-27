@@ -8,7 +8,6 @@ Player::Player()
 {
     connect(player,SIGNAL(positionChanged(float)),this,SLOT(positionChanged(float)));
     connect(player,SIGNAL(end()),this,SLOT(playNext()));
-
 }
 
 
@@ -28,12 +27,15 @@ void Player::playSong(json song)
     currentSong = song;
     songPlaying(song);
 
-    //player->open(new VlcMedia("http://www.sample-videos.com/audio/mp3/wave.mp3",false,vlc));
-
-    QString songPath = path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]);
-    player->open(new VlcMedia(songPath,true,vlc));
-    return;
-
+    if(song["local"])
+    {
+        QString songPath = path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]);
+        player->open(new VlcMedia(songPath,true,vlc));
+    }
+    else
+    {
+        player->open(new VlcMedia("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media&access_token="+QString::fromStdString(settings["token"]) ,false,vlc));
+    }
 
     play(true);
 }

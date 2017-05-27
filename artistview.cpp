@@ -23,6 +23,31 @@ ArtistView::ArtistView()
     albumsLayout->setSpacing(40);
 }
 
+void ArtistView::menuDeleteLocalSongs()
+{
+    deleteSongs(selectedSongs,"local");
+}
+
+void ArtistView::menuDeleteCloudSongs()
+{
+    deleteSongs(selectedSongs,"cloud");
+}
+
+void ArtistView::menuDeleteBothSongs()
+{
+    deleteSongs(selectedSongs,"both");
+}
+
+void ArtistView::menuUploadSongs()
+{
+
+}
+
+void ArtistView::menuDownloadSongs()
+{
+
+}
+
 //Sets the data and print the albums
 
 void ArtistView::setData(json _data){
@@ -45,6 +70,7 @@ void ArtistView::setData(json _data){
 
     for (json::iterator it = data.begin(); it != data.end(); ++it)
     {
+
         Album *album = new Album(0,it.value());
         albumsLayout->addWidget(album);
 
@@ -119,6 +145,7 @@ void ArtistView::songSelected(int id)
     }
     else{
         firstSelected = index;
+        lastSelected = -1;
         song->setSelected(true);
     }
 
@@ -126,6 +153,57 @@ void ArtistView::songSelected(int id)
 
 void ArtistView::songRightClicked(int id)
 {
+
+    bool local = false;
+    bool cloud = false;
+    bool both  = false;
+    bool selected = false;
+    bool downloading = false;
+    bool uploading = false;
+
+    if(!existSong(id))return;
+
+    AlbumSong *song = getSongById(id);
+    selectedSongs.clear();
+
+    if(firstSelected != -1 && lastSelected != -1)
+    {
+        int from = 0;
+        int to = 0;
+        if(firstSelected >= lastSelected)
+        {
+            from = lastSelected;
+            to = firstSelected;
+        }
+        else
+        {
+            from = firstSelected;
+            to = lastSelected;
+        }
+        for(int i = from; i <= to; i++)
+        {
+            selectedSongs.append(songs[i]->data);
+            if(songs[i]->data["id"] == id) selected = true;
+            if(songs[i]->data["local"] && !songs[i]->data["cloud"]) local = true;
+            if(!songs[i]->data["local"] && songs[i]->data["cloud"]) cloud = true;
+            if(songs[i]->data["local"]  &&  songs[i]->data["cloud"]) both = true;
+            if(songs[i]->downloading) downloading = true;
+            if(songs[i]->uploading) uploading = true;
+        }
+    }
+    qDebug() <<selected;
+
+    if(!selected)
+    {
+        selectedSongs.clear();
+        selectedSongs.append(song->data);
+        if(song->data["local"] && !song->data["cloud"]) local = true;
+        if(!song->data["local"] && song->data["cloud"]) cloud = true;
+        if(song->data["local"]  &&  song->data["cloud"]) both = true;
+        if(song->downloading) downloading = true;
+        if(song->uploading) uploading = true;
+    }
+
     QMenu contextMenu(tr("Options"),this);
 
     QAction action1("Edit Info", this);
@@ -133,25 +211,33 @@ void ArtistView::songRightClicked(int id)
     QAction action3("Stop Upload", this);
     QAction action4("Download", this);
     QAction action5("Upload", this);
+    QAction action6("Delete from local", this);
+    QAction action7("Delete from cloud", this);
+    QAction action8("Delete from everywhere", this);
 
-    contextMenu.addAction(&action1);
-    contextMenu.addAction(&action2);
-    contextMenu.addAction(&action3);
-    contextMenu.addAction(&action4);
-    contextMenu.addAction(&action5);
+    if(!uploading&&!downloading)contextMenu.addAction(&action1);
+    if(downloading)contextMenu.addAction(&action2);
+    if(uploading)contextMenu.addAction(&action3);
+    if(!local && cloud && !downloading && !uploading)contextMenu.addAction(&action4);
+    if(local && !cloud && !downloading && !uploading)contextMenu.addAction(&action5);
+    if(cloud || both)contextMenu.addAction(&action7);
+    if(local || both)contextMenu.addAction(&action6);
+    if(both && !downloading && !uploading)contextMenu.addAction(&action8);
 
-    //connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
-    //connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
-    //connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
-    //connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
 
-    //contextMenu.exec(QCursor::pos());
+    connect(&action6, SIGNAL(triggered()), this, SLOT(menuDeleteLocalSongs()));
+    connect(&action7, SIGNAL(triggered()), this, SLOT(menuDeleteCloudSongs()));
+    connect(&action8, SIGNAL(triggered()), this, SLOT(menuDeleteBothSongs()));
+
+
+    contextMenu.exec(QCursor::pos());
 }
 
 void ArtistView::setSongUploadPercent(int per, int id)
 {
     if(!existSong(id)) return;
     AlbumSong *song = getSongById(id);
+    song->uploading = true;
     song->pie->show();
     song->sync->hide();
     song->pie->setPercent(per);
@@ -185,7 +271,10 @@ void ArtistView::songUploaded(json _data)
 
     AlbumSong *song = getSongById(id);
     song->pie->hide();
-    song->space->show();
+    song->sync->setIcon(QIcon(":res/img/success.svg"));
+    song->sync->setColor(blue);
+    song->sync->show();
+    song->uploading = false;
 }
 
 void ArtistView::cancelSongUpload(int sid)

@@ -10,6 +10,9 @@
 #include "storagebar.h"
 #include "searchbar.h"
 #include "pie.h"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class TopBar : public QFrame
 {

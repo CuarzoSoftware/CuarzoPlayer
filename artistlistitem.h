@@ -14,16 +14,16 @@ class ArtistListItem:public QFrame
 {
     Q_OBJECT
 public:
-    ArtistListItem(int _id,json _data);
+    ArtistListItem(json _data);
     json data;
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QLabel *icon = new QLabel();
     CropLabel *text;
-    int id;
+    QString artistName;
     Pix r;
     void mousePressEvent(QMouseEvent *event);
 signals:
-    void selected(int);
+    void selected(ArtistListItem*);
 public slots:
     void setData(json _data);
     void setSelected(bool selected);

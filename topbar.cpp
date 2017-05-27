@@ -3,13 +3,20 @@
 
 TopBar::TopBar()
 {
-    QJsonArray data;
+
     setMaximumHeight(55);
     setMouseTracking(true);
     setStyleSheet("TopBar{border:none;background:transparent;border-bottom:1px solid #DDD;}");
-    data.append(QJsonObject({{"icon",":res/img/local.svg"},{"text","Local"},{"selected",true}}));
-    data.append(QJsonObject({{"icon",":res/img/cloud.svg"},{"text","Cloud"},{"selected",false}}));
-    data.append(QJsonObject({{"icon",":res/img/all.svg"},{"text","All"},{"selected",false}}));
+    json data;
+    data[0]["icon"] = ":res/img/local.svg";
+    data[0]["text"] = "Local";
+    data[0]["selected"] = true;
+    data[1]["icon"] = ":res/img/cloud.svg";
+    data[1]["text"] = "Cloud";
+    data[1]["selected"] = false;
+    data[2]["icon"] = ":res/img/all.svg";
+    data[2]["text"] = "All";
+    data[2]["selected"] = false;
     modeList = new SelectList(data);
     modeList->setFixedWidth(130);
     modeList->menu->setFixedWidth(135);

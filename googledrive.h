@@ -58,6 +58,8 @@ public slots:
     void uploadSongRes(QNetworkReply*res, QString callback);
     void songUploadProgress(int percent, int id);
     void cancelSongUpload(int id);
+    void deleteSong(json song);
+    void deleteSongRes(QNetworkReply*res, QString callback);
 
 
 

@@ -43,6 +43,7 @@ public slots:
     void getCode();
     void cancel();
     void getToken();
+    void continueWithoutLogin();
     void response(QNetworkReply*res);
 };
 

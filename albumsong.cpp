@@ -18,21 +18,17 @@ AlbumSong::AlbumSong(json _data)
     number->setStyleSheet("color:#888");
     number->setFixedWidth(15);
     duration->setStyleSheet("color:#888");
-    space->setFixedWidth(23);
     layout->setMargin(8);
     layout->addWidget(sync);
     layout->addWidget(pie);
-    layout->addWidget(space);
     layout->addWidget(number);
     layout->addWidget(status);
     layout->addWidget(name,10);
     layout->addWidget(duration);
     layout->addWidget(more);
     pie->hide();
-    sync->hide();
     status->hide();
     more->hide();
-    space->hide();
     setData(_data);
     connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
     connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
@@ -53,21 +49,14 @@ void AlbumSong::setData(json _data)
     if(!data["local"])
     {
         sync->setIcon(QIcon(":res/img/download-border.svg"));
-        sync->show();
     }
     else if(!data["cloud"])
     {
-        sync->show();
-
-    }else{
-
-        sync->hide();
-
-        if(!data["albumSynched"])
-        {
-            space->show();
-        }
-
+        sync->setIcon(QIcon(":res/img/upload-border.svg"));
+    }
+    else if(data["cloud"] && data["local"])
+    {
+        sync->setIcon(QIcon(":res/img/success.svg"));
     }
 }
 
@@ -97,6 +86,7 @@ void AlbumSong::setSelected(bool op)
         status->setColor(blue);
         if(data["local"] && !data["cloud"]) sync->setColor(blue);
         if(!data["local"] && data["cloud"]) sync->setColor(red);
+        if(data["local"] && data["cloud"]) sync->setColor(blue);
         more->setColor(blue);
     }
 
@@ -173,6 +163,7 @@ void AlbumSong::showMenu()
 void AlbumSong::syncClicked()
 {
     syncSong(data);
+
 }
 
 void AlbumSong::piePressed()

@@ -7,9 +7,9 @@ using json = nlohmann::json;
 
 //Create an artists list item for the left bar
 
-ArtistListItem::ArtistListItem(int _id, json _data)
+ArtistListItem::ArtistListItem(json _data)
 {
-    id = _id;
+    artistName = QString::fromStdString(_data.begin().value().begin().value()["artist"]);
     setData(_data);
     setAutoFillBackground(true);
     setObjectName("item");
@@ -52,6 +52,6 @@ void ArtistListItem::setSelected(bool selected)
 
 
 void ArtistListItem::mousePressEvent(QMouseEvent*){
-    selected(id);
+    selected(this);
 }
 

@@ -28,7 +28,8 @@ public:
     Pie *pie = new Pie(0,19);
     json data;
     int id;
-    QWidget *space = new QWidget();
+    bool downloading = false;
+    bool uploading = false;
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QLabel *number  = new QLabel();
     QLabel *duration = new QLabel("caca");
@@ -36,6 +37,7 @@ public:
     OpButton *sync = new OpButton(":res/img/upload-border.svg", bSize, bSize, blue);
     OpButton *more = new OpButton(":res/img/more.svg", bSize, bSize, blue);
     CropLabel *name = new CropLabel("","color:#444");
+    QString location = "local";
     void enterEvent(QEvent * event);
     void leaveEvent(QEvent * event);
     void mouseReleaseEvent(QMouseEvent *);
