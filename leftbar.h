@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QList>
 #include <QScrollArea>
 #include "leftbaritem.h"
 
@@ -22,7 +23,7 @@ public:
     QBoxLayout *playlistsLayout = new QBoxLayout(QBoxLayout::TopToBottom,playlistsFrame);
     QLabel *title1 = new QLabel("Library");
     QLabel *title2 = new QLabel("Playlists");
-    LeftBarItem *items[10000] = {nullptr};
+    QList<LeftBarItem*> items;
 signals:
     void sendSelected(QString id);
 public slots:

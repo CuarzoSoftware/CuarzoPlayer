@@ -22,7 +22,9 @@ TopBar::TopBar()
     modeList->menu->setFixedWidth(135);
     frameLayout->setAlignment(Qt::AlignLeft);
     frameLayout->setContentsMargins(8,8,15,8);
+    frameLayout->setSpacing(10);
     frameLayout->addWidget(userPicture);
+    frameLayout->addWidget(addAccount);
     frameLayout->addWidget(storageBar);
     frameLayout->addWidget(modeList);
     frameLayout->addWidget(new QWidget(),10);
@@ -30,7 +32,6 @@ TopBar::TopBar()
     frameLayout->addWidget(searchBar);
     frameLayout->addWidget(addButton);
     pie->hide();
-
 
 }
 

@@ -1,5 +1,6 @@
 #include "playerwindow.h"
 #include "croplabel.h"
+#include <QCloseEvent>
 
 extern QString path;
 
@@ -10,18 +11,38 @@ extern QString path;
 
 PlayerWindow::PlayerWindow()
 {
+    #ifdef Q_OS_MAC
+        ObjectiveC *obc = new ObjectiveC();
+        obc->Display(winId());
+        delete obc;
+    #endif
 
-    //Checks if is the first app launch
+    QRect screen = QApplication::desktop()->screenGeometry();
+    setContextMenuPolicy(Qt::NoContextMenu);
+    setFocusPolicy(Qt::ClickFocus);
+    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    setMinimumSize(1000,600);
+    move(screen.width()/2-500,screen.height()/2-300);
+    setCentralWidget(frame);
+    installEventFilter(this);
+    frame->setObjectName("MainFrame");
+    frame->setStyleSheet("#MainFrame{background:#FFF}");
+    frameLayout->setMargin(0);
+    frameLayout->setSpacing(0);
+    frameLayout->addWidget(topBar);
+    frameLayout->addWidget(middleView);
+    frameLayout->addWidget(bottomBar);
+
+    createActions();
+    createMenus();
 
     if(!library->settings["init"])
     {
-        login->show();
-        connect(login,SIGNAL(loggedIn(QString,QString)),this,SLOT(loggedIn(QString,QString)));
+        showLoginWindow();
     }
     else{
         setupSettings();
     }
-
 }
 
 /* ---------------------------------------*/
@@ -35,7 +56,6 @@ void PlayerWindow::loggedIn(QString token, QString refresh)
     library->settings["init"] = true;
     library->saveSettings();
     setupSettings();
-    delete login;
 }
 
 /* -----------------------------------------------------------------*/
@@ -45,95 +65,113 @@ void PlayerWindow::loggedIn(QString token, QString refresh)
 void PlayerWindow::setupSettings()
 {
 
-    setContextMenuPolicy(Qt::NoContextMenu);
-    setFocusPolicy(Qt::ClickFocus);
-    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    setMinimumSize(1000,600);
-    setLayout(mainLayout);
-    installEventFilter(this);
-    mainLayout->setMargin(0);
-    mainLayout->addWidget(frame);
-    frame->setObjectName("MainFrame");
-    frame->setStyleSheet("#MainFrame{background:#FFF}");
-    frameLayout->setMargin(0);
-    frameLayout->setSpacing(0);
-    frameLayout->addWidget(topBar);
-    frameLayout->addWidget(middleView);
-    frameLayout->addWidget(bottomBar);
-
+    fileMenu->setEnabled(true);
+    accountMenu->setEnabled(true);
 
     if(library->settings["token"] != "NO"){
-        drive = new GoogleDrive(library->settings);
+
+        logoutAct->setVisible(true);
+        loginAct->setVisible(false);
         library->library["logged"] = true;
+        topBar->modeList->show();
+        topBar->addAccount->hide();
+        topBar->storageBar->show();
 
-        //Google Drive
+        if(!cloudConnectionsMade)
+        {
+            drive = new GoogleDrive(library->settings);
 
-        connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
-        connect(middleView->artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
-        connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
-        connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
-        connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
-        connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
-        connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
-        connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
-        connect(drive,SIGNAL(sendSongUploadProgress(int,int)),middleView->artistView,SLOT(setSongUploadPercent(int,int)));
+            //Google Drive
 
-        //DELETE SONGS
-        connect(library,SIGNAL(deleteFromCloud(json)),drive,SLOT(deleteSong(json)));
-        connect(library,SIGNAL(deleteFromBoth(json)),drive,SLOT(deleteSong(json)));
+            connect(middleView->artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
+            connect(middleView->artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
+            connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
+            connect(drive,SIGNAL(songUploaded(json)),middleView->artistView,SLOT(songUploaded(json)));
+            connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
+            connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
+            connect(library,SIGNAL(userInfoChanged()),this,SLOT(setUserInfo()));
+            connect(drive,SIGNAL(imageReady()),this,SLOT(imageReady()));
+            connect(drive,SIGNAL(sendSongUploadProgress(int,int)),middleView->artistView,SLOT(setSongUploadPercent(int,int)));
+
+            //DELETE SONGS
+            connect(library,SIGNAL(deleteFromCloud(json)),drive,SLOT(deleteSong(json)));
+            connect(library,SIGNAL(deleteFromBoth(json)),drive,SLOT(deleteSong(json)));
+            cloudConnectionsMade = true;
+        }
 
         setUserInfo();
     }
     else{
+
+        loginAct->setVisible(true);
+        logoutAct->setVisible(false);
+        topBar->modeList->hide();
         topBar->userPicture->image->setPixmap(QPixmap(":res/img/user.svg"));
-        topBar->storageBar->bar->hide();
-        topBar->storageBar->text->setText("No Account");
+        topBar->addAccount->show();
+        topBar->storageBar->hide();
+        if(!globalConnectionsMade) connect(topBar->addAccount,SIGNAL(released()),this,SLOT(showLoginWindow()));
     }
 
-    //DISPLAY MODE
-    connect(topBar->modeList,SIGNAL(sendSelected(QString)),this,SLOT(setLibrary(QString)));
+    if(!globalConnectionsMade)
+    {
+        //DISPLAY MODE
 
-    //ADD MUSIC
+        connect(topBar->modeList,SIGNAL(sendSelected(QString)),this,SLOT(setLibraryLocation(QString)));
+        connect(middleView->artistsList,SIGNAL(hideArtistView(int)),middleView->artistView->f,SLOT(fadeOut(int)));
+        connect(middleView->artistsList,SIGNAL(showArtistView(int)),middleView->artistView->f,SLOT(fadeIn(int)));
 
-    connect(topBar->addButton,SIGNAL(released()),this,SLOT(addMusic()));
-    connect(library,SIGNAL(musicAddComplete()),this,SLOT(setLibrary()));
-    connect(library,SIGNAL(percentAdded(int)),topBar->pie,SLOT(setPercent(int)));
+        //ADD MUSIC
 
-    //DELETE SONGS
+        connect(topBar->addButton,SIGNAL(released()),library,SLOT(startMusicAdder()));
+        connect(topBar->addButton,SIGNAL(released()),topBar->pie,SLOT(show()));
+        connect(library,SIGNAL(songAddCanceled()),topBar->pie,SLOT(hide()));
+        connect(library,SIGNAL(songAddProgress(int)),topBar->pie,SLOT(setPercent(int)));
+        connect(library,SIGNAL(songAddComplete()),topBar->pie,SLOT(hide()));
+        connect(library,SIGNAL(songAddComplete()),this,SLOT(setLibrary()));
 
-    connect(middleView->artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
-    connect(library,SIGNAL(deleteFromBoth(json)),middleView->artistView,SLOT(hideSong(json)));
-    connect(library,SIGNAL(deleteFromLocal(json)),middleView->artistView,SLOT(changeSong(json)));
+        //DELETE SONGS
 
-    connect(library,SIGNAL(deleteFromCloud(json)),middleView->artistView,SLOT(changeSong(json)));
+        connect(middleView->artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
+        connect(library,SIGNAL(deleteFromBoth(json)),middleView->artistView,SLOT(hideSong(json)));
+        connect(library,SIGNAL(deleteFromLocal(json)),middleView->artistView,SLOT(changeSong(json)));
 
-    //SONGS EVENTS
+        connect(library,SIGNAL(deleteFromCloud(json)),middleView->artistView,SLOT(changeSong(json)));
 
-    connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
-    connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
-    connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
+        //SONGS EVENTS
 
-    //PLAYER EVENTS
+        connect(middleView->artistView,SIGNAL(sendSongPlayed(json)),this,SLOT(playFromArtist(json)));
+        connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
+        connect(middleView->artistsList,SIGNAL(sendSelectedArtist(json)),this,SLOT(artistSelected(json)));
 
-    connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
-    connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
-    connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
-    connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
-    connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
-    connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player->audio(),SLOT(setVolume(int)));
-    connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
-    connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
-    connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
-    connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
-    connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
+        //PLAYER EVENTS
 
+        connect(player,SIGNAL(songPlaying(json)),bottomBar->songInfo,SLOT(setData(json)));
+        connect(player,SIGNAL(songPlaying(json)),middleView->artistView,SLOT(songPlayed(json)));
+        connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
+        connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
+        connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
+        connect(bottomBar->volumeBar->slider,SIGNAL(valueChanged(int)),player->player->audio(),SLOT(setVolume(int)));
+        connect(bottomBar->playerButtons->play,SIGNAL(released()),player,SLOT(playPause()));
+        connect(bottomBar->playerButtons->back,SIGNAL(released()),player,SLOT(playBack()));
+        connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
+        connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
+        connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
 
-    setLibrary("local");
+        globalConnectionsMade = true;
+    }
+
+    //SET SETTINGS
+
     bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
     bottomBar->volumeBar->positionChanged(library->settings["volume"]);
     bottomBar->setLoopMode(library->settings["loop"]);
     bottomBar->setShuffleMode(library->settings["shuffle"]);
     player->settings = library->settings;
+
+    middleView->leftBar->itemSelected("artists");
+
+    libraryLocationSelected = "local";
+    setLibrary();
     show();
 }
 
@@ -144,6 +182,7 @@ void PlayerWindow::setupSettings()
 
 void PlayerWindow::leftItemSelected(QString id)
 {
+
     viewMode = id;
 
     if(id == "artists")
@@ -151,6 +190,7 @@ void PlayerWindow::leftItemSelected(QString id)
         middleView->artistsList->show();
         middleView->artistView->show();
     }
+
 }
 
 
@@ -160,10 +200,7 @@ void PlayerWindow::leftItemSelected(QString id)
 
 void PlayerWindow::artistSelected(json data)
 {
-    middleView->artistView->hide();
-    middleView->artistView->setData(data);
-    middleView->artistView->artistViewTitle->show();
-    middleView->artistView->show();
+    middleView->artistView->setData(data,libraryLocationSelected);
 
     if(!player->currentSong.is_null())
         middleView->artistView->songPlayed(player->currentSong);
@@ -175,13 +212,9 @@ void PlayerWindow::artistSelected(json data)
 /* Sets the current library to child elements */
 /* ------------------------------------------ */
 
-void PlayerWindow::setLibrary(QString location)
+void PlayerWindow::setLibrary()
 {
-    location = location.toLower();
-    qDebug()<<"Display mode changed to: " + location;
-    topBar->pie->hide();
-    middleView->artistsList->setData(library->library["artists"],location);
-
+    middleView->artistsList->setData(library->library["artists"],libraryLocationSelected);
 }
 
 
@@ -254,13 +287,24 @@ void PlayerWindow::setUserInfo()
 
 }
 
+
+/* Makes interface only show songs from selected location ('local', 'cloud' or 'all') */
+
+void PlayerWindow::setLibraryLocation(QString location)
+{
+    libraryLocationSelected = location.toLower();
+    setLibrary();
+}
+
+
+
+
 /* ------------------------------- */
 /* When prfile image is downloaded */
 /* ------------------------------- */
 
 void PlayerWindow::imageReady()
 {
-
     if(library->settings["userPicture"] != "")
     {
         QImage im(path + "/Cuarzo Player/User/ProfileImage.jpg");
@@ -270,28 +314,94 @@ void PlayerWindow::imageReady()
     }
 }
 
-
-void PlayerWindow::addMusic()
+void PlayerWindow::quitApp()
 {
-    topBar->pie->show();
-    library->startMusicAdder();
+    goingToExit = true;
+    QApplication::exit(0);
 }
 
-//Events
+
+/* -------*/
+/* Events */
+/* ------ */
 
 bool PlayerWindow::eventFilter(QObject *, QEvent *event)
 {
 
     if(event->type() == QEvent::KeyPress)
     {
-
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
-        if(keyEvent->key() == Qt::Key_MediaPlay)
+        if(keyEvent->key() == Qt::Key_Q && QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
         {
-            //bottomBar->playerButtons->playPause();
-        }
 
+        }
     }
     return false;
+}
+
+
+void PlayerWindow::closeEvent(QCloseEvent *event)
+{
+    if(!goingToExit){
+        #ifdef Q_OS_MAC
+            ObjectiveC *obc = new ObjectiveC();
+            obc->HideWindow();
+            delete obc;
+        #endif
+            event->ignore();
+     }
+}
+
+void PlayerWindow::createActions()
+{
+    addMusicAct = new QAction(tr("&Add Music"), this);
+    addMusicAct->setShortcuts(QKeySequence::New);
+    //connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
+
+    loginAct = new QAction(tr("&Add Google Drive Account"),this);
+    connect(loginAct, SIGNAL(triggered(bool)), this, SLOT(showLoginWindow()));
+
+    logoutAct = new QAction(tr("Logout from Google Drive"),this);
+    connect(logoutAct, SIGNAL(triggered(bool)), this, SLOT(logout()));
+
+    exitAct = new QAction(tr("&PIC"),this);
+    exitAct->setMenuRole(QAction::QuitRole);
+    connect(exitAct, SIGNAL(triggered(bool)), this, SLOT(quitApp()));
+}
+
+void PlayerWindow::createMenus()
+{
+
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(addMusicAct);
+    fileMenu->addAction(exitAct);
+    accountMenu = menuBar()->addMenu(tr("&Account"));
+    accountMenu->addAction(logoutAct);
+    accountMenu->addAction(loginAct);
+
+}
+
+void PlayerWindow::showLoginWindow()
+{
+    fileMenu->setEnabled(false);
+    accountMenu->setEnabled(false);
+    hide();
+    Login *login = new Login();
+    login->show();
+    connect(login,SIGNAL(loggedIn(QString,QString)),this,SLOT(loggedIn(QString,QString)));
+}
+
+void PlayerWindow::logout()
+{
+    QMessageBox msgBox;
+    msgBox.setText("You won't be able to listen to the songs stored in this cloud until you login again.");
+    msgBox.setInformativeText("Do you wish to continue?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::No);
+    int ret = msgBox.exec();
+
+    if(ret != QMessageBox::Yes) return;
+
+    showLoginWindow();
 }

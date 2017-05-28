@@ -3,9 +3,10 @@
 
 #include <QWidget>
 #include <QBoxLayout>
-#include <QScrollArea>
 #include <QApplication>
 #include <QList>
+#include "bouncyscroll.h"
+#include "fader.h"
 #include "artistviewtitle.h"
 #include "album.h"
 #include "json.hpp"
@@ -18,50 +19,62 @@ class ArtistView : public QWidget
     Q_OBJECT
 public:
     explicit ArtistView();
-    json data;
-    QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
-    QScrollArea *scroll = new QScrollArea();
-    QWidget *albumsFrame = new QWidget();
-    QBoxLayout *albumsLayout = new QBoxLayout(QBoxLayout::TopToBottom,albumsFrame);
-    ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
-    QList<Album*> albums;
-    QList<AlbumSong*> songs;
+
+    //VARIABLES
+    QString libraryLocationSelected;
     QList<json> selectedSongs;
-    QString location = "local";
+    QList<AlbumSong*> songs;
     int firstSelected = -1;
     int lastSelected = -1;
+    QList<Album*> albums;
+    json data;
+
+
+    //ELEMENTS
+    QWidget *albumsFrame = new QWidget();
+    QBoxLayout *albumsLayout = new QBoxLayout(QBoxLayout::TopToBottom,albumsFrame);
+    QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
+    ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
+    BouncyScroll *scroll = new BouncyScroll();
+    Fader *f = new Fader(this);
+
+
 
 public slots:
 
+    //CONSTRUCTORS
+    void setData(json, QString);
+
+    //MENUS
     void menuDeleteLocalSongs();
     void menuDeleteCloudSongs();
     void menuDeleteBothSongs();
-
-    void menuUploadSongs();
     void menuDownloadSongs();
+    void menuUploadSongs();
 
-    void songSelected(int id);
-    void songRightClicked(int);
-    void songPlayed(json song);
-    void setData(json _data);
-    void sendSyncSong(json song);
-    void setSongUploadPercent(int per, int id);
-    void songUploaded(json _data);
-    void cancelSongUpload(int);
+
+    //SONGS
+    void setSongUploadPercent(int,int);
     void deleteSong(json,QString);
-    void hideSong(json);
+    AlbumSong *getSongById(int);
+    void cancelSongUpload(int);
+    void songRightClicked(int);
+    void songSelected(int id);
+    void sendSyncSong(json);
+    void songUploaded(json);
     void changeSong(json);
-    bool existSong(int id);
-    AlbumSong *getSongById(int id);
-
+    void songPlayed(json);
+    void hideSong(json);
+    bool existSong(int);
 
 signals:
-    void sendSongPlayed(json song);
-    void syncSong(json song);
-    void sendCancelSongUpload(int);
-    void deleteSongs(QList<json>,QString);
 
-public slots:
+    //SONGS
+    void deleteSongs(QList<json>,QString);
+    void sendCancelSongUpload(int);
+    void sendSongPlayed(json);
+    void syncSong(json);
+
 };
 
 #endif // ARTISTVIEW_H

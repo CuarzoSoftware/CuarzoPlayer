@@ -21,11 +21,21 @@ class Album:public QWidget
 {
     Q_OBJECT
 public:
-    Album(int _id, json _data);
-    Pix p;
-    JSort s;
-    int id;
+
+    //CONSTRUCTOR
+    Album(int,json,QString);
+
+    //VARIABLES
+    QString libraryLocationSelected;
+    QList<AlbumSong*>songs;
     json data;
+    int id;
+
+    //UTILITIES
+    JSort s;
+    Pix p;
+
+    //ELEMENTS
     QWidget *artWorkFrame = new QWidget();
     QWidget *artWorkBottomFrame = new QWidget();
     QWidget *nameFrame = new QWidget();
@@ -49,12 +59,11 @@ public:
 
     OpButton *shuffle = new OpButton(":res/img/shuffle.svg",20,20,blue);
     OpButton *more = new OpButton(":res/img/more.svg",20,20,blue);
-    OpButton *sync = new OpButton(":res/img/sync-border.svg",20,20,blue);
-
-    QString location = "local";
-    QList<AlbumSong*>songs;
+    //OpButton *sync = new OpButton(":res/img/sync-border.svg",20,20,blue);
 
 signals:
+
+    //SONGS
     void songSelected(int);
     void songPlayed(json);
     void syncSong(json);
@@ -63,11 +72,15 @@ signals:
     void deleteSong(json,QString);
 
 public slots:
+
+    //SONGS
     void sendSelectedSong(int);
     void sendPlayedSong(json);
-    void setData(json);
     void sendSyncSong(json);
     void cancelSongUpload(int);
+
+    //CONSTRUCTOR
+    void setData(json,QString);
 };
 
 

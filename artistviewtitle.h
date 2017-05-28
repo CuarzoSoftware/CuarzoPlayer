@@ -24,7 +24,7 @@ public:
     CropLabel *artistInfo = new CropLabel("","color:#888;font-size:15px");
     OpButton *shuffle = new OpButton(":res/img/shuffle.svg",bSize,bSize,blue);
     //OpButton *download = new OpButton(":res/img/download.svg",bSize,bSize,red);
-    OpButton *sync = new OpButton(":res/img/cloud.svg",bSize,bSize,blue);
+    //OpButton *sync = new OpButton(":res/img/cloud.svg",bSize,bSize,blue);
     OpButton *more = new OpButton(":res/img/more-big.svg",bSize,bSize,blue);
 
 signals:

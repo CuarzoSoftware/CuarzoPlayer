@@ -4,7 +4,7 @@ SelectList::SelectList(json list)
 {
     setData(list);
     setStyleSheet("SelectList{border-radius:5px;background:white;border:1px solid #D8D8D8}");
-    currentText = new QLabel("Home");
+    currentText = new QLabel("Local");
     currentIcon = new Icon(":res/img/local.svg","#666",16,16);
     selectIcon = new Icon(":res/img/listArrow.svg","#666",16,16);
     layout->setContentsMargins(7,4,4,4);
@@ -17,7 +17,7 @@ SelectList::SelectList(json list)
 }
 
 void SelectList::mousePressEvent(QMouseEvent *eventPress){
-    menu->move(mapToGlobal(QPoint(this->pos().x() - 10,this->pos().y() - 20)));
+    menu->move(mapToGlobal(QPoint(this->pos().x() - 167,this->pos().y() - 20)));
     menu->show();
 }
 

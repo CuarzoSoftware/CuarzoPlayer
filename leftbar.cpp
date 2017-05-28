@@ -25,24 +25,24 @@ LeftBar::LeftBar()
  layout->addWidget(title2);
  layout->addWidget(playlistsFrame);
 
- items[0] = new LeftBarItem("artists",":res/img/artists.svg","Artists");
- items[1] = new LeftBarItem("albums",":res/img/albums.svg","Albums");
- items[2] = new LeftBarItem("songs",":res/img/songs.svg","Songs");
- items[3] = new LeftBarItem("genres",":res/img/genres.svg","Genres");
+ items.append(new LeftBarItem("artists",":res/img/artists.svg","Artists"));
+ items.append(new LeftBarItem("albums",":res/img/albums.svg","Albums"));
+ items.append(new LeftBarItem("songs",":res/img/songs.svg","Songs"));
+ items.append(new LeftBarItem("genres",":res/img/genres.svg","Genres"));
 
 
  libraryLayout->setMargin(0);
  libraryLayout->setSpacing(0);
 
- for(int i = 0; i<=3; i++){
-     libraryLayout->addWidget(items[i]);
-     connect(items[i],SIGNAL(selected(QString)),this,SLOT(itemSelected(QString)));
+ foreach(LeftBarItem *item,items){
+     libraryLayout->addWidget(item);
+     connect(item,SIGNAL(selected(QString)),this,SLOT(itemSelected(QString)));
  }
 
- items[4] = new LeftBarItem("0",":res/img/playlist.svg","Eduardo's playlist");
- items[5] = new LeftBarItem("1",":res/img/playlist.svg","Viaje");
- items[6] = new LeftBarItem("2",":res/img/playlist.svg","Inspiración");
- items[7] = new LeftBarItem("3",":res/img/playlist.svg","Cásicos");
+ items.append(new LeftBarItem("0",":res/img/playlist.svg","Eduardo's playlist"));
+ items.append(new LeftBarItem("1",":res/img/playlist.svg","Viaje"));
+ items.append(new LeftBarItem("2",":res/img/playlist.svg","Inspiración"));
+ items.append(new LeftBarItem("3",":res/img/playlist.svg","Cásicos"));
 
  for(int i = 4; i<=7; i++){
      playlistsLayout->addWidget(items[i]);
@@ -54,15 +54,17 @@ LeftBar::LeftBar()
 
  title1->setStyleSheet("color:#AAA;font-size:10px;font-weight:bold;margin:8px");
  title2->setStyleSheet("color:#AAA;font-size:10px;font-weight:bold;margin:8px");
+
 }
 
 void LeftBar::itemSelected(QString id){
     sendSelected(id);
-    int i = 0;
-    while(items[i] != nullptr){
-        if(items[i]->id != id){
-            items[i]->setSelected(false);
+    foreach(LeftBarItem *item,items){
+        if(item->id != id){
+            item->setSelected(false);
         }
-        i++;
+        else{
+            item->setSelected(true);
+        }
     }
 }

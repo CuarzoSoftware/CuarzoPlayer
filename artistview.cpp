@@ -6,6 +6,7 @@ using json = nlohmann::json;
 
 ArtistView::ArtistView()
 {
+    setWindowOpacity(0);
     layout->setAlignment(Qt::AlignTop);
     layout->setContentsMargins(15,0,15,0);
     layout->setSpacing(0);
@@ -48,10 +49,14 @@ void ArtistView::menuDownloadSongs()
 
 }
 
-//Sets the data and print the albums
 
-void ArtistView::setData(json _data){
+/* SETS THE DATA AND CREATE THE ALBUMS */
 
+void ArtistView::setData(json _data, QString location){
+
+    hide();
+
+    libraryLocationSelected = location;
     songs.clear();
 
     //Cleans the previus albums
@@ -71,7 +76,7 @@ void ArtistView::setData(json _data){
     for (json::iterator it = data.begin(); it != data.end(); ++it)
     {
 
-        Album *album = new Album(0,it.value());
+        Album *album = new Album(0,it.value(),libraryLocationSelected);
         albumsLayout->addWidget(album);
 
         connect(album,SIGNAL(songPlayed(json)),this,SIGNAL(sendSongPlayed(json)));
@@ -91,6 +96,7 @@ void ArtistView::setData(json _data){
 
     artistViewTitle->artistName->changeText(QString::fromStdString(data.begin().value().begin().value()["artist"]));
     artistViewTitle->artistInfo->changeText(QString::number(albums.length()) + " álbumes, " + QString::number(songsCount) + " canciones");
+    show();
 
 }
 
@@ -218,11 +224,11 @@ void ArtistView::songRightClicked(int id)
     if(!uploading&&!downloading)contextMenu.addAction(&action1);
     if(downloading)contextMenu.addAction(&action2);
     if(uploading)contextMenu.addAction(&action3);
-    if(!local && cloud && !downloading && !uploading)contextMenu.addAction(&action4);
-    if(local && !cloud && !downloading && !uploading)contextMenu.addAction(&action5);
+    if(!local && cloud && !downloading && !uploading && libraryLocationSelected != "local")contextMenu.addAction(&action4);
+    if(local && !cloud && !downloading && !uploading && libraryLocationSelected != "local")contextMenu.addAction(&action5);
     if(cloud || both)contextMenu.addAction(&action7);
-    if(local || both)contextMenu.addAction(&action6);
-    if(both && !downloading && !uploading)contextMenu.addAction(&action8);
+    if(local || both && libraryLocationSelected != "local")contextMenu.addAction(&action6);
+    if(both && !downloading && !uploading && libraryLocationSelected != "local")contextMenu.addAction(&action8);
 
 
     connect(&action6, SIGNAL(triggered()), this, SLOT(menuDeleteLocalSongs()));
@@ -300,7 +306,7 @@ void ArtistView::changeSong(json song)
 {
     int id = song["id"];
     if(!existSong(id)) return;
-    getSongById(id)->setData(song);
+    getSongById(id)->setData(song,libraryLocationSelected);
 }
 
 bool ArtistView::existSong(int sid)

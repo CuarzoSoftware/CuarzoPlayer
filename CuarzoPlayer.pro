@@ -54,7 +54,6 @@ win32 {
 
 
 SOURCES += main.cpp\
-    opbutton.cpp \
     bottombar.cpp \
     croplabel.cpp \
     playerwindow.cpp \
@@ -126,7 +125,9 @@ HEADERS  += \
     maths.h \
     pie.h \
     filemanager.h \
-    reply.h
+    reply.h \
+    fader.h \
+    bouncyscroll.h
 
 
 

@@ -15,11 +15,11 @@ using json = nlohmann::json;
 class SelectList : public QFrame
 {
     Q_OBJECT
+public:
+    explicit SelectList(json items);
     Icon *currentIcon;
     Icon *selectIcon;
     QLabel *currentText;
-public:
-    explicit SelectList(json items);
     QList<SelectListItem*> items;
     int size;
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);

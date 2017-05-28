@@ -5,8 +5,19 @@
 #include <QHttpMultiPart>
 #include <QNetworkRequest>
 
+#ifdef Q_OS_MAC
+    #include "objectivec.h"
+#endif
+
 Login::Login()
 {
+
+    #ifdef Q_OS_MAC
+        ObjectiveC *obc = new ObjectiveC();
+        obc->Display(winId());
+        delete obc;
+    #endif
+
     code->hide();
     QRect screen = QApplication::desktop()->screenGeometry();
     setStyleSheet("Login{background:#FFF}");
@@ -109,6 +120,7 @@ void Login::getToken(){
 void Login::continueWithoutLogin()
 {
     loggedIn("NO","NO");
+    delete this;
 }
 void Login::response(QNetworkReply*res){
 
@@ -116,7 +128,7 @@ void Login::response(QNetworkReply*res){
 
     if(!jres["access_token"].is_null() && !jres["refresh_token"].is_null()){
         loggedIn(QString::fromStdString(jres["access_token"]),QString::fromStdString(jres["refresh_token"]));
+        delete this;
     }
 
-    qDebug() << QString::fromStdString(jres.dump());
 }

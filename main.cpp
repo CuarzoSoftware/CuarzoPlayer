@@ -4,12 +4,6 @@
 #include <QString>
 #include <QDir>
 
-
-
-#ifdef Q_OS_MAC
-    #include "objectivec.h"
-#endif
-
 QString blue = "#2687FB";
 QString red = "#FF1D25";
 QString green = "#7AC943";
@@ -23,13 +17,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
     a.setAttribute(Qt::AA_EnableHighDpiScaling);
+    a.setQuitOnLastWindowClosed(false);
     PlayerWindow *w = new PlayerWindow();
-    #ifdef Q_OS_MAC
-        ObjectiveC *obc = new ObjectiveC();
-        obc->Display(w->winId());
-        obc->Display(w->login->winId());
-
-    #endif
     return a.exec();
 }
 

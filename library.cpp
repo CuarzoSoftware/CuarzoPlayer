@@ -180,7 +180,7 @@ void Library::songUploaded(json sng)
                     library["artists"][artist][album][id] = updatedSong;
 
                     saveLibrary();
-                    musicAddComplete();
+                    //musicAddComplete();
 
                     return;
                 }
@@ -189,61 +189,32 @@ void Library::songUploaded(json sng)
     }
 }
 
-void Library::newSongAdded(int songID, int track, int year, int duration, QString artist, QString album, QString title, QString genre, QString format, bool artWork){
-
-    songsAdded++;
-    float per = 100/(float)songsToAdd*(float)songsAdded;
-    percentAdded((int)per);
-
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["year"] = year;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["duration"] = duration;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artist"] = artist.toStdString();
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["album"] = album.toStdString();
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["title"] = title.toStdString();
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["genre"] = genre.toStdString();
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["format"] = format.toStdString();
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWork"] = artWork;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["cloud"] = false;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["local"] = true;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["albumSynched"] = false;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWorkId"] = NULL;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["musicId"] = NULL;
-    library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["downloadURL"] = NULL;
 
 
-    if(songsAdded == songsToAdd){
-        saveLibrary();
-        musicAddComplete();
-    }
-    else{
-        FileManager *man = new FileManager(files[songsAdded]);
-        connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
-        connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
-        man->start();
-    }
+void Library::startMusicAdder()
+{
 
-}
-
-void Library::startMusicAdder(){
-
-    files.clear();
+    QList<QUrl> files;
     files = QFileDialog::getOpenFileUrls(new QWidget(),"Añade Música",path,"ALL (*.mp3 *.m4a) ;; MP3 (*.mp3) ;; M4A (*.m4a)");
 
-    if(files.length() == 0){
-        musicAddComplete();
+    if(files.length() == 0)
+    {
+        songAddCanceled();
         return;
     }
 
-    songsToAdd = files.length();
-    songsAdded = 0;
-
-    FileManager *man = new FileManager(files[0]);
-    connect(man,SIGNAL(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)),this,SLOT(newSongAdded(int,int,int,int,QString,QString,QString,QString,QString,bool)));
-    connect(man,SIGNAL(finished()),man,SLOT(deleteLater()));
+    FileManager *man = new FileManager(library,files);
+    connect(man,SIGNAL(songAddProgress(int)),this,SIGNAL(songAddProgress(int)));
+    connect(man,SIGNAL(songAddEnd(QString)),this,SLOT(songAddEnd(QString)));
     man->start();
 
+}
+
+void Library::songAddEnd(QString newLibrary)
+{
+    library = json::parse(newLibrary.toStdString());
+    saveLibrary();
+    songAddComplete();
 }
 
 void Library::deleteSongs(QList<json> songs, QString from)
@@ -356,7 +327,7 @@ void Library::deleteSongs(QList<json> songs, QString from)
     }
 
     saveLibrary();
-    musicAddComplete();
+    //musicAddComplete();
 
     foreach(json song,unlocal)
     {

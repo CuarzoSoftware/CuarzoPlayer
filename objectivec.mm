@@ -1,10 +1,12 @@
 #include "objectivec.h"
+#include <QObject>
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 #import <Foundation/NSUserNotification.h>
 #import <Foundation/NSString.h>
 #include <QDebug>
+#include <QToolButton>
 
 
 
@@ -15,7 +17,12 @@ void ObjectiveC::Display(WId id)
     mainWindow.titlebarAppearsTransparent = true;
     mainWindow.backgroundColor =  NSColor.whiteColor;
 
+
+
+
     /*
+    NSButton *closeButton = [mainWindow standardWindowButton:NSWindowCloseButton];
+    [closeButton setHidden:YES];
     NSUserNotification* userNotification = [[[NSUserNotification alloc] init] autorelease];
     userNotification.title = @"Cancion Actual";
     userNotification.informativeText = @"Strawberry Fields Forever";
@@ -23,6 +30,12 @@ void ObjectiveC::Display(WId id)
     */
 
 
+}
+
+
+void ObjectiveC::HideWindow()
+{
+    [NSApp hide:nil];
 }
 
 

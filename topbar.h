@@ -22,6 +22,7 @@ public:
     SelectList *modeList;
     QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     UserPicture *userPicture = new UserPicture();
+    OpButton *addAccount = new OpButton("Add Google Drive","font-size:11px;color:#888");
     StorageBar *storageBar = new StorageBar();
     SearchBar *searchBar = new SearchBar();
     OpButton *addButton = new OpButton(":res/img/add.svg",35,35);

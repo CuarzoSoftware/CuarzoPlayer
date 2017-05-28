@@ -18,7 +18,6 @@ LeftBarItem::LeftBarItem(QString _id,QString _icon,QString _text)
 }
 
 void LeftBarItem::mousePressEvent(QMouseEvent *event){
-    setSelected(true);
     selected(id);
 }
 

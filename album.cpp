@@ -6,10 +6,10 @@ extern QString path;
 
 //Creates the album
 
-Album::Album(int _id, json _data)
+Album::Album(int _id, json _data, QString location)
 {
     id = _id;
-    setData(_data);
+    setData(_data,location);
     artWork->setScaledContents(true);
     artWork->setMaximumSize(150,150);
     artWork->setStyleSheet("border-radius:10px;border:2px solid #EEE");
@@ -37,7 +37,7 @@ Album::Album(int _id, json _data)
     rightLayout->addWidget(songsFrame,10);
     rightLayout->setMargin(0);
     infoLayout->addWidget(nameFrame,10);
-    infoLayout->addWidget(sync);
+    //infoLayout->addWidget(sync);
     infoLayout->addWidget(more);
     infoLayout->setMargin(5);
     infoFrame->setObjectName("info");
@@ -50,19 +50,15 @@ Album::Album(int _id, json _data)
     songsLayout->setMargin(0);
     songsLayout->setSpacing(0);
 
+
 }
 
 //Set the albums data
 
-void Album::setData(json _data)
+void Album::setData(json _data, QString location)
 {
     data = _data;
-
-    //Detect if the entire albums is synched
-
-    if(data.begin().value()["albumSynched"]){
-        sync->hide();
-    }
+    libraryLocationSelected = location;
 
     //Sets the artwork
 
@@ -113,8 +109,7 @@ void Album::setData(json _data)
 
     foreach(json jsong , list)
     {
-        jsong["albumSynched"] = isAlbumSynched;
-        AlbumSong *song = new AlbumSong(jsong);
+        AlbumSong *song = new AlbumSong(jsong, libraryLocationSelected);
         songsLayout->addWidget(song);
         connect(song,SIGNAL(songSelected(int)),this,SLOT(sendSelectedSong(int)));
         connect(song,SIGNAL(songPlayed(json)),this,SLOT(sendPlayedSong(json)));

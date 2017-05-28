@@ -8,6 +8,8 @@ class ObjectiveC
 {
 public:
     static void Display(WId);
+    static void HideWindow();
+
 };
 
 #endif

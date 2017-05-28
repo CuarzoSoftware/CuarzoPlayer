@@ -10,9 +10,8 @@ ArtistViewTitle::ArtistViewTitle()
     layout->setMargin(0);
     layout->setAlignment(Qt::AlignBottom);
     layout->addWidget(leftFrame,10);
-    layout->addWidget(sync);
+    //layout->addWidget(sync);
     layout->addWidget(shuffle);
     layout->addWidget(more);
-    hide();
 
 }

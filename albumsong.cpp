@@ -9,7 +9,7 @@ extern QString green;
 
 //Creates the song
 
-AlbumSong::AlbumSong(json _data)
+AlbumSong::AlbumSong(json _data, QString location)
 {
     setAttribute(Qt::WA_Hover);
     setObjectName("song");
@@ -29,7 +29,7 @@ AlbumSong::AlbumSong(json _data)
     pie->hide();
     status->hide();
     more->hide();
-    setData(_data);
+    setData(_data,location);
     connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
     connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
     connect(more,SIGNAL(released()),this,SLOT(showMenu()));
@@ -37,14 +37,20 @@ AlbumSong::AlbumSong(json _data)
 
 //Set the songs data
 
-void AlbumSong::setData(json _data)
+void AlbumSong::setData(json _data, QString location)
 {
-
+    libraryLocationSelected = location;
     data = _data;
     id = data["id"];
     name->changeText(QString::fromStdString(data["title"]));
     number->setText(QString::number((int)data["track"]));
     duration->setText(r.timeFromSecconds((int)data["duration"]));
+
+    if(libraryLocationSelected == "local")
+    {
+        sync->hide();
+        return;
+    }
 
     if(!data["local"])
     {
@@ -132,15 +138,15 @@ void AlbumSong::showMenu()
 
     if(pie->isVisible() && !data["cloud"]) contextMenu.addAction(&action3);
 
-    if(!pie->isVisible() && data["cloud"] && !data["local"]) contextMenu.addAction(&action4);
+    if(!pie->isVisible() && data["cloud"] && !data["local"] && libraryLocationSelected != "local") contextMenu.addAction(&action4);
 
-    if(!pie->isVisible() && !data["cloud"] && data["local"]) contextMenu.addAction(&action5);
+    if(!pie->isVisible() && !data["cloud"] && data["local"] && libraryLocationSelected != "local") contextMenu.addAction(&action5);
 
-    if(data["cloud"] && data["local"])
+    if(data["cloud"] && data["local"] && libraryLocationSelected != "local")
     {
         contextMenu.addAction(&action6); contextMenu.addAction(&action7); contextMenu.addAction(&action8);
     }
-    else if(data["cloud"] && !data["local"])
+    else if(data["cloud"] && !data["local"] && libraryLocationSelected != "local")
     {
         contextMenu.addAction(&action7);
     }

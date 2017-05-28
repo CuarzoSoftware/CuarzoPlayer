@@ -1,16 +1,18 @@
 #ifndef PLAYERWINDOW_H
 #define PLAYERWINDOW_H
 
-#include <QWidget>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QMainWindow>
 #include <QBoxLayout>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QMenuBar>
 #include "library.h"
 #include "titlebar.h"
 #include "topbar.h"
 #include "middleview.h"
 #include "bottombar.h"
-#include "id.h"
 #include "player.h"
 #include "json.hpp"
 #include "jsort.h"
@@ -19,41 +21,78 @@
 #include "maths.h"
 #include "pix.h"
 
+#ifdef Q_OS_MAC
+    #include "objectivec.h"
+#endif
+
 using json = nlohmann::json;
 
-
-class PlayerWindow : public QWidget
+class PlayerWindow : public QMainWindow
 {
     Q_OBJECT
 public:
+
+    PlayerWindow();
+
+    //MENU ITEMS
+    QMenu *fileMenu;
+    QMenu *accountMenu;
+    QAction *addMusicAct;
+    QAction *loginAct;
+    QAction *logoutAct;
+    QAction *exitAct;
+
+    //VARIABLES
     QString viewMode;
     QString playingFrom;
-    Maths math;
-    ID id;
-    JSort s;
+    QString libraryLocationSelected;
+    bool goingToExit = false;
+    bool cloudConnectionsMade = false;
+    bool globalConnectionsMade = false;
+
+    //UTILITIES
     Pix p;
-    PlayerWindow();
+    JSort s;
+    Maths math;
+
+    //BRAINS
     GoogleDrive *drive;
-    Login *login = new Login();
     Player *player = new Player();
-    QBoxLayout *mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+    Library *library = new Library();
+
+    //ELEMENTS
+    TopBar *topBar = new TopBar();
     QWidget *frame = new QWidget();
     TitleBar *titleBar = new TitleBar();
+    BottomBar *bottomBar = new BottomBar();
     MiddleView *middleView = new MiddleView();
     QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::TopToBottom,frame);
-    Library *library = new Library();
-    TopBar *topBar = new TopBar();
-    BottomBar *bottomBar = new BottomBar();
+
+
+    //EVENTS
     bool eventFilter(QObject *obj, QEvent *event);
+    void closeEvent(QCloseEvent * event);
+
 public slots:
-    void addMusic();
+
+    //CONSTRUCTORS
+    void setLibrary();
+    void setUserInfo();
+    void setLibraryLocation(QString);
+    void setupSettings();
+    void createActions();
+    void createMenus();
+
+    //METHODS
+    void playFromArtist(json);
+    void showLoginWindow();
+    void logout();
+    void quitApp();
+
+    //EVENTS
+    void loggedIn(QString token, QString refresh);
     void leftItemSelected(QString);
     void artistSelected(json data);
-    void setLibrary(QString location);
-    void playFromArtist(json);
-    void loggedIn(QString token, QString refresh);
-    void setUserInfo();
-    void setupSettings();
     void imageReady();
 
 };
