@@ -9,7 +9,7 @@ extern QString green;
 
 //Creates the song
 
-AlbumSong::AlbumSong(json _data, QString location)
+AlbumSong::AlbumSong(json _data)
 {
     setAttribute(Qt::WA_Hover);
     setObjectName("song");
@@ -29,7 +29,7 @@ AlbumSong::AlbumSong(json _data, QString location)
     pie->hide();
     status->hide();
     more->hide();
-    setData(_data,location);
+    setData(_data);
     connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
     connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
     connect(more,SIGNAL(released()),this,SLOT(showMenu()));
@@ -37,9 +37,8 @@ AlbumSong::AlbumSong(json _data, QString location)
 
 //Set the songs data
 
-void AlbumSong::setData(json _data, QString location)
+void AlbumSong::setData(json _data)
 {
-    libraryLocationSelected = location;
     data = _data;
     id = data["id"];
     name->changeText(QString::fromStdString(data["title"]));

@@ -27,6 +27,7 @@ signals:
 public slots:
     void setData(json _data);
     void setSelected(bool selected);
+    void setLocation(QString);
 };
 
 #endif // ARTISTLISTITEM_H

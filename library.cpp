@@ -58,18 +58,18 @@ Library::Library()
         settings["shuffle"] = false;
         settings["init"] = false;
         settings["logged"] = false;
-        settings["token"] = NULL;
-        settings["restoreToken"] = NULL;
-        settings["totalSpace"] = NULL;
-        settings["usedSpace"] = NULL;
-        settings["userName"] = NULL;
-        settings["email"] = NULL;
+        settings["token"] = "";
+        settings["restoreToken"] = "";
+        settings["totalSpace"] = 0;
+        settings["usedSpace"] = 0;
+        settings["userName"] = "";
+        settings["email"] = "";
         settings["userPicture"] = NULL;
-        settings["folderId"] = NULL;
-        settings["artworkId"] = NULL;
-        settings["musicId"] = NULL;
-        settings["libraryId"] = NULL;
-        settings["libraryURL"] = NULL;
+        settings["folderId"] = "";
+        settings["artworkId"] = "";
+        settings["musicId"] = "";
+        settings["libraryId"] = "";
+        settings["libraryURL"] = "";
 
         QJsonDocument doc =  QJsonDocument::fromJson(QString::fromStdString(settings.dump()).toUtf8());
         QFile file;
@@ -206,6 +206,7 @@ void Library::startMusicAdder()
     FileManager *man = new FileManager(library,files);
     connect(man,SIGNAL(songAddProgress(int)),this,SIGNAL(songAddProgress(int)));
     connect(man,SIGNAL(songAddEnd(QString)),this,SLOT(songAddEnd(QString)));
+    connect(man,SIGNAL(songAddEnd(QString)),man,SLOT(quit()));
     man->start();
 
 }
@@ -327,7 +328,6 @@ void Library::deleteSongs(QList<json> songs, QString from)
     }
 
     saveLibrary();
-    //musicAddComplete();
 
     foreach(json song,unlocal)
     {

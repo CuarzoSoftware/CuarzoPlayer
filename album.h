@@ -5,6 +5,7 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QList>
+#include <QMap>
 #include "croplabel.h"
 #include "opbutton.h"
 #include "albumsong.h"
@@ -23,13 +24,10 @@ class Album:public QWidget
 public:
 
     //CONSTRUCTOR
-    Album(int,json,QString);
+    Album(json);
 
     //VARIABLES
-    QString libraryLocationSelected;
-    QList<AlbumSong*>songs;
-    json data;
-    int id;
+    QMap<int,AlbumSong*>songs;
 
     //UTILITIES
     JSort s;
@@ -59,7 +57,6 @@ public:
 
     OpButton *shuffle = new OpButton(":res/img/shuffle.svg",20,20,blue);
     OpButton *more = new OpButton(":res/img/more.svg",20,20,blue);
-    //OpButton *sync = new OpButton(":res/img/sync-border.svg",20,20,blue);
 
 signals:
 
@@ -73,14 +70,9 @@ signals:
 
 public slots:
 
-    //SONGS
-    void sendSelectedSong(int);
-    void sendPlayedSong(json);
-    void sendSyncSong(json);
-    void cancelSongUpload(int);
-
-    //CONSTRUCTOR
-    void setData(json,QString);
+    void sort();
+    void setData(json);
+    void addSong(AlbumSong*);
 };
 
 

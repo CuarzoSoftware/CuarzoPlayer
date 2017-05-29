@@ -50,6 +50,31 @@ void ArtistListItem::setSelected(bool selected)
     }
 }
 
+void ArtistListItem::setLocation(QString location)
+{
+    bool local = false;
+    bool cloud = false;
+
+    for (json::iterator it = data.begin(); it != data.end(); ++it) {
+        for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
+            if(it2.value()["local"]){
+                local = true;
+            }
+            if(it2.value()["cloud"]){
+                cloud = true;
+            }
+        }
+    }
+
+    if(location == "local" && local || location == "cloud" && cloud || location == "both" && local || location == "both" && cloud ){
+        show();
+    }
+    else{
+        hide();
+    }
+
+}
+
 
 void ArtistListItem::mousePressEvent(QMouseEvent*){
     selected(this);

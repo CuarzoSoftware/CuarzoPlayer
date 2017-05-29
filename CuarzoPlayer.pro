@@ -55,7 +55,6 @@ win32 {
 
 SOURCES += main.cpp\
     bottombar.cpp \
-    croplabel.cpp \
     playerwindow.cpp \
     songinfo.cpp \
     playerbuttons.cpp \
@@ -127,7 +126,8 @@ HEADERS  += \
     filemanager.h \
     reply.h \
     fader.h \
-    bouncyscroll.h
+    init.h \
+    emptymessage.h
 
 
 

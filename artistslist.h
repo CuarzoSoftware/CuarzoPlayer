@@ -3,9 +3,8 @@
 
 #include <QWidget>
 #include <QBoxLayout>
-#include <QList>
+#include <QMap>
 #include <QScrollArea>
-#include "fader.h"
 #include "leftbaritem.h"
 #include "artistlistitem.h"
 #include "json.hpp"
@@ -22,14 +21,14 @@ public:
     QFrame *frame = new QFrame();
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,frame);
     json data;
-    Fader *f = new Fader(this);
     QString selectedArtist;
-    QList<ArtistListItem*>items;
+    QMap<QString,ArtistListItem*>artists;
 public slots:
-    void setData(json,QString);
+    void setData(json);
+    void setLocation(QString);
     void artistSelected(ArtistListItem*);
 signals:
-    void sendSelectedArtist(json data);
+    void sendSelectedArtist(QString);
     void hideArtistView(int);
     void showArtistView(int);
 };

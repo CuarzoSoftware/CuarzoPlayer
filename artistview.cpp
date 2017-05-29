@@ -4,9 +4,9 @@ using json = nlohmann::json;
 
 //Creates the artist window
 
-ArtistView::ArtistView()
+ArtistView::ArtistView(json data)
 {
-    setWindowOpacity(0);
+    hide();
     layout->setAlignment(Qt::AlignTop);
     layout->setContentsMargins(15,0,15,0);
     layout->setSpacing(0);
@@ -22,7 +22,48 @@ ArtistView::ArtistView()
     albumsFrame->setStyleSheet("#fram{background:transparent}");
     albumsLayout->setMargin(15);
     albumsLayout->setSpacing(40);
+
+    for (json::iterator it = data.begin(); it != data.end(); ++it)
+    {
+        Album *album = new Album(it.value());
+        addAlbum(album);
+    }
+
+    sort();
+
+    artistViewTitle->artistName->changeText(QString::fromStdString(data.begin().value().begin().value()["artist"]));
+    artistViewTitle->artistInfo->changeText(QString::number(albums.size()) + " álbumes, " + QString::number(songs.size()) + " canciones");
 }
+
+void ArtistView::addAlbum(Album *album)
+{
+
+    albumsLayout->addWidget(album);
+    QString artistName = QString::fromStdString(album->songs.values()[0]->data["artist"]);
+    QString albumName = QString::fromStdString(album->songs.values()[0]->data["album"]);
+    albums.insert(artistName+albumName,album);
+
+}
+
+void ArtistView::sort()
+{
+    songs.clear();
+
+    foreach(Album *album,albums)
+    {
+        QList<AlbumSong*> sngs = album->songs.values();
+
+        qSort(sngs.begin(), sngs.end(),[](AlbumSong *a, AlbumSong *b) -> bool {
+            return a->data["track"] <= b->data["track"];
+        });
+
+        foreach (AlbumSong *song, sngs) {
+            songs.append(song);
+        }
+    }
+}
+
+/*
 
 void ArtistView::menuDeleteLocalSongs()
 {
@@ -49,56 +90,6 @@ void ArtistView::menuDownloadSongs()
 
 }
 
-
-/* SETS THE DATA AND CREATE THE ALBUMS */
-
-void ArtistView::setData(json _data, QString location){
-
-    hide();
-
-    libraryLocationSelected = location;
-    songs.clear();
-
-    //Cleans the previus albums
-
-    firstSelected = -1;
-    lastSelected = -1;
-
-    qDeleteAll(albums);
-    albums.clear();
-
-    data = _data;
-
-    //Create the albums
-
-    int songsCount = 0;
-
-    for (json::iterator it = data.begin(); it != data.end(); ++it)
-    {
-
-        Album *album = new Album(0,it.value(),libraryLocationSelected);
-        albumsLayout->addWidget(album);
-
-        connect(album,SIGNAL(songPlayed(json)),this,SIGNAL(sendSongPlayed(json)));
-        connect(album,SIGNAL(syncSong(json)),this,SLOT(sendSyncSong(json)));
-        connect(album,SIGNAL(songSelected(int)),this,SLOT(songSelected(int)));
-        connect(album,SIGNAL(sendCancelSongUpload(int)),this,SLOT(cancelSongUpload(int)));
-        connect(album,SIGNAL(songRightClicked(int)),this,SLOT(songRightClicked(int)));
-        connect(album,SIGNAL(deleteSong(json,QString)),this,SLOT(deleteSong(json,QString)));
-
-        songsCount += album->songs.length();
-
-        songs.append(album->songs);
-        albums.append(album);
-    }
-
-    //Set the artist info in the top bar
-
-    artistViewTitle->artistName->changeText(QString::fromStdString(data.begin().value().begin().value()["artist"]));
-    artistViewTitle->artistInfo->changeText(QString::number(albums.length()) + " álbumes, " + QString::number(songsCount) + " canciones");
-    show();
-
-}
 
 void ArtistView::sendSyncSong(json song)
 {
@@ -306,7 +297,7 @@ void ArtistView::changeSong(json song)
 {
     int id = song["id"];
     if(!existSong(id)) return;
-    getSongById(id)->setData(song,libraryLocationSelected);
+    getSongById(id)->setData(song);
 }
 
 bool ArtistView::existSong(int sid)
@@ -324,6 +315,7 @@ bool ArtistView::existSong(int sid)
     return false;
 }
 
+
 AlbumSong *ArtistView::getSongById(int sid)
 {
     foreach(Album *album,albums)
@@ -337,4 +329,4 @@ AlbumSong *ArtistView::getSongById(int sid)
         }
     }
 }
-
+*/

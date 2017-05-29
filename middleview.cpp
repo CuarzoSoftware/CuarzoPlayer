@@ -5,11 +5,7 @@ MiddleView::MiddleView()
     setChildrenCollapsible(false);
     setHandleWidth(0);
     addWidget(leftBar);
-    addWidget(artistsList);
-    addWidget(artistView);
-
-    artistsList->hide();
-    artistView->hide();
+    addWidget(msg);
 
     setStyleSheet("QSplitter::handle{background-color: black;}");
 }

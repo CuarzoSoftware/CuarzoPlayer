@@ -24,10 +24,10 @@ class AlbumSong : public QFrame
 public:
 
     //CONSTRUCTOR
-    AlbumSong(json,QString);
+    AlbumSong(json);
 
     //VARIABLES
-    QString libraryLocationSelected;
+    QString libraryLocationSelected = "local";
     bool downloading = false;
     bool uploading = false;
     int bSize = 15;
@@ -61,7 +61,7 @@ public slots:
     //SETTERS
     void setSelected(bool);
     void setPlaying(bool);
-    void setData(json,QString);
+    void setData(json);
 
     //EVENTS
     void syncClicked();

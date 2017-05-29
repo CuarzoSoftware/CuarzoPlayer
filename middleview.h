@@ -5,16 +5,14 @@
 #include "leftbar.h"
 #include "artistslist.h"
 #include "artistview.h"
+#include "emptymessage.h"
 
 class MiddleView : public QSplitter
 {
 public:
     MiddleView();
-
     LeftBar *leftBar = new LeftBar();
-    ArtistsList *artistsList = new ArtistsList();
-
-    ArtistView *artistView = new ArtistView();
+    EmptyMessage *msg = new EmptyMessage();
 };
 
 #endif // MIDDLEVIEW_H

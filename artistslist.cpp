@@ -2,7 +2,7 @@
 
 ArtistsList::ArtistsList()
 {
-
+    hide();
     setAutoFillBackground(true);
     setMinimumWidth(190);
     setFixedWidth(190);
@@ -27,76 +27,40 @@ ArtistsList::ArtistsList()
 
 }
 
-void ArtistsList::artistSelected(ArtistListItem* item){
-    foreach(ArtistListItem *it,items)
-    {
-        it->setSelected(false);
-    }
-    item->setSelected(true);
-    selectedArtist = item->artistName;
-    sendSelectedArtist(item->data);
-}
+void ArtistsList::setData(json _data){
 
-void ArtistsList::setData(json _data,QString location){
+    qDeleteAll(artists);
+    artists.clear();
+    for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
 
-    qDeleteAll(items);
-    items.clear();
-    bool found = false;
-    if(location == "local" || location == "cloud")
-    {
+        ArtistListItem *artist = new ArtistListItem(it.value());
+        artists.insert(QString::fromStdString(it.key()),artist);
+        layout->addWidget(artist);
+        connect(artist,SIGNAL(selected(ArtistListItem*)),this,SLOT(artistSelected(ArtistListItem*)));
 
-        for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
-            bool hasLocalSongs = false;
-            for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2) {
-                for (json::iterator it3 = it2.value().begin(); it3 != it2.value().end(); ++it3) {
-                    if(it3.value()[location.toStdString()]){
-                        hasLocalSongs = true;
-                    }
-                }
-            }
-            if(!hasLocalSongs) continue;
-            ArtistListItem *item = new ArtistListItem(it.value());
-            items.append(item);
-            layout->addWidget(item);
-            connect(item,SIGNAL(selected(ArtistListItem*)),this,SLOT(artistSelected(ArtistListItem*)));
-            if(item->artistName == selectedArtist){
-                item->setSelected(true);
-                sendSelectedArtist(item->data);
-                found = true;
-            }
+
+        if(artist->artistName == selectedArtist){
+            artist->setSelected(true);
+            sendSelectedArtist(selectedArtist);
         }
     }
-    else{
-        for (json::iterator it = _data.begin(); it != _data.end(); ++it) {
-            ArtistListItem *item = new ArtistListItem(it.value());
-            items.append(item);
-            layout->addWidget(item);
-            connect(item,SIGNAL(selected(ArtistListItem*)),this,SLOT(artistSelected(ArtistListItem*)));
-            if(item->artistName == selectedArtist){
-                item->setSelected(true);
-                sendSelectedArtist(item->data);
-                found = true;
-            }
-        }
-    }
-
-    if(!found && items.length() == 0)
-    {
-        hideArtistView(256);
-    }
-
-    if(!found && items.length() != 0)
-    {
-        items[0]->setSelected(true);
-        sendSelectedArtist(items[0]->data);
-        f->fadeIn(256);
-        showArtistView(256);
-    }
-
-    if(found){
-        f->fadeIn(256);
-        showArtistView(256);
-    }
-
-
 }
+
+
+void ArtistsList::setLocation(QString location)
+{
+    foreach (ArtistListItem *artist, artists) {
+       artist->setLocation(location);
+    }
+}
+
+void ArtistsList::artistSelected(ArtistListItem* ar){
+    foreach(ArtistListItem *artist,artists)
+    {
+        artist->setSelected(false);
+    }
+    ar->setSelected(true);
+    selectedArtist = ar->artistName;
+    sendSelectedArtist(selectedArtist);
+}
+

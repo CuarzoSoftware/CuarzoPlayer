@@ -6,8 +6,10 @@
 #include <QMainWindow>
 #include <QBoxLayout>
 #include <QMouseEvent>
+#include <QCloseEvent>
 #include <QKeyEvent>
 #include <QMenuBar>
+#include <QMap>
 #include "library.h"
 #include "titlebar.h"
 #include "topbar.h"
@@ -20,6 +22,8 @@
 #include "googledrive.h"
 #include "maths.h"
 #include "pix.h"
+#include "croplabel.h"
+
 
 #ifdef Q_OS_MAC
     #include "objectivec.h"
@@ -32,7 +36,7 @@ class PlayerWindow : public QMainWindow
     Q_OBJECT
 public:
 
-    PlayerWindow();
+    PlayerWindow(Library*,QString,QString);
 
     //MENU ITEMS
     QMenu *fileMenu;
@@ -46,9 +50,11 @@ public:
     QString viewMode;
     QString playingFrom;
     QString libraryLocationSelected;
+    QMap<QString, ArtistView*> artistViews;
+    QMap<QString, Album*> albums;
+    QMap<int, AlbumSong*> albumSongs;
     bool goingToExit = false;
-    bool cloudConnectionsMade = false;
-    bool globalConnectionsMade = false;
+
 
     //UTILITIES
     Pix p;
@@ -57,10 +63,11 @@ public:
 
     //BRAINS
     GoogleDrive *drive;
+    Library *library;
     Player *player = new Player();
-    Library *library = new Library();
 
     //ELEMENTS
+    ArtistsList *artistList;
     TopBar *topBar = new TopBar();
     QWidget *frame = new QWidget();
     TitleBar *titleBar = new TitleBar();
@@ -79,22 +86,21 @@ public slots:
     void setLibrary();
     void setUserInfo();
     void setLibraryLocation(QString);
-    void setupSettings();
-    void createActions();
-    void createMenus();
 
     //METHODS
+    void refreshLibrary();
     void playFromArtist(json);
-    void showLoginWindow();
     void logout();
     void quitApp();
 
     //EVENTS
-    void loggedIn(QString token, QString refresh);
     void leftItemSelected(QString);
-    void artistSelected(json data);
+    void artistSelected(QString);
     void imageReady();
+    void showSongPlaying(json);
 
+signals:
+    void showLoginWindow();
 };
 
 #endif // PLAYERWINDOW_H
