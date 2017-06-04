@@ -3,6 +3,7 @@
 
 #include "leftbar.h"
 #include "artistview.h"
+#include "tableview.h"
 
 class EmptyMessage : public QWidget{
 
@@ -66,6 +67,7 @@ class MiddleView : public QWidget
         ArtistsList *artistsList = new ArtistsList();
         EmptyMessage *msg = new EmptyMessage();
         ArtistView *artistView = new ArtistView();
+        TableView *songView = new TableView();
 
         MiddleView()
         {
@@ -76,6 +78,7 @@ class MiddleView : public QWidget
             layout->addWidget(leftBar);
             layout->addWidget(artistsList);
             layout->addWidget(artistView);
+            layout->addWidget(songView);
 
         }
 

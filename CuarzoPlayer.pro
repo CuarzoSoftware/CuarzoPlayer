@@ -111,7 +111,8 @@ HEADERS  += \
     reply.h \
     init.h \
     songmenu.h \
-    tageditor.h
+    tageditor.h \
+    tableview.h
 
 
 

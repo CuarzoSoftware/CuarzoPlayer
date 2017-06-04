@@ -106,6 +106,8 @@ public:
         songsLayout->setAlignment(Qt::AlignTop);
         songsLayout->setMargin(0);
         songsLayout->setSpacing(0);
+        connect(shuffle,SIGNAL(clicked(bool)),this,SLOT(shuffleAll()));
+        connect(more,SIGNAL(clicked(bool)),this,SLOT(moreAll()));
 
     }
     void refreshSongCount(){
@@ -117,8 +119,17 @@ public:
             songsNumber->setText(QString::number(songsCount) + " Songs");
         }
     }
+public slots:
+    void shuffleAll(){
+        shuffleAlbum(artist,album);
+    }
+    void moreAll(){
+        moreMenuAlbum(artist,album);
+    }
+
 signals:
     void shuffleAlbum(QString artist,QString album);
+    void moreMenuAlbum(QString artist,QString album);
 };
 
 

@@ -57,7 +57,7 @@ public:
     QList<Album*> albums;
     QList<AlbumSong*> albumSongs;
     QList<AlbumSong*> selectedAlbumSongs;
-    QVariantList songsToDelete;
+    QVariantList selectedSongs;
     bool logged;
     bool goingToExit = false;
 
@@ -105,6 +105,7 @@ public slots:
     void logout();
     void quitApp();
     void showSongMenu(QString);
+    void createMenuFromData();
     void deleteSongsFromLocal();
     void showTagEditor();
     void songsEdited(QVariantList);
@@ -132,6 +133,9 @@ public slots:
     void songDeletionEnd();
     void createPlayList(QString key, QString from);
     void shuffleArtist();
+    void shuffleAlbum(QString,QString);
+    void moreAlbum(QString,QString);
+    void moreArtist();
 
 signals:
     void showLoginWindow();

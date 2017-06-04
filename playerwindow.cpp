@@ -186,7 +186,7 @@ void PlayerWindow::setupConnections()
     connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
     connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
     connect(middleView->artistView->artistViewTitle->shuffle,SIGNAL(released()),this,SLOT(shuffleArtist()));
-
+    connect(middleView->artistView->artistViewTitle->more,SIGNAL(released()),this,SLOT(moreArtist()));
 }
 
 void PlayerWindow::setupSettings()
@@ -266,6 +266,21 @@ void PlayerWindow::leftItemSelected(QString id)
     {
         middleView->artistsList->show();
     }
+    else
+    {
+        middleView->artistsList->hide();
+        middleView->artistView->hide();
+    }
+
+    if(id == "songs")
+    {
+        middleView->songView->setData(library->songs);
+        middleView->songView->show();
+    }
+    else
+    {
+        middleView->songView->hide();
+    }
 
 }
 
@@ -330,6 +345,8 @@ void PlayerWindow::artistSelected(QString artis)
             if(libraryLocation == "local" && !local) continue;
             if(libraryLocation == "cloud" && !cloud) continue;
             Album *newAlbum = new Album(sng);
+            connect(newAlbum,SIGNAL(shuffleAlbum(QString,QString)),this,SLOT(shuffleAlbum(QString,QString)));
+            connect(newAlbum,SIGNAL(moreMenuAlbum(QString,QString)),this,SLOT(moreAlbum(QString, QString)));
             AlbumSong *newSong = new AlbumSong(sng,logged);
             connect(newSong,SIGNAL(songSelected(QString)),this,SLOT(albumSongSelected(QString)));
             connect(newSong,SIGNAL(songPlayed(QString)),this,SLOT(playFromArtist(QString)));
@@ -392,6 +409,48 @@ void PlayerWindow::shuffleArtist()
     bottomBar->setShuffleMode(true);
     createPlayList(currentArtist,"artistView");
     player->playSong(player->playList[0].toMap());
+}
+
+void PlayerWindow::shuffleAlbum(QString artist, QString album)
+{
+
+    QVariantList playlist;
+    foreach(QVariant sng,library->songs){
+        QVariantMap s = sng.toMap();
+        if(s["artist"].toString() == artist && s["album"].toString() == album){
+            playlist.append(s);
+        }
+    }
+    bottomBar->setShuffleMode(true);
+    player->playList = playlist;
+    player->setShuffle(player->shuffle);
+    player->playSong(player->playList[0].toMap());
+
+    playingFrom = "album";
+}
+
+void PlayerWindow::moreArtist()
+{
+    selectedSongs.clear();
+    foreach(QVariant sng,library->songs){
+        QVariantMap s = sng.toMap();
+        if(s["artist"].toString() == currentArtist){
+            selectedSongs.append(s);
+        }
+    }
+    createMenuFromData();
+}
+
+void PlayerWindow::moreAlbum(QString artist, QString album)
+{
+    selectedSongs.clear();
+    foreach(QVariant sng,library->songs){
+        QVariantMap s = sng.toMap();
+        if(s["artist"].toString() == artist && s["album"].toString() == album){
+            selectedSongs.append(s);
+        }
+    }
+    createMenuFromData();
 }
 
 /* ---------------------------------------- */
@@ -637,85 +696,19 @@ void PlayerWindow::songRightClicked(QString songId)
         showSongMenu(songId);
     }
     else{
+        selectedSongs.clear();
         bool exist = false;
         foreach (AlbumSong *song, selectedAlbumSongs) {
+           selectedSongs.append(getSong(song->id));
            if(songId == song->id){
                exist = true;
            }
         }
         if(exist){
-
-            bool local = false;
-            bool both = false;
-            bool cloud = false;
-            bool downloading = false;
-            bool uploading = false;
-
-            songsToDelete.clear();
-
-            foreach (AlbumSong *song, selectedAlbumSongs) {
-
-               QVariantMap songData = getSong(song->id);
-               songsToDelete.append(songData);
-
-               if(song->uploading){
-                   uploading = true;
-               }
-               if(song->downloading){
-                   downloading = true;
-               }
-               if(songData["local"].toBool() && songData["cloud"].toBool()){
-                   both = true;
-               }
-               if(songData["local"].toBool() && !songData["cloud"].toBool()){
-                   local = true;
-               }
-               if(!songData["local"].toBool() && songData["cloud"].toBool()){
-                   cloud = true;
-               }
-            }
-
-            bool synching = downloading || uploading;
-
-            SongMenu contextMenu;
-            QAction action1("Edit Info");
-            QAction action2("Stop Download");
-            QAction action3("Stop Upload");
-            QAction action4("Download");
-            QAction action5("Upload");
-            QAction action6("Delete from local");
-            QAction action7("Delete from cloud");
-            QAction action8("Delete from everywhere");
-
-            if(!synching) contextMenu.addAction(&action1);
-
-            if(downloading) contextMenu.addAction(&action2);
-
-            if(uploading) contextMenu.addAction(&action3);
-
-            if(cloud) contextMenu.addAction(&action4);
-
-            if(local && logged) contextMenu.addAction(&action5);
-
-            if(local) contextMenu.addAction(&action6);
-
-            if(cloud) contextMenu.addAction(&action7);
-
-            if(both) contextMenu.addAction(&action8);
-
-            connect(&action1, SIGNAL(triggered()), this, SLOT(showTagEditor()));
-            connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
-            connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
-            connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
-            connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
-            connect(&action6, SIGNAL(triggered()), this, SLOT(deleteSongsFromLocal()));
-            connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
-            connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
-
-            contextMenu.exec(QPoint(QCursor::pos().x() - 40,QCursor::pos().y() - 10));
-
+           createMenuFromData();
         }
         else{
+            selectedSongs.clear();
             showSongMenu(songId);
         }
     }
@@ -736,23 +729,61 @@ void PlayerWindow::showSongMenu(QString songId)
 
     AlbumSong *song = getAlbumSong(songId);
     QVariantMap songData = getSong(songId);
-    songsToDelete.clear();
-    songsToDelete.append(songData);
+    selectedSongs.clear();
+    selectedSongs.append(songData);
+    createMenuFromData();
+    song->more->deleteLater();
+    song->more = nullptr;
+    song->duration->show();
+}
 
-    bool local = songData["local"].toBool();
-    bool cloud = songData["cloud"].toBool();
-    bool downloading = song->downloading;
-    bool uploading = song->uploading;
+void PlayerWindow::createMenuFromData()
+{
+
+    bool local = false;
+    bool both = false;
+    bool cloud = false;
+    bool downloading = false;
+    bool uploading = false;
+
+
+    foreach (QVariant song, selectedSongs) {
+
+       QVariantMap songData = song.toMap();
+
+       if(existAlbumSong(songData["id"].toString()))
+       {
+           AlbumSong * s = getAlbumSong(songData["id"].toString());
+           if(s->uploading){
+               uploading = true;
+           }
+           if(s ->downloading){
+               downloading = true;
+           }
+       }
+
+       if(songData["local"].toBool() && songData["cloud"].toBool()){
+           both = true;
+       }
+       if(songData["local"].toBool() && !songData["cloud"].toBool()){
+           local = true;
+       }
+       if(!songData["local"].toBool() && songData["cloud"].toBool()){
+           cloud = true;
+       }
+    }
+
     bool synching = downloading || uploading;
+
     SongMenu contextMenu;
-    QAction action1("Edit Info", song);
-    QAction action2("Stop Download", song);
-    QAction action3("Stop Upload", song);
-    QAction action4("Download", song);
-    QAction action5("Upload", song);
-    QAction action6("Delete from local", song);
-    QAction action7("Delete from cloud", song);
-    QAction action8("Delete from everywhere", song);
+    QAction action1("Edit Info");
+    QAction action2("Stop Download");
+    QAction action3("Stop Upload");
+    QAction action4("Download");
+    QAction action5("Upload");
+    QAction action6("Delete from local");
+    QAction action7("Delete from cloud");
+    QAction action8("Delete from everywhere");
 
     if(!synching) contextMenu.addAction(&action1);
 
@@ -760,42 +791,39 @@ void PlayerWindow::showSongMenu(QString songId)
 
     if(uploading) contextMenu.addAction(&action3);
 
-    if(!local && cloud) contextMenu.addAction(&action4);
+    if(cloud) contextMenu.addAction(&action4);
 
-    if(!cloud && logged) contextMenu.addAction(&action5);
+    if(local && logged) contextMenu.addAction(&action5);
 
-    if(local && !synching) contextMenu.addAction(&action6);
+    if(local) contextMenu.addAction(&action6);
 
-    if(cloud && !synching) contextMenu.addAction(&action7);
+    if(cloud) contextMenu.addAction(&action7);
 
-    if(cloud && local && !synching) contextMenu.addAction(&action8);
+    if(both) contextMenu.addAction(&action8);
 
     connect(&action1, SIGNAL(triggered()), this, SLOT(showTagEditor()));
-    connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
-    connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
-    connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
-    connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    //connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
+    //connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
+    //connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    //connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
     connect(&action6, SIGNAL(triggered()), this, SLOT(deleteSongsFromLocal()));
-    connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
-    connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
+    //connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
+    //connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
 
     contextMenu.exec(QPoint(QCursor::pos().x() - 40,QCursor::pos().y() - 10));
 
-    song->more->deleteLater();
-    song->more = nullptr;
-    song->duration->show();
 }
 
 
 void PlayerWindow::deleteSongsFromLocal()
 {
     selectedAlbumSongs.clear();
-    library->deleteSongs(songsToDelete,"local");
+    library->deleteSongs(selectedSongs,"local");
 }
 
 void PlayerWindow::showTagEditor()
 {
-    tagEditor->setData(songsToDelete);
+    tagEditor->setData(selectedSongs);
     tagEditor->open();
 }
 
