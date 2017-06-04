@@ -3,37 +3,72 @@
 
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QList>
-#include <QMap>
 #include <QScrollArea>
 #include "artistviewtitle.h"
-#include "album.h"
-#include "json.hpp"
 
-
-using json = nlohmann::json;
 
 class ArtistView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ArtistView(json);
-
-    //VARIABLES
-    QList<AlbumSong*> songs;
-    QMap<QString,Album*> albums;
-
-    //ELEMENTS
+    ArtistView()
+    {
+        hide();
+        layout->setAlignment(Qt::AlignTop);
+        layout->setContentsMargins(15,0,15,0);
+        layout->setSpacing(0);
+        layout->addWidget(artistViewTitle);
+        layout->addWidget(scroll,10);
+        scroll->setStyleSheet("QScrollArea{border:none;background:transparent}");
+        scroll->setWidget(albumsFrame);
+        scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        scroll->setWidgetResizable( true );
+        albumsFrame->setLayout(albumsLayout);
+        albumsFrame->setObjectName("fram");
+        albumsFrame->setStyleSheet("#fram{background:transparent}");
+        albumsLayout->setMargin(15);
+        albumsLayout->setSpacing(40);
+    }
+    int songCount;
+    int albumCount;
+    QString artistName;
     QWidget *albumsFrame = new QWidget();
     QVBoxLayout *albumsLayout = new QVBoxLayout(albumsFrame);
     QVBoxLayout *layout = new QVBoxLayout(this);
     ArtistViewTitle *artistViewTitle = new ArtistViewTitle();
     QScrollArea *scroll = new QScrollArea();
 
+    void setData(QString name, int albums, int songs){
+        albumCount = albums;
+        songCount = songs;
+        artistName = name;
+        artistViewTitle->artistName->changeText(name);
 
-public slots:
-    void addAlbum(Album*);
-    void sort();
+        QString P1,P2;
+
+        if(albumCount == 1)
+        {
+            P1 = "1 album, ";
+        }
+        else
+        {
+            P1 = QString::number(albumCount) + " albums, ";
+        }
+
+        if(songCount == 1)
+        {
+            P2 = "1 song";
+        }
+        else
+        {
+            P2 = QString::number(songCount) + " songs";
+        }
+
+        artistViewTitle->artistInfo->changeText(P1 + P2);
+    }
+
+
 };
 
 #endif // ARTISTVIEW_H

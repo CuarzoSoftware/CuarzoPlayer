@@ -19,16 +19,17 @@ public:
 
     //VARIABLES
 
-    int w;
-    int h;
+    int w = 0;
+    int h = 0;
     QPropertyAnimation *animation;
     QGraphicsOpacityEffect *opacity;
 
-    //CONSTRUCTORS
-
-    OpButton(QIcon ico)
+    OpButton(QImage im, int width, int height)
     {
-        setIcon(ico);
+        w = width;
+        h = height;
+        setIcon(QIcon(QPixmap::fromImage(im)));
+        setIconSize(QSize(width,height));
         setStyleSheet("OpButton{background:transparent;border:none;}");
         setup();
     }
@@ -113,7 +114,7 @@ public slots:
 
     void setColor(QString color)
     {
-        QPixmap m = icon().pixmap(icon().actualSize(QSize(128, 128)));
+        QPixmap m = icon().pixmap(QSize(w*2,h*2));
         QPixmap newPix(m.size());
         newPix.fill( QColor(color) );
         newPix.setMask( m.createMaskFromColor( Qt::transparent ) );

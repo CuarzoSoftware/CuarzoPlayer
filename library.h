@@ -6,6 +6,9 @@
 #include <QDir>
 #include <QDebug>
 #include <QJsonDocument>
+#include <QVariant>
+#include <QMap>
+#include <QVariantMap>
 #include <QFileInfo>
 #include <fstream>
 #include <fileref.h>
@@ -13,9 +16,6 @@
 #include "filemanager.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include "json.hpp"
-
-using json = nlohmann::json;
 
 class Library:public QObject
 {
@@ -23,29 +23,33 @@ class Library:public QObject
 
 public:
     Library();
-    json library;
-    json cloud;
-    json settings;
+
+    QVariantMap lib;
+    QVariantMap set;
+    QVariantList songs;
+
     void readLibrary();
     void saveLibrary();
     void readSettings();
     void saveSettings();
+    void sortSongs();
 public slots:
-    void setUserInfo(json);
-    void getCloud(json);
-    void songUploaded(json);
+    void setUserInfo(QVariantMap res);
+    void getCloud(QVariantMap cloudLibrary);
+    void songUploaded(QVariantMap songData);
     void startMusicAdder();
-    void deleteSongs(QList<json>,QString);
-    void songAddEnd(QString);
+    void deleteSongs(QVariantList songsToDelete, QString from);
+    void songAddEnd(QVariantList newLib);
 signals:
     void userInfoChanged();
     void songAddProgress(int);
     void songAddCanceled();
     void songAddComplete();
+    void songDeletionEnd();
 
-    void deleteFromCloud(json);
-    void deleteFromLocal(json);
-    void deleteFromBoth(json);
+    void deleteFromCloud(QString);
+    void deleteFromLocal(QString);
+    void deleteFromBoth(QString);
 };
 
 #endif // LIBRARY_H

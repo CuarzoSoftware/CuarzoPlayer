@@ -9,22 +9,16 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QLabel>
-#include <QEventLoop>
 #include <QLineEdit>
 #include "opbutton.h"
 #include "croplabel.h"
 #include <QDebug>
 
-#include "json.hpp"
-
-
-using json = nlohmann::json;
-
 class Login : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Login();
+    Login();
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom,this);
     QLabel *logo = new QLabel();
     CropLabel *title = new CropLabel("Welcome to Cuarzo Player", "color:#666666;font-size:50px;font-weight:bold");

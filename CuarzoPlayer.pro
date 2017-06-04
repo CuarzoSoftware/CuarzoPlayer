@@ -56,28 +56,16 @@ win32 {
 SOURCES += main.cpp\
     bottombar.cpp \
     playerwindow.cpp \
-    songinfo.cpp \
     playerbuttons.cpp \
     timebar.cpp \
     volumebar.cpp \
-    topbar.cpp \
     library.cpp \
-    selectlist.cpp \
-    selectlistitem.cpp \
-    icon.cpp \
     menu.cpp \
-    userpicture.cpp \
-    storagebar.cpp \
     searchbar.cpp \
-    middleview.cpp \
     titlebar.cpp \
     leftbar.cpp \
     leftbaritem.cpp \
-    artistslist.cpp \
     artistlistitem.cpp \
-    artistview.cpp \
-    artistviewtitle.cpp \
-    album.cpp \
     albumsong.cpp \
     player.cpp \
     login.cpp \
@@ -96,7 +84,6 @@ HEADERS  += \
     volumebar.h \
     topbar.h \
     library.h \
-    id.h \
     selectlist.h \
     selectlistitem.h \
     icon.h \
@@ -108,16 +95,13 @@ HEADERS  += \
     titlebar.h \
     leftbar.h \
     leftbaritem.h \
-    artistslist.h \
     artistlistitem.h \
     pix.h \
     artistview.h \
     artistviewtitle.h \
     album.h \
     albumsong.h \
-    json.hpp \
     player.h \
-    jsort.h \
     login.h \
     googledrive.h \
     network.h \
@@ -125,9 +109,9 @@ HEADERS  += \
     pie.h \
     filemanager.h \
     reply.h \
-    fader.h \
     init.h \
-    emptymessage.h
+    songmenu.h \
+    tageditor.h
 
 
 

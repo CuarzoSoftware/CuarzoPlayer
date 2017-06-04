@@ -1,18 +1,17 @@
+/*
 #include "googledrive.h"
 #include <QHttpPart>
 #include <QJsonDocument>
 
 extern QString path;
 
-GoogleDrive::GoogleDrive(json s)
+GoogleDrive::GoogleDrive(QVariantMap s)
 {
-    setData(s);
+    settings = s;
     getUserInfo();
 }
 
-void GoogleDrive::setData(json s){
-    settings = s;
-}
+
 
 void GoogleDrive::getUserInfo(){
 
@@ -20,7 +19,7 @@ void GoogleDrive::getUserInfo(){
     connect(network,SIGNAL(finished(QNetworkReply*)),this,SLOT(getUserInfoRes(QNetworkReply*)));
     QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v2/about"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
+    request.setRawHeader("Authorization",QString("Bearer "+settings["token"].toString()).toUtf8());
     network->get(request);
 }
 
@@ -384,4 +383,4 @@ void GoogleDrive::imageDownloaded(QNetworkReply *res)
     file.close();
     imageReady();
 }
-
+*/

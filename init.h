@@ -15,14 +15,16 @@ public:
 
     Library *library = new Library();
 
+    PlayerWindow *w = nullptr;
+
     Init(){
 
-        if(!library->settings["init"])
+        if(!library->set["init"].toBool())
         {
             logOut();
         }
         else{
-            loggedIn(QString::fromStdString(library->settings["token"]),QString::fromStdString(library->settings["restoreToken"]));
+            loggedIn(library->set["token"].toString(),library->set["restoreToken"].toString());
         }
     }
 
@@ -30,12 +32,17 @@ public slots:
 
     void loggedIn(QString token,QString refresh)
     {
-        PlayerWindow *w = new PlayerWindow(library,token,refresh);
+        w = new PlayerWindow(library,token,refresh);
         connect(w,SIGNAL(showLoginWindow()),this,SLOT(logOut()));
     }
 
     void logOut()
     {
+        if(w != nullptr)
+        {
+            w->player->play(false);
+            w->deleteLater();
+        }
         Login *login = new Login();
         login->show();
         connect(login,SIGNAL(loggedIn(QString,QString)),this,SLOT(loggedIn(QString,QString)));

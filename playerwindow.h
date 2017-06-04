@@ -9,27 +9,29 @@
 #include <QCloseEvent>
 #include <QKeyEvent>
 #include <QMenuBar>
-#include <QMap>
+#include <QList>
 #include "library.h"
 #include "titlebar.h"
 #include "topbar.h"
 #include "middleview.h"
 #include "bottombar.h"
 #include "player.h"
-#include "json.hpp"
-#include "jsort.h"
 #include "login.h"
-#include "googledrive.h"
+//#include "googledrive.h"
 #include "maths.h"
 #include "pix.h"
 #include "croplabel.h"
-
+#include "album.h"
+#include "albumsong.h"
+#include "artistview.h"
+#include "artistlistitem.h"
+#include "songmenu.h"
+#include "tageditor.h"
 
 #ifdef Q_OS_MAC
     #include "objectivec.h"
 #endif
 
-using json = nlohmann::json;
 
 class PlayerWindow : public QMainWindow
 {
@@ -47,30 +49,34 @@ public:
     QAction *exitAct;
 
     //VARIABLES
+    QString currentArtist;
     QString viewMode;
     QString playingFrom;
-    QString libraryLocationSelected;
-    QMap<QString, ArtistView*> artistViews;
-    QMap<QString, Album*> albums;
-    QMap<int, AlbumSong*> albumSongs;
+    QString libraryLocation;
+    QList<ArtistListItem*> artistListItems;
+    QList<Album*> albums;
+    QList<AlbumSong*> albumSongs;
+    QList<AlbumSong*> selectedAlbumSongs;
+    QVariantList songsToDelete;
+    bool logged;
     bool goingToExit = false;
 
 
     //UTILITIES
     Pix p;
-    JSort s;
     Maths math;
+    QDir d;
 
     //BRAINS
-    GoogleDrive *drive;
+   // GoogleDrive *drive;
     Library *library;
     Player *player = new Player();
 
     //ELEMENTS
-    ArtistsList *artistList;
     TopBar *topBar = new TopBar();
     QWidget *frame = new QWidget();
     TitleBar *titleBar = new TitleBar();
+    TagEditor *tagEditor = new TagEditor();
     BottomBar *bottomBar = new BottomBar();
     MiddleView *middleView = new MiddleView();
     QBoxLayout *frameLayout = new QBoxLayout(QBoxLayout::TopToBottom,frame);
@@ -83,21 +89,47 @@ public:
 public slots:
 
     //CONSTRUCTORS
-    void setLibrary();
+    void setupUI();
+    void setupLibrary(Library *lib, QString token, QString refresh);
+    void setupViewsAndWidgets();
+    void setupTopBarMenus();
+    void setupConnections();
+    void setupSettings();
+
     void setUserInfo();
     void setLibraryLocation(QString);
 
     //METHODS
     void refreshLibrary();
-    void playFromArtist(json);
+    void playFromArtist(QString SongId);
     void logout();
     void quitApp();
+    void showSongMenu(QString);
+    void deleteSongsFromLocal();
+    void showTagEditor();
+    void songsEdited(QVariantList);
+
+
+    //FINDERS
+    bool existArtistListItem(QString);
+    bool existAlbum(QString,QString);
+    bool existAlbumSong(QString);
+    ArtistListItem *getArtistListItem(QString);
+    Album *getAlbum(QString,QString);
+    AlbumSong *getAlbumSong(QString);
+    QVariantMap getSong(QString id);
 
     //EVENTS
     void leftItemSelected(QString);
     void artistSelected(QString);
     void imageReady();
-    void showSongPlaying(json);
+    void showSongPlaying(QVariantMap songData);
+    void deletedFromBoth(QString);
+
+    //SONGS
+    void albumSongSelected(QString songId);
+    void songRightClicked(QString songId);
+    void songDeletionEnd();
 
 signals:
     void showLoginWindow();

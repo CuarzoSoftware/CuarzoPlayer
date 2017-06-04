@@ -12,6 +12,7 @@
 Login::Login()
 {
 
+
     #ifdef Q_OS_MAC
         ObjectiveC *obc = new ObjectiveC();
         obc->Display(winId());
@@ -119,16 +120,14 @@ void Login::getToken(){
 
 void Login::continueWithoutLogin()
 {
-    loggedIn("NO","NO");
+    loggedIn("","");
     delete this;
 }
 void Login::response(QNetworkReply*res){
 
-    json jres = json::parse(res->readAll().toStdString());
+    QJsonDocument doc = QJsonDocument::fromJson(res->readAll());
+    QVariantMap data = doc.toVariant().toMap();
 
-    if(!jres["access_token"].is_null() && !jres["refresh_token"].is_null()){
-        loggedIn(QString::fromStdString(jres["access_token"]),QString::fromStdString(jres["refresh_token"]));
-        delete this;
-    }
-
+    loggedIn(data["access_token"].toString(),data["refresh_token"].toString());
+    delete this;
 }

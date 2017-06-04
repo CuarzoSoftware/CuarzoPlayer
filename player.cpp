@@ -15,26 +15,26 @@ Player::Player()
 
 void Player::positionChanged(float position)
 {
-    float pos = (float)currentSong["duration"] * position;
-    sendTimePosition(pos,(float)currentSong["duration"]);
+    float pos = currentSong["duration"].toFloat() * position;
+    sendTimePosition(pos,currentSong["duration"].toFloat());
 }
 
 
 /* Plays the selected song */
 
-void Player::playSong(json song)
+void Player::playSong(QVariantMap song)
 {
     currentSong = song;
-    songPlaying(song);
+    songPlaying(currentSong);
 
-    if(song["local"])
+    if(currentSong["local"].toBool())
     {
-        QString songPath = path + "/Cuarzo Player/Music/" + QString::fromStdString(song["artist"]) + "/" + QString::fromStdString(song["album"]) + "/" + QString::number((int)song["id"]) + "." + QString::fromStdString(song["format"]);
+        QString songPath = path +"/Cuarzo Player/Music/"+currentSong["artist"].toString()+"/"+currentSong["album"].toString() +"/"+currentSong["fileName"].toString();
         player->open(new VlcMedia(songPath,true,vlc));
     }
     else
     {
-        player->open(new VlcMedia("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media&access_token="+QString::fromStdString(settings["token"]) ,false,vlc));
+        player->open(new VlcMedia("https://www.googleapis.com/drive/v3/files/"+song["musicId"].toString()+"?alt=media&access_token="+settings["token"].toString() ,false,vlc));
     }
 
     play(true);
@@ -62,7 +62,18 @@ void Player::play(bool op)
 {
     if(op)
     {
-        player->play();
+        if(player->seekable()){
+            player->play();
+        }
+        else{
+            if(currentSong["id"].toString() != ""){
+                playSong(currentSong);
+            }
+            else{
+                return;
+            }
+        }
+
     }
     else
     {
@@ -98,13 +109,70 @@ void  Player::setShuffle(bool mode)
 
     if(mode)
     {
-        qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
-            int ans = QString::fromStdString(a["album"]).compare(QString::fromStdString(b["album"]));
-            return (a["track"] <= b["track"] && ans == 0) || ans == -1;
+
+        qSort(playList.begin(), playList.end(),[](QVariant a, QVariant b) -> bool {
+
+            QString aArtist = a.toMap()["artist"].toString();
+            QString bArtist = b.toMap()["artist"].toString();
+
+
+            int comp = aArtist.compare(bArtist);
+
+            if(comp<0){
+                return true;
+            }
+            if(comp>0){
+                return false;
+            }
+            if(comp==0){
+
+                QString aAlbum = a.toMap()["album"].toString();
+                QString bAlbum = b.toMap()["album"].toString();
+
+                comp = aAlbum.compare(bAlbum);
+
+                if(comp<0){
+                    return true;
+                }
+                if(comp>0){
+                    return false;
+                }
+                if(comp==0){
+
+                    int aTrack =  a.toMap()["track"].toInt();
+                    int bTrack =  b.toMap()["track"].toInt();
+
+                    if(aTrack<bTrack){
+                        return true;
+                    }
+                    if(aTrack>bTrack){
+                        return false;
+                    }
+                    if(aTrack==bTrack){
+
+                        QString aTitle = a.toMap()["title"].toString();
+                        QString bTitle = b.toMap()["title"].toString();
+
+                        comp = aTitle.compare(bTitle);
+
+                        if(comp<0){
+                            return true;
+                        }
+                        if(comp>0){
+                            return false;
+                        }
+                        if(comp==0){
+                            return false;
+                        }
+                    }
+                }
+            }
         });
+
     }
     else{
-        qSort(playList.begin(), playList.end(),[](json a, json b) -> bool {
+
+        qSort(playList.begin(), playList.end(),[](QVariant a, QVariant b) -> bool {
             return qrand() % ((1 + 1) - 0) + 0;
         });
     }
@@ -116,6 +184,9 @@ void  Player::setShuffle(bool mode)
 
 void Player::playNext()
 {
+
+    if(playList.empty()) return;
+
     if(loopMode == 2)
     {
         playSong(currentSong);
@@ -123,36 +194,32 @@ void Player::playNext()
     }
 
     int size = playList.length();
-    int songIndex = -1;
+    int songIndex = playList.indexOf(currentSong);
 
-    //Gets the current song index in playlist and its size
-
-    foreach(json song,playList)
+    if(loopMode == 0 && songIndex == size -1)
     {
-        songIndex++;
-        if(song["id"] == currentSong["id"])
-        {
-            break;
-        }
-
+        currentSong = playList[0].toMap();
+        songPlaying(currentSong);
+        play(false);
+        player->stop();
+        sendTimePosition(0,0);
+        return;
     }
-
-    if(songIndex == -1) return;
 
     if(songIndex == size - 1)
     {
         if(loopMode == 0){
-            playSong(playList[0]);
+            playSong(playList[0].toMap());
             play(false);
         }
         else{
-            playSong(playList[0]);
+            playSong(playList[0].toMap());
         }
 
     }
     else
     {
-        playSong(playList[songIndex + 1]);
+        playSong(playList[songIndex + 1].toMap());
     }
 }
 
@@ -160,6 +227,8 @@ void Player::playNext()
 
 void Player::playBack(){
 
+    if(playList.empty()) return;
+
     if(loopMode == 2)
     {
         playSong(currentSong);
@@ -167,77 +236,15 @@ void Player::playBack(){
     }
 
     int size = playList.length();
-    int songIndex = -1;
-
-    //Gets the current song index in playlist and its size
-
-    foreach(json song,playList)
-    {
-        songIndex++;
-        if(song["id"] == currentSong["id"])
-        {
-            break;
-        }
-    }
+    int songIndex =  playList.indexOf(currentSong);
 
     if(songIndex==0)
     {
-        playSong(playList[size - 1]);
+        playSong(playList[size - 1].toMap());
     }
     else{
-        playSong(playList[songIndex - 1]);
+        playSong(playList[songIndex - 1].toMap());
     }
-
-}
-
-
-void Player::downloadTempSong(json song)
-{
-    /*
-    QNetworkAccessManager *network = new QNetworkAccessManager(this);
-    QNetworkRequest request(QUrl("https://www.googleapis.com/drive/v3/files/"+QString::fromStdString(song["musicId"])+"?alt=media"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    request.setRawHeader("Authorization",QString("Bearer "+QString::fromStdString(settings["token"])).toUtf8());
-    reply = network->get(request);
-    connect(reply, SIGNAL(readyRead()),this,SLOT(setBuffer()));
-    connect(reply,SIGNAL(finished()),this,SLOT(endBuffer()));
-    connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(downloadProg(qint64,qint64)));
-    file->setFileName("/tmp/caca.mp3");
-    file->open(QIODevice::WriteOnly);
-    */
-}
-
-void Player::setBuffer()
-{
-    /*
-    file->write(reply->read(reply->bytesAvailable()));
-
-    int pos = player->position();
-    player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
-    player->setPosition(pos);
-    play(true);
-    */
-}
-
-void Player::endBuffer()
-{
-    /*
-    file->close();
-    */
-}
-
-void Player::downloadProg(qint64 per,qint64 tot)
-{
-    /*
-    qDebug() << per;
-    if(per > 100000 && player->state() != QMediaPlayer::PlayingState)
-    {
-        //int pos = player->position();
-        //player->setMedia(QUrl::fromLocalFile("/tmp/caca.mp3"));
-        //player->setPosition(pos);
-        //play(true);
-    }
-    */
 
 }
 

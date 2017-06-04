@@ -1,4 +1,5 @@
 #include "playerwindow.h"
+#include <QCollator>
 
 
 extern QString path;
@@ -11,7 +12,22 @@ extern QString path;
 PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
 {
 
-    //MAKES TITLE BAR WHITE ON MAC OS X
+    setupUI();                          //SETUP THE MAIN WINDOW
+
+    setupLibrary(lib,token,refresh);    //SETUP MUSIC LIBRARY
+
+    setupViewsAndWidgets();             //SETUP VIEWS AND UI ELEMENTS
+
+    setupTopBarMenus();                 //SETUP THE TOP MENU OPTIONS
+
+    setupConnections();                 //SETUP SOME IMPORTANT CONNECTIONS
+
+    setupSettings();                    //SETUP SAVED SETTINGS
+
+}
+
+void PlayerWindow::setupUI()
+{
 
     #ifdef Q_OS_MAC
         ObjectiveC *obc = new ObjectiveC();
@@ -37,22 +53,31 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
     frameLayout->addWidget(middleView);
     frameLayout->addWidget(bottomBar);
     show();
+}
 
-    //CREATES MUSIC LIBRARY
-
+void PlayerWindow::setupLibrary(Library *lib, QString token, QString refresh)
+{
     library = lib;
-
-    library->settings["token"] = token.toStdString();
-    library->settings["restoreToken"] = refresh.toStdString();
-    library->settings["init"] = true;
+    library->set["token"] = token;
+    library->set["restoreToken"] = refresh;
+    library->set["init"] = true;
     library->saveSettings();
+    if(token == ""){
+        logged = false;
+    }
+    else{
+        logged = true;
+    }
+}
 
-    //CREATE ELEMENTS
-
-    artistList = new ArtistsList();
-    middleView->addWidget(artistList);
+void PlayerWindow::setupViewsAndWidgets()
+{
+    viewMode = "artists";
     refreshLibrary();
+}
 
+void PlayerWindow::setupTopBarMenus()
+{
     //CREATES MENUS ACTIONS
 
     addMusicAct = new QAction(tr("&Add Music"), this);
@@ -77,9 +102,10 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
     accountMenu = menuBar()->addMenu(tr("&Account"));
     accountMenu->addAction(logoutAct);
     accountMenu->addAction(loginAct);
+}
 
-
-    //CONNECTIONS
+void PlayerWindow::setupConnections()
+{
 
     //ADD MUSIC
 
@@ -89,39 +115,31 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
     connect(library,SIGNAL(songAddProgress(int)),topBar->pie,SLOT(setPercent(int)));
     connect(library,SIGNAL(songAddComplete()),topBar->pie,SLOT(hide()));
     connect(library,SIGNAL(songAddComplete()),this,SLOT(refreshLibrary()));
+    connect(library,SIGNAL(deleteFromBoth(QString)),this,SLOT(deletedFromBoth(QString)));
+    connect(library,SIGNAL(songDeletionEnd()),this,SLOT(songDeletionEnd()));
 
     //SELECTION
 
     connect(middleView->leftBar,SIGNAL(sendSelected(QString)),this,SLOT(leftItemSelected(QString)));
-    connect(artistList,SIGNAL(sendSelectedArtist(QString)),this,SLOT(artistSelected(QString)));
 
 
-    //SETUP SETTINGS
+    //EDIT SONGS
 
-    if(albumSongs.size() == 0)
-    {
-        middleView->msg->show();
-    }
-    else{
-        artistList->artistSelected(artistList->artists.values()[0]);
-        artistList->show();
-        middleView->leftBar->itemSelected("artists");
-    }
+    connect(tagEditor,SIGNAL(songsEdited(QVariantList)),this,SLOT(songsEdited(QVariantList)));
 
-
-    if(library->settings["token"] != "NO"){
+    if(logged){
 
         logoutAct->setVisible(true);
         loginAct->setVisible(false);
-        topBar->modeList->show();
+        //topBar->modeList->show();
         topBar->addAccount->hide();
         topBar->storageBar->show();
 
-        drive = new GoogleDrive(library->settings);
+        //drive = new GoogleDrive(library->settings);
 
         //Google Drive
 
-
+        /*
         connect(drive,SIGNAL(songUploaded(json)),library,SLOT(songUploaded(json)));
         connect(drive,SIGNAL(sendUserInfo(json)),library,SLOT(setUserInfo(json)));
         connect(drive,SIGNAL(sendCloud(json)),library,SLOT(getCloud(json)));
@@ -132,7 +150,7 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
         //DELETE SONGS
         connect(library,SIGNAL(deleteFromCloud(json)),drive,SLOT(deleteSong(json)));
         connect(library,SIGNAL(deleteFromBoth(json)),drive,SLOT(deleteSong(json)));
-
+        */
 
         setUserInfo();
     }
@@ -140,7 +158,7 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
 
         loginAct->setVisible(true);
         logoutAct->setVisible(false);
-        topBar->modeList->hide();
+        //topBar->modeList->hide();
         topBar->userPicture->image->setPixmap(QPixmap(":res/img/user.svg"));
         topBar->addAccount->show();
         topBar->storageBar->hide();
@@ -152,16 +170,12 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
 
     //DISPLAY MODE
 
-    connect(topBar->modeList,SIGNAL(sendSelected(QString)),this,SLOT(setLibraryLocation(QString)));
-
-
-
-
-
+    //connect(topBar->modeList,SIGNAL(sendSelected(QString)),this,SLOT(setLibraryLocation(QString)));
 
     //PLAYER EVENTS
 
-    connect(player,SIGNAL(songPlaying(json)),this,SLOT(showSongPlaying(json)));
+    connect(player,SIGNAL(songPlaying(QVariantMap)),this,SLOT(showSongPlaying(QVariantMap)));
+    connect(player,SIGNAL(songPlaying(QVariantMap)),bottomBar->songInfo,SLOT(setData(QVariantMap)));
     connect(player,SIGNAL(sendTimePosition(float,float)),bottomBar->timeBar,SLOT(getTimePosition(float,float)));
     connect(player,SIGNAL(sendState(bool)),bottomBar->playerButtons,SLOT(setPlay(bool)));
     connect(bottomBar->timeBar,SIGNAL(positionChanged(float)),player,SLOT(setTime(float)));
@@ -172,100 +186,63 @@ PlayerWindow::PlayerWindow(Library *lib, QString token, QString refresh)
     connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
     connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
 
+}
 
-    //SET SETTINGS
-
-    bottomBar->volumeBar->slider->setValue(library->settings["volume"]);
-    bottomBar->volumeBar->positionChanged(library->settings["volume"]);
-    bottomBar->setLoopMode(library->settings["loop"]);
-    bottomBar->setShuffleMode(library->settings["shuffle"]);
-    player->settings = library->settings;
-
-
-    libraryLocationSelected = "local";
-
+void PlayerWindow::setupSettings()
+{
+    bottomBar->volumeBar->slider->setValue(library->set["volume"].toInt());
+    bottomBar->volumeBar->positionChanged(library->set["volume"].toInt());
+    bottomBar->setLoopMode(library->set["loop"].toInt());
+    bottomBar->setShuffleMode(library->set["shuffle"].toBool());
+    player->settings = library->set;
+    libraryLocation = "local";
 }
 
 void PlayerWindow::refreshLibrary()
 {
-    for (json::iterator it = library->library["artists"].begin(); it != library->library["artists"].end(); ++it)
+
+    if(library->songs.empty())
     {
-        if(artistViews.contains(QString::fromStdString(it.key()))){
-
-            ArtistView *artistView = artistViews[QString::fromStdString(it.key())];
-
-            for (json::iterator it2 = it.value().begin(); it2 != it.value().end(); ++it2)
-            {
-                QString albumKey = QString::fromStdString(it.key())+QString::fromStdString(it2.key());
-
-                if(artistView->albums.contains(albumKey)){
-
-                    Album *album = albums[albumKey];
-
-                    for (json::iterator it3 = it2.value().begin(); it3 != it2.value().end(); ++it3)
-                    {
-                        int songId = (int)it3.value()["id"];
-
-                        if(!album->songs.contains(songId)){
-                            AlbumSong *song = new AlbumSong(it3.value());
-                            album->addSong(song);
-                            artistView->songs.append(song);
-                            albumSongs.insert(songId,song);
-                            connect(song,SIGNAL(songPlayed(json)),this,SLOT(playFromArtist(json)));
-                            album->sort();
-                        }
-
-                    }
-                }
-                else{
-                    Album *album = new Album(it2.value());
-                    artistView->addAlbum(album);
-                    albums.insert(albumKey,album);
-                    foreach (AlbumSong *song, album->songs)
-                    {
-                        albumSongs.insert((int)song->data["id"],song);
-                        connect(song,SIGNAL(songPlayed(json)),this,SLOT(playFromArtist(json)));
-                    }
-
-                }
-            }
-            artistView->sort();
-        }
-        else{
-            ArtistView *artistView = new ArtistView(it.value());
-            artistViews.insert(QString::fromStdString(it.key()),artistView);
-            middleView->addWidget(artistView);
-
-            albums.unite(artistView->albums);
-
-            /*
-            //TESTING
-            connect(artistView,SIGNAL(syncSong(json)),drive,SLOT(syncSong(json)));
-            connect(artistView,SIGNAL(sendCancelSongUpload(int)),drive,SLOT(cancelSongUpload(int)));
-
-            connect(drive,SIGNAL(songUploaded(json)),artistView,SLOT(songUploaded(json)));
-            connect(drive,SIGNAL(sendSongUploadProgress(int,int)),artistView,SLOT(setSongUploadPercent(int,int)));
-
-            connect(artistView,SIGNAL(deleteSongs(QList<json>,QString)),library,SLOT(deleteSongs(QList<json>,QString)));
-            connect(library,SIGNAL(deleteFromBoth(json)),artistView,SLOT(hideSong(json)));
-            connect(library,SIGNAL(deleteFromLocal(json)),artistView,SLOT(changeSong(json)));
-
-            connect(library,SIGNAL(deleteFromCloud(json)),artistView,SLOT(changeSong(json)));
-
-
-
-            */
-
-            foreach (AlbumSong *song, artistView->songs)
-            {
-                albumSongs.insert((int)song->data["id"],song);
-                connect(song,SIGNAL(songPlayed(json)),this,SLOT(playFromArtist(json)));
-            }
-        }
+        middleView->msg->show();
+        return;
     }
-    artistList->hide();
-    artistList->setData(library->library["artists"]);
-    artistList->show();
+    else
+    {
+         middleView->msg->hide();
+    }
+
+
+    if(viewMode == "artists")
+    {
+        while(!artistListItems.empty())
+        {
+            artistListItems.takeLast()->deleteLater();
+        }
+
+        middleView->leftBar->hide();
+
+        foreach (QVariant song, library->songs)
+        {
+            QVariantMap sng = song.toMap();
+            QString id = sng["id"].toString();
+            QString album = sng["album"].toString();
+            QString artist = sng["artist"].toString();
+
+            if(!existArtistListItem(artist))
+            {
+                ArtistListItem *item = new ArtistListItem(sng);
+                if(artist == currentArtist)item->setSelected(true);
+                connect(item,SIGNAL(selected(QString)),this,SLOT(artistSelected(QString)));
+                artistListItems.append(item);
+                middleView->artistsList->layout->addWidget(item);
+            }
+        }
+
+        middleView->leftBar->show();
+
+        if(currentArtist!="")middleView->artistView->show();
+    }
+
 }
 
 
@@ -276,56 +253,123 @@ void PlayerWindow::leftItemSelected(QString id)
 
     if(id == "artists")
     {
-        artistList->show();
+        middleView->artistsList->show();
     }
 
 }
 
 
-void PlayerWindow::artistSelected(QString artist)
+void PlayerWindow::artistSelected(QString artis)
 {
-    foreach (ArtistView *view, artistViews) {
-        view->hide();
+    if(viewMode == "artists" && currentArtist == artis) return;
+
+    foreach (ArtistListItem *item, artistListItems) {
+       if(item->artistName == artis)
+       {
+           item->setSelected(true);
+       }
+       else
+       {
+           item->setSelected(false);
+       }
     }
-    artistViews[artist]->show();
+
+    currentArtist = artis;
+
+    middleView->artistView->hide();
+
+    while(!albums.empty())
+    {
+        albums.takeFirst()->deleteLater();
+    }
+    selectedAlbumSongs.clear();
+    albumSongs.clear();
+    albums.clear();
+
+    foreach (QVariant song, library->songs)
+    {
+        QVariantMap sng = song.toMap();
+        QString id = sng["id"].toString();
+        QString album = sng["album"].toString();
+        QString artist = sng["artist"].toString();
+        bool local = sng["local"].toBool();
+        bool cloud = sng["cloud"].toBool();
+
+        if(artis != artist)continue;
+
+        if(existAlbum(artist,album))
+        {
+            if(!existAlbumSong(id))
+            {
+                if(libraryLocation == "local" && !local) continue;
+                if(libraryLocation == "cloud" && !cloud) continue;
+                AlbumSong *newSong = new AlbumSong(sng,logged);
+                connect(newSong,SIGNAL(songSelected(QString)),this,SLOT(albumSongSelected(QString)));
+                connect(newSong,SIGNAL(songPlayed(QString)),this,SLOT(playFromArtist(QString)));
+                connect(newSong,SIGNAL(showSongMenu(QString)),this,SLOT(showSongMenu(QString)));
+                connect(newSong,SIGNAL(songRightClicked(QString)),this,SLOT(songRightClicked(QString)));
+                albumSongs.append(newSong);
+                Album *oldAlbum = getAlbum(artist,album);
+                oldAlbum->songsLayout->addWidget(newSong);
+                oldAlbum->songsCount++;
+            }
+        }
+        else
+        {
+            if(libraryLocation == "local" && !local) continue;
+            if(libraryLocation == "cloud" && !cloud) continue;
+            Album *newAlbum = new Album(sng);
+            AlbumSong *newSong = new AlbumSong(sng,logged);
+            connect(newSong,SIGNAL(songSelected(QString)),this,SLOT(albumSongSelected(QString)));
+            connect(newSong,SIGNAL(songPlayed(QString)),this,SLOT(playFromArtist(QString)));
+            connect(newSong,SIGNAL(showSongMenu(QString)),this,SLOT(showSongMenu(QString)));
+            connect(newSong,SIGNAL(songRightClicked(QString)),this,SLOT(songRightClicked(QString)));
+            albumSongs.append(newSong);
+            newAlbum->songsLayout->addWidget(newSong);
+            albums.append(newAlbum);
+            middleView->artistView->albumsLayout->addWidget(newAlbum);
+        }
+    }
+
+    if(albums.empty()) return;
+    foreach (Album *album, albums)
+    {
+        album->refreshSongCount();
+    }
+    if(existAlbumSong(player->currentSong["id"].toString()))
+    {
+        showSongPlaying(player->currentSong);
+    }
+
+    middleView->artistView->setData(artis,albums.length(),albumSongs.length());
+
+    middleView->artistView->show();
 }
 
 
-void PlayerWindow::setLibrary()
+void PlayerWindow::playFromArtist(QString SongId)
 {
-}
-
-void PlayerWindow::playFromArtist(json data)
-{
+    QVariantMap song = getSong(SongId);
+    QString artist = song["artist"].toString();
 
     //Check if current song playlist is created, and create if not
 
-    if(playingFrom != "artistView" || data["artist"] != player->currentSong["artist"])
+    if(playingFrom != "artistView" || artist != player->currentSong["artist"].toString())
     {
-        //Read the artist songs
 
-        json artist = library->library["artists"][QString::fromStdString(data["artist"]).toStdString()];
-
-        //Create the artist playlist
-
-        QList<json> list;
-
-        for (json::iterator a = artist.begin(); a != artist.end(); ++a)
-        {
-            //json ar = s.sortByKey(a.value(),"track","int");
-
-            for (json::iterator s = a.value().begin(); s != a.value().end(); ++s)
-            {
-                list.append(s.value());
+        QVariantList playlist;
+        foreach(QVariant sng,library->songs){
+            QVariantMap s = sng.toMap();
+            if(s["artist"].toString() == artist){
+                playlist.append(s);
             }
         }
-
-        player->playList = list;
+        player->playList = playlist;
         player->setShuffle(player->shuffle);
         playingFrom = "artistView";
     }
 
-    player->playSong(data);
+    player->playSong(song);
 
 }
 
@@ -335,6 +379,7 @@ void PlayerWindow::playFromArtist(json data)
 
 void PlayerWindow::setUserInfo()
 {
+    /*
     drive->setData(library->settings);
 
     long used;
@@ -357,7 +402,7 @@ void PlayerWindow::setUserInfo()
 
 
     topBar->storageBar->setPercent(used,total);
-
+    */
 }
 
 
@@ -365,16 +410,13 @@ void PlayerWindow::setUserInfo()
 
 void PlayerWindow::setLibraryLocation(QString location)
 {
-    libraryLocationSelected = location.toLower();
-    setLibrary();
+    libraryLocation = location.toLower();
+
 }
-
-
-
 
 void PlayerWindow::imageReady()
 {
-    if(library->settings["userPicture"] != "")
+    if(library->set["userPicture"].toString() != "")
     {
         QImage im(path + "/Cuarzo Player/User/ProfileImage.jpg");
         if(!im.isNull()){
@@ -383,17 +425,80 @@ void PlayerWindow::imageReady()
     }
 }
 
-void PlayerWindow::showSongPlaying(json songData)
+void PlayerWindow::showSongPlaying(QVariantMap songData)
 {
     foreach (AlbumSong *song, albumSongs) {
        song->setPlaying(false);
     }
-    if(albumSongs.contains(songData["id"]))
-    {
-        albumSongs[songData["id"]]->setPlaying(true);
-        bottomBar->songInfo->setData(songData);
-    }
+    getAlbumSong(songData["id"].toString())->setPlaying(true);
 }
+
+void PlayerWindow::deletedFromBoth(QString songId)
+{
+    /*
+    foreach (QVariant song, player->playList) {
+       if(song.toMap()["id"].toString() == songId){
+           player->playList.removeAt(player->playList.indexOf(song));
+       }
+    }
+    if(player->currentSong["id"].toString() == songId){
+        player->play(false);
+        player->player->stop();
+        player->sendTimePosition(0,0);
+        player->currentSong.clear();
+        bottomBar->songInfo->clear();
+    }
+    if(existAlbumSong(songId))
+    {
+        albumSongs.takeAt(albumSongs.indexOf(getAlbumSong(songId)))->deleteLater();
+    }
+    */
+}
+
+void PlayerWindow::albumSongSelected(QString songId)
+{
+
+    if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier) && !selectedAlbumSongs.empty())
+    {
+        int first = albumSongs.indexOf(selectedAlbumSongs[0]);
+        int last  = albumSongs.indexOf(getAlbumSong(songId));
+        foreach (AlbumSong *song, selectedAlbumSongs) {
+            song->setSelected(false);
+        }
+        selectedAlbumSongs.clear();
+
+        if(first >= last)
+        {
+            for(int i=first;i>=last;i--)
+            {
+                AlbumSong *song = albumSongs[i];
+                song->setSelected(true);
+                selectedAlbumSongs.append(song);
+            }
+        }
+        else{
+            for(int i=first;i<=last;i++)
+            {
+                AlbumSong *song = albumSongs[i];
+                song->setSelected(true);
+                selectedAlbumSongs.append(song);
+            }
+        }
+    }
+    else
+    {
+        foreach (AlbumSong *song, selectedAlbumSongs) {
+            song->setSelected(false);
+        }
+        selectedAlbumSongs.clear();
+        AlbumSong *s = getAlbumSong(songId);
+        s->setSelected(true);
+        selectedAlbumSongs.append(s);
+    }
+
+}
+
+
 
 
 bool PlayerWindow::eventFilter(QObject *, QEvent *event)
@@ -411,6 +516,66 @@ bool PlayerWindow::eventFilter(QObject *, QEvent *event)
     return false;
 }
 
+
+
+bool PlayerWindow::existArtistListItem(QString artist)
+{
+    foreach(ArtistListItem *item,artistListItems)
+    {
+        if(item->artistName == artist) return true;
+    }
+    return false;
+}
+
+bool PlayerWindow::existAlbum(QString artist, QString albumName)
+{
+    foreach(Album *album,albums)
+    {
+        if(album->artist== artist && album->album== albumName) return true;
+    }
+    return false;
+}
+bool PlayerWindow::existAlbumSong(QString id)
+{
+    foreach(AlbumSong *song,albumSongs)
+    {
+        if(song->id == id) return true;
+    }
+    return false;
+}
+
+ArtistListItem *PlayerWindow::getArtistListItem(QString artist)
+{
+    foreach(ArtistListItem *item,artistListItems)
+    {
+        if(item->artistName == artist) return item;
+    }
+}
+
+Album *PlayerWindow::getAlbum(QString artist, QString albumName)
+{
+    foreach(Album *album,albums)
+    {
+        if(album->artist== artist && album->album== albumName) return album;
+    }
+}
+AlbumSong *PlayerWindow::getAlbumSong(QString id)
+{
+    foreach(AlbumSong *song,albumSongs)
+    {
+        if(song->id == id) return song;
+    }
+    qDebug()<<"Song not found";
+}
+
+QVariantMap PlayerWindow::getSong(QString id)
+{
+    foreach(QVariant song,library->songs)
+    {
+        QVariantMap map = song.toMap();
+        if(map["id"].toString() == id) return map;
+    }
+}
 void PlayerWindow::logout()
 {
     QMessageBox msgBox;
@@ -435,12 +600,249 @@ void PlayerWindow::closeEvent(QCloseEvent *event)
         #endif
 
             event->ignore();
-     }
+    }
 }
+
 
 void PlayerWindow::quitApp()
 {
     goingToExit = true;
     QApplication::exit(0);
 }
+
+void PlayerWindow::songRightClicked(QString songId)
+{
+    if(selectedAlbumSongs.empty()){
+        showSongMenu(songId);
+    }
+    else{
+        bool exist = false;
+        foreach (AlbumSong *song, selectedAlbumSongs) {
+           if(songId == song->id){
+               exist = true;
+           }
+        }
+        if(exist){
+
+            bool local = false;
+            bool both = false;
+            bool cloud = false;
+            bool downloading = false;
+            bool uploading = false;
+
+            songsToDelete.clear();
+
+            foreach (AlbumSong *song, selectedAlbumSongs) {
+
+               QVariantMap songData = getSong(song->id);
+               songsToDelete.append(songData);
+
+               if(song->uploading){
+                   uploading = true;
+               }
+               if(song->downloading){
+                   downloading = true;
+               }
+               if(songData["local"].toBool() && songData["cloud"].toBool()){
+                   both = true;
+               }
+               if(songData["local"].toBool() && !songData["cloud"].toBool()){
+                   local = true;
+               }
+               if(!songData["local"].toBool() && songData["cloud"].toBool()){
+                   cloud = true;
+               }
+            }
+
+            bool synching = downloading || uploading;
+
+            SongMenu contextMenu;
+            QAction action1("Edit Info");
+            QAction action2("Stop Download");
+            QAction action3("Stop Upload");
+            QAction action4("Download");
+            QAction action5("Upload");
+            QAction action6("Delete from local");
+            QAction action7("Delete from cloud");
+            QAction action8("Delete from everywhere");
+
+            if(!synching) contextMenu.addAction(&action1);
+
+            if(downloading) contextMenu.addAction(&action2);
+
+            if(uploading) contextMenu.addAction(&action3);
+
+            if(cloud) contextMenu.addAction(&action4);
+
+            if(local && logged) contextMenu.addAction(&action5);
+
+            if(local) contextMenu.addAction(&action6);
+
+            if(cloud) contextMenu.addAction(&action7);
+
+            if(both) contextMenu.addAction(&action8);
+
+            connect(&action1, SIGNAL(triggered()), this, SLOT(showTagEditor()));
+            connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
+            connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
+            connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
+            connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+            connect(&action6, SIGNAL(triggered()), this, SLOT(deleteSongsFromLocal()));
+            connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
+            connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
+
+            contextMenu.exec(QPoint(QCursor::pos().x() - 40,QCursor::pos().y() - 10));
+
+        }
+        else{
+            showSongMenu(songId);
+        }
+    }
+}
+
+void PlayerWindow::songDeletionEnd()
+{
+    refreshLibrary();
+    QString arti = currentArtist;
+    currentArtist = "";
+    artistSelected(arti);
+}
+
+void PlayerWindow::showSongMenu(QString songId)
+{
+
+    AlbumSong *song = getAlbumSong(songId);
+    QVariantMap songData = getSong(songId);
+    songsToDelete.clear();
+    songsToDelete.append(songData);
+
+    bool local = songData["local"].toBool();
+    bool cloud = songData["cloud"].toBool();
+    bool downloading = song->downloading;
+    bool uploading = song->uploading;
+    bool synching = downloading || uploading;
+    SongMenu contextMenu;
+    QAction action1("Edit Info", song);
+    QAction action2("Stop Download", song);
+    QAction action3("Stop Upload", song);
+    QAction action4("Download", song);
+    QAction action5("Upload", song);
+    QAction action6("Delete from local", song);
+    QAction action7("Delete from cloud", song);
+    QAction action8("Delete from everywhere", song);
+
+    if(!synching) contextMenu.addAction(&action1);
+
+    if(downloading) contextMenu.addAction(&action2);
+
+    if(uploading) contextMenu.addAction(&action3);
+
+    if(!local && cloud) contextMenu.addAction(&action4);
+
+    if(!cloud && logged) contextMenu.addAction(&action5);
+
+    if(local && !synching) contextMenu.addAction(&action6);
+
+    if(cloud && !synching) contextMenu.addAction(&action7);
+
+    if(cloud && local && !synching) contextMenu.addAction(&action8);
+
+    connect(&action1, SIGNAL(triggered()), this, SLOT(showTagEditor()));
+    connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
+    connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
+    connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
+    connect(&action6, SIGNAL(triggered()), this, SLOT(deleteSongsFromLocal()));
+    connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
+    connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
+
+    contextMenu.exec(QPoint(QCursor::pos().x() - 40,QCursor::pos().y() - 10));
+
+    song->more->deleteLater();
+    song->more = nullptr;
+    song->duration->show();
+}
+
+
+void PlayerWindow::deleteSongsFromLocal()
+{
+    selectedAlbumSongs.clear();
+    library->deleteSongs(songsToDelete,"local");
+}
+
+void PlayerWindow::showTagEditor()
+{
+    tagEditor->setData(songsToDelete);
+    tagEditor->open();
+}
+
+void PlayerWindow::songsEdited(QVariantList editedSongs)
+{
+    foreach (QVariant song, editedSongs)
+    {
+       QVariantMap s = song.toMap();
+
+       foreach(QVariant _song,library->songs)
+       {
+           QVariantMap _s = _song.toMap();
+
+           if(_s["id"].toString() == s["id"].toString())
+           {
+
+               QFileInfo check_art(path + "/Cuarzo Player/Artwork/" + s["artist"].toString() + "/" + s["album"].toString() + ".jpg");
+
+               s["artWork"] = check_art.exists();
+
+               if(_s["artist"].toString() != s["artist"].toString()){
+                   if(!QDir(path+"/Cuarzo Player/Music/" + s["artist"].toString()).exists()){
+                       QDir().mkdir(path+"/Cuarzo Player/Music/" + s["artist"].toString());
+                   }
+               }
+
+               if(_s["album"].toString() != s["album"].toString()){
+                   if(!QDir(path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString()).exists()){
+                       QDir().mkdir(path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString());
+                   }
+               }
+
+               QString songFileName = QString::number(s["track"].toInt())  + " " + s["title"].toString()  + "." + s["format"].toString();
+               QString destPath = path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString() + "/";
+
+               QFileInfo check_lib( destPath + songFileName);
+
+               bool alreadyExistName = check_lib.exists();
+
+               int sufix = 1;
+
+
+               while(alreadyExistName)
+               {
+                   songFileName = QString::number(s["track"].toInt()) + " " + s["title"].toString() + " " + QString::number(sufix) + "." + s["format"].toString();
+
+                   QFileInfo check_lib(destPath + songFileName);
+
+                   alreadyExistName = check_lib.exists();
+               }
+
+
+               d.rename(path + "/Cuarzo Player/Music/" + _s["artist"].toString() + "/" + _s["album"].toString() + "/" + _s["fileName"].toString() , destPath + songFileName);
+
+               s["fileName"] = songFileName;
+
+               library->songs[library->songs.indexOf(_song)] = s;
+           }
+       }
+    }
+    library->sortSongs();
+    library->saveLibrary();
+    refreshLibrary();
+    QString arti = currentArtist;
+    currentArtist = "";
+    artistSelected(arti);
+}
+
+
+
+
+
 

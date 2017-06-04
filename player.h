@@ -14,9 +14,6 @@
 #include "Audio.h"
 #include "MediaPlayer.h"
 
-#include "json.hpp"
-
-using json = nlohmann::json;
 
 class Player : public QObject
 {
@@ -26,9 +23,9 @@ public:
     bool shuffle = false;
     int loopMode = 0;
     QString playFrom;
-    json currentSong;
-    json settings;
-    QList<json> playList;
+    QVariantMap currentSong;
+    QVariantMap settings;
+    QVariantList playList;
     QNetworkReply *reply;
     QFile *file = new QFile();
     VlcInstance *vlc = new VlcInstance(VlcCommon::args(), this);
@@ -36,12 +33,12 @@ public:
 
 
 signals:
-    void songPlaying(json);
+    void songPlaying(QVariantMap);
     void sendTimePosition(float,float);
     void sendState(bool);
 public slots:
     void positionChanged(float position);
-    void playSong(json);
+    void playSong(QVariantMap);
     void setTime(float percent);
     void setLoopMode(int);
     void setShuffle(bool);
@@ -49,10 +46,6 @@ public slots:
     void playPause();
     void playNext();
     void playBack();
-    void downloadTempSong(json song);
-    void setBuffer();
-    void endBuffer();
-    void downloadProg(qint64,qint64);
 
 };
 

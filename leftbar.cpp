@@ -2,6 +2,7 @@
 
 LeftBar::LeftBar()
 {
+ hide();
  setAutoFillBackground(true);
  setFixedWidth(170);
  setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Expanding);

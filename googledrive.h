@@ -1,3 +1,4 @@
+/*
 #ifndef GOOGLEDRIVE_H
 #define GOOGLEDRIVE_H
 
@@ -11,23 +12,21 @@
 #include <QList>
 #include "network.h"
 #include "reply.h"
-#include "json.hpp"
 
-using json = nlohmann::json;
 
 class GoogleDrive : public QObject
 {
     Q_OBJECT
 public:
-    explicit GoogleDrive(json settings);
+    explicit GoogleDrive(QVariantMap settings);
 
     QList<Reply*> replies;
     QString key = "AIzaSyCQXTMwalQiq-twGJrBrnXmDFNJeGwWs0g";
     QString client_id = "677866894523-ejp2cte1mn0mnb7v7m62kiuteng6mo8v.apps.googleusercontent.com";
     QString client_secret = "QW5thR07Nwo4dfUy4oozRofU";
     QString redirect = "urn:ietf:wg:oauth:2.0:oob";
-    json settings;
-    json cloud;
+    QVariantMap settings;
+    QVariantMap cloud;
 
 
 signals:
@@ -70,3 +69,4 @@ public slots:
 };
 
 #endif // GOOGLEDRIVE_H
+*/

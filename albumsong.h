@@ -4,19 +4,18 @@
 #include <QFrame>
 #include <QBoxLayout>
 #include <QLabel>
-#include <QAction>
-#include <QMenu>
 #include <QMouseEvent>
 #include "opbutton.h"
 #include "icon.h"
 #include "croplabel.h"
-#include "json.hpp"
 #include "pix.h"
 #include "pie.h"
 
-using json = nlohmann::json;
 
 extern QString blue;
+extern QString red;
+extern QString green;
+
 
 class AlbumSong : public QFrame
 {
@@ -24,27 +23,26 @@ class AlbumSong : public QFrame
 public:
 
     //CONSTRUCTOR
-    AlbumSong(json);
+    AlbumSong(QVariantMap, bool logged);
 
     //VARIABLES
-    QString libraryLocationSelected = "local";
     bool downloading = false;
     bool uploading = false;
+    bool isSelected = false;
     int bSize = 15;
-    json data;
-    int id;
+    QString id;
 
     //UTILITIES
     Pix r;
 
     //ELEMENTS
-    Pie *pie = new Pie(0,19);
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     QLabel *number  = new QLabel();
-    QLabel *duration = new QLabel("caca");
-    Icon *status = new Icon(":res/img/volume-high.svg",blue,bSize, bSize);
-    OpButton *sync = new OpButton(":res/img/upload-border.svg", bSize, bSize, blue);
-    OpButton *more = new OpButton(":res/img/more.svg", bSize, bSize, blue);
+    QLabel *duration = new QLabel();
+    Icon *status = nullptr;
+    Pie *pie = nullptr;
+    OpButton *sync = nullptr;
+    OpButton *more = nullptr;
     CropLabel *name = new CropLabel("","color:#444");
 
     //EVENTS
@@ -55,37 +53,32 @@ public:
 
 public slots:
 
-    //METHODS
-    void showMenu();
 
     //SETTERS
     void setSelected(bool);
     void setPlaying(bool);
-    void setData(json);
+    void setData(QVariantMap);
+    void setLocation(QString);
 
     //EVENTS
     void syncClicked();
     void piePressed();
+    void morePressed();
 
-    //DELETE
-    void deleteFromLocal();
-    void deleteFromCloud();
-    void deleteFromBoth();
 
 signals:
+
     //EVENTS
-    void songSelected(int);
-    void songPlayed(json);
-    void songRightClicked(int);
+    void songSelected(QString);
+    void songPlayed(QString);
+    void songRightClicked(QString);
+    void showSongMenu(QString);
 
     //SYNC
-    void syncSong(json);
+    void syncSong(QString);
 
     //DOWNLOAD
-    void cancelDownload(int);
-
-    //DELETE
-    void deleteSong(json data,QString from);
+    void cancelDownload(QString);
 
 
 };

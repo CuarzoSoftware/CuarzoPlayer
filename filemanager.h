@@ -1,6 +1,7 @@
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
+#include <QCryptographicHash>
 #include <QObject>
 #include <QImage>
 #include <QThread>
@@ -13,7 +14,6 @@
 #include <QFileInfo>
 #include <fstream>
 #include <fileref.h>
-#include "id.h"
 #include <tag.h>
 #include <id3v2tag.h>
 #include <mpegfile.h>
@@ -21,9 +21,7 @@
 #include <mp4tag.h>
 #include <mp4coverart.h>
 #include <attachedpictureframe.h>
-#include "json.hpp"
-
-using json = nlohmann::json;
+#include "pix.h"
 
 extern QString path;
 
@@ -33,11 +31,12 @@ class FileManager : public QThread
 
 public:
 
-    ID uid;
+    QCryptographicHash *hash3 = new QCryptographicHash(QCryptographicHash::Sha3_224);
     QList<QUrl> urls;
-    json library;
-    FileManager(json oldLibrary,QList<QUrl> uris){
-        library = oldLibrary;
+    QVariantList newLib;
+    Pix p;
+    FileManager(QVariantList oldLib,QList<QUrl> uris){
+        newLib = oldLib;
         urls = uris;
     }
 
@@ -46,14 +45,15 @@ protected:
 
         int total = urls.length();
         int completed = 0;
+
         foreach (QUrl uri, urls)
         {
             QStringList urlParts = uri.path().split( "." );
             QString format = urlParts.last();
             QString filename = uri.fileName();
 
-            QString artist, album, title, genre;
-            int track, year, songID, duration;
+            QString artist, album, title, genre, songId;
+            int track, year, duration;
             bool artWork;
 
             if(format == "mp3")
@@ -71,7 +71,6 @@ protected:
                  year = MP3->year();
                  duration = MP3FILE.audioProperties()->lengthInSeconds();
                  genre = QString::fromStdWString(MP3->genre().toWString());
-                 songID = uid.newID();
 
                  TagLib::ID3v2::FrameList frameList = MP3->frameList("APIC");
 
@@ -85,18 +84,20 @@ protected:
                          QDir().mkdir(path+"/Cuarzo Player/Artwork/"+artist);
                      }
 
-                     QFileInfo check_file(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
+                     QFileInfo check_file(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg");
                      if (!check_file.exists()) {
                          TagLib::ID3v2::AttachedPictureFrame *coverImg = static_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameList.front());
                          QImage coverQImg;
                          coverQImg.loadFromData((const uchar *) coverImg->picture().data(), coverImg->picture().size());
-                         coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
+                         coverQImg = coverQImg.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                         coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg","jpg",100);
                      }
                  }
                  else
                  {
                      artWork = false;
                  }
+
             }
             else if (format == "m4a")
             {
@@ -114,7 +115,6 @@ protected:
                 year = M4A->year();
                 duration = M4AFILE.audioProperties()->lengthInSeconds();
                 genre = QString::fromStdWString(M4A->genre().toWString());
-                songID = uid.newID();
 
                 TagLib::MP4::ItemListMap itemsListMap = M4A->itemListMap();
                 TagLib::MP4::Item coverItem = itemsListMap["covr"];
@@ -130,18 +130,20 @@ protected:
                         QDir().mkdir(path+"/Cuarzo Player/Artwork/"+artist);
                     }
 
-                    QFileInfo check_file(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
+                    QFileInfo check_file(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg");
                     if (!check_file.exists()) {
                         QImage coverQImg;
                         TagLib::MP4::CoverArt coverArt = coverArtList.front();
                         coverQImg.loadFromData((const uchar *)coverArt.data().data(),coverArt.data().size());
-                        coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".png");
+                        coverQImg = coverQImg.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                        coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg","jpg",100);
                     }
                 }
                 else
                 {
                     artWork = false;
                 }
+
             }
 
             //Check if artist folder exist
@@ -159,25 +161,55 @@ protected:
             //Copy file
 
 
-            QFile::copy(uri.path(),path+"/Cuarzo Player/Music/"+artist+"/"+album+"/"+QString::number(songID) + "." + format);
+            QFile originFile( uri.path() );
+            originFile.open( QIODevice::ReadOnly );
+            QByteArray songData = originFile.readAll();
+            hash3->addData(songData);
+            songId = QString::fromStdString(hash3->result().toStdString());
+            originFile.close();
 
+            QString songFileName = QString::number(track) + " " + title + "." + format;
+            QString destPath = path+"/Cuarzo Player/Music/"+artist+"/"+album+"/";
 
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["id"] = songID;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["track"] = track;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["year"] = year;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["duration"] = duration;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artist"] = artist.toStdString();
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["album"] = album.toStdString();
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["title"] = title.toStdString();
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["genre"] = genre.toStdString();
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["format"] = format.toStdString();
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWork"] = artWork;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["cloud"] = false;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["local"] = true;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["albumSynched"] = false;
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["artWorkId"] = "";
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["musicId"] = "";
-            library["artists"][artist.toStdString()][album.toStdString()][QString::number(songID).toStdString()]["downloadURL"] = "";
+            QFileInfo check_lib(destPath + songFileName);
+
+            bool alreadyExistName = check_lib.exists();
+
+            int sufix = 1;
+
+            while(alreadyExistName)
+            {
+                songFileName = QString::number(track) + " " + title + " " + QString::number(sufix) + "." + format;
+
+                QFileInfo check_lib(destPath + songFileName);
+
+                alreadyExistName = check_lib.exists();
+            }
+
+            QFile destFile(destPath + songFileName);
+            destFile.open(QIODevice::WriteOnly);
+            destFile.write(songData);
+            destFile.close();
+
+            QVariantMap song;
+
+            song["id"] = songId;
+            song["track"] = track;
+            song["year"] = year;
+            song["duration"] = duration;
+            song["artist"] = artist;
+            song["album"] = album;
+            song["title"] = title;
+            song["genre"] = genre;
+            song["format"] = format;
+            song["artWork"] = artWork;
+            song["cloud"] = false;
+            song["local"] = true;
+            song["artWorkId"] = "";
+            song["musicId"] = "";
+            song["fileName"] = songFileName;
+
+            newLib.append(song);
 
             completed++;
 
@@ -185,13 +217,13 @@ protected:
             songAddProgress((float)percent);
         }
 
-        songAddEnd(QString::fromStdString(library.dump()));
+        songAddEnd(newLib);
         deleteLater();
     }
 
 signals:
     void songAddProgress(int);
-    void songAddEnd(QString);
+    void songAddEnd(QVariantList);
 };
 
 

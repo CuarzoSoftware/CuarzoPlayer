@@ -10,17 +10,17 @@ class LeftBarItem : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LeftBarItem(QString _id,QString _icon,QString _text);
+    LeftBarItem(QString _id,QString _icon,QString _text);
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
     Icon *icon;
     CropLabel *text;
-    void setSelected(bool);
     QString id;
 
     void mousePressEvent(QMouseEvent *);
 signals:
     void selected(QString);
 public slots:
+    void setSelected(bool);
 };
 
 #endif // LEFTBARITEM_H

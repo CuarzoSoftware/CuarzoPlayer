@@ -6,28 +6,23 @@
 #include <QLabel>
 #include "croplabel.h"
 #include "pix.h"
-#include "json.hpp"
-
-using json = nlohmann::json;
 
 class ArtistListItem:public QFrame
 {
     Q_OBJECT
 public:
-    ArtistListItem(json _data);
-    json data;
+    ArtistListItem(QVariantMap data);
     QBoxLayout *layout = new QBoxLayout(QBoxLayout::LeftToRight,this);
-    QLabel *icon = new QLabel();
+    QWidget *icon = new QWidget();
     CropLabel *text;
     QString artistName;
     Pix r;
     void mousePressEvent(QMouseEvent *event);
 signals:
-    void selected(ArtistListItem*);
+    void selected(QString);
 public slots:
-    void setData(json _data);
+    void setData(QVariantMap data);
     void setSelected(bool selected);
-    void setLocation(QString);
 };
 
 #endif // ARTISTLISTITEM_H

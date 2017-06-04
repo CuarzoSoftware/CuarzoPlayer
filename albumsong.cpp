@@ -1,67 +1,69 @@
 #include "albumsong.h"
 #include <QDebug>
 
-using json = nlohmann::json;
-
-extern QString red;
-extern QString green;
-
-
 //Creates the song
 
-AlbumSong::AlbumSong(json _data)
+AlbumSong::AlbumSong(QVariantMap data, bool logged)
 {
     setAttribute(Qt::WA_Hover);
-    setObjectName("song");
     setFixedHeight(35);
-    setStyleSheet("#song{border-bottom:1px solid #EEE;background:#FFF;border-radius:0px}");
+    setStyleSheet("AlbumSong{border-bottom:1px solid #EEE;border-radius:0px}");
     number->setStyleSheet("color:#888");
     number->setFixedWidth(15);
     duration->setStyleSheet("color:#888");
     layout->setMargin(8);
-    layout->addWidget(sync);
-    layout->addWidget(pie);
+    if(logged){
+        sync = new OpButton(":res/img/upload-border.png", bSize, bSize);
+        connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
+        layout->addWidget(sync);
+    }
     layout->addWidget(number);
-    layout->addWidget(status);
     layout->addWidget(name,10);
     layout->addWidget(duration);
-    layout->addWidget(more);
-    pie->hide();
-    status->hide();
-    more->hide();
-    setData(_data);
-    connect(sync,SIGNAL(pressed()),this,SLOT(syncClicked()));
-    connect(pie,SIGNAL(pressed()),this,SLOT(piePressed()));
-    connect(more,SIGNAL(released()),this,SLOT(showMenu()));
+    setData(data);
 }
+
 
 //Set the songs data
 
-void AlbumSong::setData(json _data)
+void AlbumSong::setData(QVariantMap data)
 {
-    data = _data;
-    id = data["id"];
-    name->changeText(QString::fromStdString(data["title"]));
-    number->setText(QString::number((int)data["track"]));
-    duration->setText(r.timeFromSecconds((int)data["duration"]));
+    id = data["id"].toString();
+    name->changeText(data["title"].toString());
+    number->setText(QString::number(data["track"].toInt()));
+    duration->setText(r.timeFromSecconds((int)data["duration"].toInt()));
 
-    if(libraryLocationSelected == "local")
+    if(!data["local"].toBool())
     {
-        sync->hide();
-        return;
+        //sync->setIcon(QIcon(":res/img/download-border.svg"));
     }
+    else if(!data["cloud"].toBool())
+    {
+        //sync->setIcon(QIcon(":res/img/upload-border.svg"));
+    }
+    else if(data["cloud"].toBool() && data["local"].toBool())
+    {
+        //sync->setIcon(QIcon(":res/img/success.svg"));
+    }
+}
 
-    if(!data["local"])
+void AlbumSong::setLocation(QString location)
+{
+    if(location == "local")
     {
-        sync->setIcon(QIcon(":res/img/download-border.svg"));
+        if(sync != nullptr)
+        {
+            sync->deleteLater();
+            sync = nullptr;
+        }
     }
-    else if(!data["cloud"])
+    else if(location == "cloud")
     {
-        sync->setIcon(QIcon(":res/img/upload-border.svg"));
+        //new OpButton(":res/img/upload-border.png", bSize, bSize)
     }
-    else if(data["cloud"] && data["local"])
+    else if(location == "all")
     {
-        sync->setIcon(QIcon(":res/img/success.svg"));
+
     }
 }
 
@@ -72,29 +74,39 @@ void AlbumSong::setSelected(bool op)
 {
     if(op)
     {
-        setStyleSheet("#song{border-bottom:1px solid transparent;background:"+blue+";border-radius:5px}");
+
+        setStyleSheet("AlbumSong{border-bottom:1px solid transparent;background:"+blue+";border-radius:5px}");
         duration->setStyleSheet("color:#FFF");
         number->setStyleSheet("color:#FFF");
         name->setStyleSheet("color:#FFF");
-        pie->setColor(Qt::white);
-        status->setColor("#FFF");
-        sync->setColor("#FFF");
-        more->setColor("#FFF");
+        if(sync != nullptr)
+            sync->setIcon(QIcon(":res/img/upload-border-sel.png"));
+        if(pie != nullptr)
+            pie->setColor(Qt::white);
+        if(status != nullptr)
+            status->setPixmap(QPixmap(":res/img/volume-high-sel.png"));
+        if(more != nullptr)
+            more->setIcon(QIcon(":res/img/more-sel.png"));
     }
     else
     {
-        setStyleSheet("#song{border-bottom:1px solid #EEE;background:transparent;border-radius:0px}");
+        setStyleSheet("AlbumSong{border-bottom:1px solid #EEE;background:transparent;border-radius:0px}");
         duration->setStyleSheet("color:#888");
         number->setStyleSheet("color:#888");
         name->setStyleSheet("color:#444");
-        pie->setColor(Qt::gray);
-        status->setColor(blue);
-        if(data["local"] && !data["cloud"]) sync->setColor(blue);
-        if(!data["local"] && data["cloud"]) sync->setColor(red);
-        if(data["local"] && data["cloud"]) sync->setColor(blue);
-        more->setColor(blue);
+        if(sync != nullptr)
+            sync->setIcon(QIcon(":res/img/upload-border.png"));
+        if(pie != nullptr)
+            pie->setColor(Qt::gray);
+        if(status != nullptr)
+            status->setPixmap(QPixmap(":res/img/volume-high.png"));
+        if(more != nullptr)
+            more->setIcon(QIcon(":res/img/more-small.png"));
+        //if(data["local"] && !data["cloud"]) sync->setColor(blue);
+        //if(!data["local"] && data["cloud"]) sync->setColor(red);
+        //if(data["local"] && data["cloud"]) sync->setColor(blue);
     }
-
+    isSelected = op;
 }
 
 //Display the playing icon
@@ -104,13 +116,20 @@ void AlbumSong::setPlaying(bool isPlaying)
 
     if(isPlaying)
     {
+
+        if(isSelected)status = new Icon(":res/img/volume-high-sel.png",bSize, bSize);
+        if(!isSelected)status = new Icon(":res/img/volume-high.png",bSize, bSize);
+        layout->insertWidget(1,status);
         number->hide();
         status->show();
     }
     else
     {
         number->show();
-        status->hide();
+        if(status != nullptr)
+            status->hide();
+            status->deleteLater();
+            status = nullptr;
     }
 
 }
@@ -118,110 +137,62 @@ void AlbumSong::setPlaying(bool isPlaying)
 
 //Events
 
-void AlbumSong::showMenu()
-{
-    QMenu contextMenu(tr("Options"),more);
-
-    QAction action1("Edit Info", more);
-    QAction action2("Stop Download", more);
-    QAction action3("Stop Upload", more);
-    QAction action4("Download", more);
-    QAction action5("Upload", more);
-    QAction action6("Delete from local", more);
-    QAction action7("Delete from cloud", more);
-    QAction action8("Delete from everywhere", more);
-
-    contextMenu.addAction(&action1);
-
-    if(pie->isVisible() && data["cloud"]) contextMenu.addAction(&action2);
-
-    if(pie->isVisible() && !data["cloud"]) contextMenu.addAction(&action3);
-
-    if(!pie->isVisible() && data["cloud"] && !data["local"] && libraryLocationSelected != "local") contextMenu.addAction(&action4);
-
-    if(!pie->isVisible() && !data["cloud"] && data["local"] && libraryLocationSelected != "local") contextMenu.addAction(&action5);
-
-    if(data["cloud"] && data["local"] && libraryLocationSelected != "local")
-    {
-        contextMenu.addAction(&action6); contextMenu.addAction(&action7); contextMenu.addAction(&action8);
-    }
-    else if(data["cloud"] && !data["local"] && libraryLocationSelected != "local")
-    {
-        contextMenu.addAction(&action7);
-    }
-    else if(!data["cloud"] && data["local"])
-    {
-        contextMenu.addAction(&action6);
-    }
-
-    connect(&action2, SIGNAL(triggered()), this, SLOT(piePressed()));
-    connect(&action3, SIGNAL(triggered()), this, SLOT(piePressed()));
-    connect(&action4, SIGNAL(triggered()), this, SLOT(syncClicked()));
-    connect(&action5, SIGNAL(triggered()), this, SLOT(syncClicked()));
-    connect(&action6, SIGNAL(triggered()), this, SLOT(deleteFromLocal()));
-    connect(&action7, SIGNAL(triggered()), this, SLOT(deleteFromCloud()));
-    connect(&action8, SIGNAL(triggered()), this, SLOT(deleteFromBoth()));
-
-    contextMenu.exec(more->mapToGlobal(QPoint(50-contextMenu.width(),0)));
-}
 
 void AlbumSong::syncClicked()
 {
-    syncSong(data);
-
+    syncSong(id);
+    pie = new Pie(0,19);
+    layout->insertWidget(0,pie);
 }
 
 void AlbumSong::piePressed()
 {
     cancelDownload(id);
-    pie->hide();
+    pie->deleteLater();
+    pie = nullptr;
     sync->show();
 }
 
-void AlbumSong::deleteFromLocal()
+void AlbumSong::morePressed()
 {
-    deleteSong(data,"local");
+    showSongMenu(id);
 }
-
-void AlbumSong::deleteFromCloud()
-{
-    deleteSong(data,"cloud");
-}
-
-void AlbumSong::deleteFromBoth()
-{
-    deleteSong(data,"both");
-}
-
 
 void AlbumSong::mouseReleaseEvent(QMouseEvent *event)
 {
 
     if(event->button() == Qt::RightButton)
     {
-        songRightClicked((int)data["id"]);
+        songRightClicked(id);
     }
     else
     {
-        setSelected(true);
         songSelected(id);
     }
 }
 
 void AlbumSong::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    setPlaying(true);
-    songPlayed(data);
+    songPlayed(id);
 }
 
 void AlbumSong::enterEvent(QEvent * event)
 {
-    more->show();
+    if(isSelected){
+        more = new OpButton(":res/img/more-sel.png", bSize, bSize);
+    }
+    else
+    {
+        more = new OpButton(":res/img/more-small.png", bSize, bSize);
+    }
+    connect(more,SIGNAL(released()),this,SLOT(morePressed()));
+    layout->insertWidget(layout->count()-1,more);
     duration->hide();
 }
 
 void AlbumSong::leaveEvent(QEvent * event)
 {
-    more->hide();
+    more->deleteLater();
+    more = nullptr;
     duration->show();
 }
