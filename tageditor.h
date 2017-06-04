@@ -288,7 +288,7 @@ public slots:
                         QDir().mkdir(path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString());
                     }
                     QImage im(files.first().path());
-                    im = im.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                    im = im.scaled(256,256,Qt::KeepAspectRatio,Qt::SmoothTransformation);
                     im.save(savePath,"jpg",100);
                     prevAlbum = s["album"].toString();
                     prevArtist = s["artist"].toString();

@@ -89,7 +89,7 @@ protected:
                          TagLib::ID3v2::AttachedPictureFrame *coverImg = static_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameList.front());
                          QImage coverQImg;
                          coverQImg.loadFromData((const uchar *) coverImg->picture().data(), coverImg->picture().size());
-                         coverQImg = coverQImg.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                         coverQImg = coverQImg.scaled(256,256,Qt::KeepAspectRatio,Qt::SmoothTransformation);
                          coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg","jpg",100);
                      }
                  }
@@ -135,7 +135,7 @@ protected:
                         QImage coverQImg;
                         TagLib::MP4::CoverArt coverArt = coverArtList.front();
                         coverQImg.loadFromData((const uchar *)coverArt.data().data(),coverArt.data().size());
-                        coverQImg = coverQImg.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                        coverQImg = coverQImg.scaled(256,256,Qt::KeepAspectRatio,Qt::SmoothTransformation);
                         coverQImg.save(path+"/Cuarzo Player/Artwork/"+artist+"/"+album+".jpg","jpg",100);
                     }
                 }

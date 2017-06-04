@@ -51,10 +51,10 @@ public:
         albumName = new CropLabel(album,"font-size:20px;color:#444;font-weight:bold");
         if(data["artWork"].toBool())
         {
-            artWork->setStyleSheet("background-image:url(\""+path + "/Cuarzo Player/Artwork/" + data["artist"].toString() + "/" + data["album"].toString() + ".jpg"+"\"); background-position: center;border-radius:10px;border:1px solid #CCC");
+            artWork->setStyleSheet("border-image:url(\""+path + "/Cuarzo Player/Artwork/" + data["artist"].toString() + "/" + data["album"].toString() + ".jpg"+"\"); background-position: center;border-radius:6px");
         }
         else{
-            artWork->setStyleSheet("background-image:url(\":res/img/artWork.png\"); background-position: center;border-radius:10px;border:1px solid #CCC ");
+            artWork->setStyleSheet("border-image:url(\":res/img/artWork.png\"); background-position: center;border-radius:6px");
         }
         QString genre = data["genre"].toString();
         QString year = QString::number(data["year"].toInt());
@@ -117,6 +117,8 @@ public:
             songsNumber->setText(QString::number(songsCount) + " Songs");
         }
     }
+signals:
+    void shuffleAlbum(QString artist,QString album);
 };
 
 

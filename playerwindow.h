@@ -130,6 +130,8 @@ public slots:
     void albumSongSelected(QString songId);
     void songRightClicked(QString songId);
     void songDeletionEnd();
+    void createPlayList(QString key, QString from);
+    void shuffleArtist();
 
 signals:
     void showLoginWindow();

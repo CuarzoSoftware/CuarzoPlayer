@@ -185,6 +185,7 @@ void PlayerWindow::setupConnections()
     connect(bottomBar->playerButtons->next,SIGNAL(released()),player,SLOT(playNext()));
     connect(bottomBar,SIGNAL(sendShuffleMode(bool)),player,SLOT(setShuffle(bool)));
     connect(bottomBar,SIGNAL(sendLoopMode(int)),player,SLOT(setLoopMode(int)));
+    connect(middleView->artistView->artistViewTitle->shuffle,SIGNAL(released()),this,SLOT(shuffleArtist()));
 
 }
 
@@ -204,6 +205,10 @@ void PlayerWindow::refreshLibrary()
     if(library->songs.empty())
     {
         middleView->msg->show();
+        middleView->leftBar->hide();
+        middleView->artistsList->hide();
+        middleView->artistView->hide();
+
         return;
     }
     else
@@ -241,6 +246,12 @@ void PlayerWindow::refreshLibrary()
         middleView->leftBar->show();
 
         if(currentArtist!="")middleView->artistView->show();
+        /*
+        QString key = currentArtist;
+        QString from = playingFrom;
+        currentArtist = playingFrom = "";
+        createPlayList(key, from);
+        */
     }
 
 }
@@ -351,26 +362,36 @@ void PlayerWindow::playFromArtist(QString SongId)
 {
     QVariantMap song = getSong(SongId);
     QString artist = song["artist"].toString();
+    createPlayList(artist,"artistView");
+    player->playSong(song);
 
-    //Check if current song playlist is created, and create if not
+}
 
-    if(playingFrom != "artistView" || artist != player->currentSong["artist"].toString())
+void PlayerWindow::createPlayList(QString key,QString from)
+{
+    if(playingFrom != "artistView" || key != player->currentSong["artist"].toString())
     {
 
         QVariantList playlist;
         foreach(QVariant sng,library->songs){
             QVariantMap s = sng.toMap();
-            if(s["artist"].toString() == artist){
+            if(s["artist"].toString() == key){
                 playlist.append(s);
             }
         }
         player->playList = playlist;
         player->setShuffle(player->shuffle);
-        playingFrom = "artistView";
+        currentArtist = key;
+
     }
+    playingFrom = from;
+}
 
-    player->playSong(song);
-
+void PlayerWindow::shuffleArtist()
+{
+    bottomBar->setShuffleMode(true);
+    createPlayList(currentArtist,"artistView");
+    player->playSong(player->playList[0].toMap());
 }
 
 /* ---------------------------------------- */
@@ -707,6 +728,8 @@ void PlayerWindow::songDeletionEnd()
     currentArtist = "";
     artistSelected(arti);
 }
+
+
 
 void PlayerWindow::showSongMenu(QString songId)
 {
