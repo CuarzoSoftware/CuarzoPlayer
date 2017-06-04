@@ -2,6 +2,7 @@
 #define TAGEDITOR_H
 
 #include <QDialog>
+#include <QFileDialog>
 #include <QBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -10,7 +11,42 @@
 #include <QPushButton>
 #include <QDebug>
 
+#include <fstream>
+#include <iostream>
+#include <fileref.h>
+#include <tag.h>
+#include <id3v2tag.h>
+#include <mpegfile.h>
+#include <mp4file.h>
+#include <mp4tag.h>
+#include <mp4coverart.h>
+#include <attachedpictureframe.h>
+#include <tbytevector.h>
+#include <id3v2frame.h>
+#include <tfile.h>
+
+
 extern QString path;
+
+class ImageFile : public TagLib::File
+{
+public:
+    ImageFile(const char *file) : TagLib::File(file)
+    {
+
+    }
+
+    TagLib::ByteVector data()
+    {
+        return readBlock(length());
+    }
+
+
+private:
+    virtual TagLib::Tag *tag() const { return 0; }
+    virtual TagLib::AudioProperties *audioProperties() const { return 0; }
+    virtual bool save() { return false; }
+};
 
 class TagEditor:public QDialog
 {
@@ -34,6 +70,7 @@ public:
     QPushButton *addArtwork = new QPushButton("Add Artwork");
     QPushButton *cancel = new QPushButton("Cancel");
     QVariantList songsToEdit;
+    QList<QUrl> files;
     QString exp = "[A-Za-z0-9_!¿¡?]{0,30}";
 
 
@@ -41,6 +78,7 @@ public:
     TagEditor(){
 
         connect(cancel,SIGNAL(clicked(bool)),this,SLOT(close()));
+        connect(addArtwork,SIGNAL(released()),this,SLOT(pickArtWork()));
         mainLayout->addWidget(header);
         mainLayout->addWidget(formWidget);
         mainLayout->addWidget(artWork);
@@ -191,16 +229,33 @@ public:
     }
 
 public slots:
-    void checkValues(){
+
+    void pickArtWork()
+    {
+
+        files = QFileDialog::getOpenFileUrls(new QWidget(),"Select an image",path,"ALL (*.jpg *.jpeg *.png) ;; JPEG (*.jpg *.jpeg) ;; PNG (*.png)");
+
+        if(!files.empty())
+        {
+            apply->setDisabled(false);
+            artWork->setStyleSheet("border-image:url(\""+files.first().path()+"\");border-radius:4px");
+
+        }
+
+    }
+
+    void checkValues()
+    {
 
         bool changed = false;
 
-        if(title->text() != "") changed = true;
-        if(artist->text() != "") changed = true;
-        if(album->text() != "") changed = true;
-        if(genre->text() != "") changed = true;
-        if(track->text() != "") changed = true;
-        if(year->text() != "") changed = true;
+        if(title->text()    != "") changed = true;
+        if(artist->text()   != "") changed = true;
+        if(album->text()    != "") changed = true;
+        if(genre->text()    != "") changed = true;
+        if(track->text()    != "") changed = true;
+        if(year->text()     != "") changed = true;
+        if(!files.empty()) changed = true;
 
         apply->setDisabled(!changed);
     }
@@ -209,16 +264,58 @@ public slots:
     {
         QVariantList editedSongs;
 
+        QString prevArtist = "";
+        QString prevAlbum = "";
+
         foreach(QVariant song,songsToEdit)
         {
             QVariantMap s = song.toMap();
 
-            if(title->text() != "") s["title"] = title->text();
-            if(artist->text() != "") s["artist"] = artist->text();
-            if(album->text() != "") s["album"] = album->text();
-            if(genre->text() != "") s["genre"] = genre->text();
-            if(track->text() != "") s["track"] = track->text().toInt();
-            if(year->text() != "") s["year"] = year->text().toInt();
+            QString songPath = path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString() + "/" + s["fileName"].toString();
+
+            TagLib::MPEG::File MP3FILE(songPath.toStdString().c_str());
+            TagLib::ID3v2::Tag *MP3 = MP3FILE.ID3v2Tag();
+
+            if(!files.empty())
+            {
+                QString savePath = path+"/Cuarzo Player/Artwork/"+s["artist"].toString()+"/"+s["album"].toString()+".jpg";
+                if(prevAlbum != s["album"].toString() && prevArtist != s["artist"].toString())
+                {
+                    if(!QDir(path+"/Cuarzo Player/Artwork/" + s["artist"].toString()).exists()){
+                        QDir().mkdir(path+"/Cuarzo Player/Music/" + s["artist"].toString());
+                    }
+                    if(!QDir(path+"/Cuarzo Player/Artwork/" + s["artist"].toString() + "/" + s["album"].toString()).exists()){
+                        QDir().mkdir(path+"/Cuarzo Player/Music/" + s["artist"].toString() + "/" + s["album"].toString());
+                    }
+                    QImage im(files.first().path());
+                    im = im.scaled(180,180,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+                    im.save(savePath,"jpg",100);
+                    prevAlbum = s["album"].toString();
+                    prevArtist = s["artist"].toString();
+
+
+                }
+
+
+                MP3->removeFrames("APIC");
+
+                ImageFile imageFile(savePath.toStdString().c_str());
+                TagLib::ByteVector imageData = imageFile.data();
+                TagLib::ID3v2::AttachedPictureFrame *frame = new TagLib::ID3v2::AttachedPictureFrame;
+                frame->setMimeType("image/jpeg");
+                frame->setPicture(imageData);
+                MP3->addFrame(frame);
+
+            }
+
+            if(title->text() != "") {s["title"] = title->text();MP3->setTitle(title->text().toStdString());}
+            if(artist->text() != "") {s["artist"] = artist->text();MP3->setArtist(artist->text().toStdString());}
+            if(album->text() != "") {s["album"] = album->text();MP3->setAlbum(album->text().toStdString());}
+            if(genre->text() != "") {s["genre"] = genre->text();MP3->setGenre(genre->text().toStdString());}
+            if(track->text() != "") {s["track"] = track->text().toInt();MP3->setTrack(track->text().toInt());}
+            if(year->text() != "") {s["year"] = year->text().toInt();MP3->setYear(year->text().toInt());}
+
+            MP3FILE.save();
 
             editedSongs.append(s);
         }
