@@ -13,6 +13,12 @@
 #include "opbutton.h"
 #include "croplabel.h"
 #include <QDebug>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QDesktopServices>
+#include <QHttpMultiPart>
+#include <QNetworkRequest>
+#include <QJsonDocument>
 
 class Login : public QWidget
 {

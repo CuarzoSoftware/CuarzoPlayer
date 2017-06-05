@@ -40,12 +40,14 @@ macx {
 unix:!macx {
 
     INCLUDEPATH += $$_PRO_FILE_PWD_/lib/linux/include/taglib/
+    INCLUDEPATH += $$_PRO_FILE_PWD_/lib/linux/include/VLCQtCore/
 
     LIBS += \
         -L/usr/local/lib \
         -L$$_PRO_FILE_PWD_/lib/linux/lib \
         -ltag\
-        -lz
+        -lz\
+        -lVLCQtCore
 }
 
 win32 {

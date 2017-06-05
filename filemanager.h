@@ -62,11 +62,11 @@ protected:
                  TagLib::ID3v2::Tag *MP3 = MP3FILE.ID3v2Tag(true);
 
                  if(MP3->artist().isEmpty())    artist = "Unknown";
-                 else                           artist = QString::fromStdWString(MP3->artist().toWString());
+                 else                           artist = QString::fromStdWString(MP3->artist().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
                  if(MP3->album().isEmpty())     album = "Unknown";
-                 else                           album = QString::fromStdWString(MP3->album().toWString());
+                 else                           album = QString::fromStdWString(MP3->album().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
                  if(MP3->title().isEmpty())     title = filename;
-                 else                           title = QString::fromStdWString(MP3->title().toWString());
+                 else                           title = QString::fromStdWString(MP3->title().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
                  track = MP3->track();
                  year = MP3->year();
                  duration = MP3FILE.audioProperties()->lengthInSeconds();
@@ -105,11 +105,11 @@ protected:
                 TagLib::MP4::Tag *M4A = M4AFILE.tag();
 
                 if(M4A->artist().isEmpty())    artist = "Unknown";
-                else                           artist = QString::fromStdWString(M4A->artist().toWString());
+                else                           artist = QString::fromStdWString(M4A->artist().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
                 if(M4A->album().isEmpty())     album = "Unknown";
-                else                           album = QString::fromStdWString(M4A->album().toWString());
+                else                           album = QString::fromStdWString(M4A->album().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
                 if(M4A->title().isEmpty())     title = filename;
-                else                           title = QString::fromStdWString(M4A->title().toWString());
+                else                           title = QString::fromStdWString(M4A->title().toWString()).remove(QRegExp("[^a-zA-Z\\d\\s]"));
 
                 track = M4A->track();
                 year = M4A->year();

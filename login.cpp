@@ -1,9 +1,5 @@
 #include "login.h"
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QDesktopServices>
-#include <QHttpMultiPart>
-#include <QNetworkRequest>
+
 
 #ifdef Q_OS_MAC
     #include "objectivec.h"
