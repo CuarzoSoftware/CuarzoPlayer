@@ -47,6 +47,7 @@ unix:!macx {
         -L$$_PRO_FILE_PWD_/lib/linux/lib \
         -ltag\
         -lz\
+        -lvlc\
         -lVLCQtCore
 }
 
